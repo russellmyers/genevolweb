@@ -1,0 +1,151 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Genetic Cross Mapping
+{% endblock %}
+
+
+{%  block app_title %}
+Genetic Cross Mapping
+{% endblock  %}
+
+{%  block content %}
+
+<!--div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Allele Freak</h1>
+
+</div-->
+<div class="row">
+<div class="col-sm-4">
+<form method="POST" id="type_form" action="{%  url 'cross_map' %}">
+{% csrf_token %}
+<button name="phenotype_type" class="btn btn-sm ml-3 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
+<button name="gamete_type" class="btn btn-sm {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+{%  if show_cross %}
+<a class="btn btn-secondary btn-sm ml-5" href="{%  url 'cross_map' %}" role="button">New parent</a>
+{% endif %}
+</form>
+</div>
+        <div class="col-sm-3">
+           <small>
+                  {% for descr in phen_descriptions %}
+                    {{  descr }}
+                    <br>
+                  {%  endfor %}
+           </small>
+           </div>
+
+        </div>
+
+
+<div class="container mt-5">
+        <div class="row">
+
+            <div class="col-sm-5">
+                   {{  org1 }}
+
+
+                    <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ org1_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+
+                     <span class="display-4"><b>X</b></span>
+
+                     {{  org2 }}
+
+                     <img src="{% get_static_prefix %}img/{{  genome_name }}/{{  genome_name }}_{{ org2_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+
+            </div>
+            <div class="col-sm-1">
+                <form class="form" method="POST" id="cross_form" action="">
+                    {% csrf_token %}
+                <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
+                 </form>
+            </div>
+
+
+
+
+
+
+        </div>
+
+    {%  if show_cross %}
+
+    <div class="mt-4">
+
+    <p class="h5">
+        {% if cross_type == 'p' %}
+             Phenotypes observed
+        {%  else %}
+             Gametes observed (heterozygote)
+        {%  endif %}
+    </p>
+
+
+    {%  if cross_type == 'p' %}
+
+        {% for key, values in children_phenotypes.items %}
+              {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
+              <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+              {%  if row == '4th' %}
+                  <br>
+              {%  endif %}
+
+        {%  endfor %}
+    {%  else %}
+        {% for key,item in parental_gametes_het.items %}
+            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
+            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;
+             {%  if row == '4th' %}
+                  <br>
+            {%  endif %}
+            {% endfor %}
+        <br>
+
+    {%  endif %}
+
+<br>
+
+<div class="row">
+    <div class="col-sm-2">
+<button name="show_answer" class="btn btn-info" onclick="showAnswer();">Show Answer</button>
+    </div>
+<div class="col-sm" id="answer_div" style="visibility:hidden">
+Answer:
+        {{  org_het_phase }}
+    {{ recomb_fraction_list }}
+    <br>
+    {{ org1.genotype  }}
+    <br>
+    {{  pairs_list }}
+    <br>
+{{  pairs_cis }}
+<br>    {{  dists  }}
+<br> {{  parentals }}
+<br> {{  double_crossovers }}
+
+<br> {{  phen_combs_per_pair }}
+<br> {{  positions }}
+<br> {{ parental_gametes_het }}
+</div>
+
+  </div>
+    </div>
+
+    {%  endif %}
+    </div>
+{%  endblock %}
+
+{%  block script %}
+<script>
+function showAnswer() {
+  var el = document.getElementById('answer_div');
+  if (el.style.visibility === "visible") {
+      el.style.visibility = "hidden";
+  }
+  else {
+      document.getElementById('answer_div').style.visibility = "visible";
+  }
+}
+</script>
+
+{%  endblock %}

@@ -1,0 +1,106 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Allele Freak
+{% endblock %}
+
+
+{%  block app_title %}
+Allele Freak
+{% endblock  %}
+
+{%  block content %}
+
+<!--div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Allele Freak</h1>
+
+</div-->
+
+
+<form action="" method="post">
+         {% csrf_token %}
+  <div class="row form-group">
+
+      <div class="col-md-1">
+
+      </div>
+      <div class="col-md-1">
+        <b>{{ form.init_freq_a.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.init_freq_a }}
+      </div>
+          <div class="col-md-1">
+        <b>{{ form.fitness_AA.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_AA }}
+      </div>
+     <div class="col-md-1">
+        <b>{{ form.fitness_Aa.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_Aa }}
+      </div>
+      <div class="col-md-1">
+        <b>{{ form.fitness_aa.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_aa }}
+      </div>
+
+
+
+
+  </div>
+  <div class="row form-group">
+          <div class="col-md-1">
+
+      </div>
+
+   <div class="col-md-1">
+        <b>{{ form.pop_size.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.pop_size }}
+      </div>
+    <div class="col-md-1">
+        <b>{{ form.num_gens.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.num_gens }}
+      </div>
+
+      <div class="col-md-1">
+        <b>{{ form.inbreeding_coefficient.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.inbreeding_coefficient }}
+      </div>
+
+      <div class = "col-md-1">
+          <div class = "btn-group">
+            <input class="btn btn-primary" name="submit" type="submit" value="Submit">
+            &nbsp;&nbsp;
+            <input class="btn btn-secondary" name="clear"  type="submit" value="Clear">
+          </div>
+      </div>
+
+
+  </div>
+
+
+         </form>
+
+
+
+
+
+<div class = "container">
+ {% autoescape off %}
+  {{ plot_div }}
+  {% endautoescape %}
+
+</div>
+
+{%  endblock %}

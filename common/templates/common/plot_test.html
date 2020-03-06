@@ -1,0 +1,97 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Plot test
+{% endblock %}
+
+
+{%  block app_title %}
+Plot test
+{% endblock  %}
+
+{%  block content %}
+
+<!--div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Allele Freak</h1>
+
+</div-->
+
+
+<form action="/test_plot" method="post">
+         {% csrf_token %}
+  <div class="row">
+
+      <div class="col-md-1">
+
+      </div>
+      <div class="col-md-1">
+        <b>{{ form.init_freq_a.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.init_freq_a }}
+      </div>
+          <div class="col-md-1">
+        <b>{{ form.fitness_AA.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_AA }}
+      </div>
+     <div class="col-md-1">
+        <b>{{ form.fitness_Aa.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_Aa }}
+      </div>
+      <div class="col-md-1">
+        <b>{{ form.fitness_aa.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.fitness_aa }}
+      </div>
+     <div class="col-md-1">
+        <b>{{ form.inbreeding_coefficient.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.inbreeding_coefficient }}
+      </div>
+
+  </div>
+  <div class="row">
+          <div class="col-md-1">
+
+      </div>
+
+   <div class="col-md-1">
+        <b>{{ form.pop_size.label_tag }}</b>
+      </div>
+      <div class = "col-md-2">
+          {{ form.pop_size }}
+      </div>
+    <div class="col-md-1">
+        <b>{{ form.num_gens.label_tag }}</b>
+      </div>
+      <div class = "col-md-2">
+          {{ form.num_gens }}
+      </div>
+      <div class = "col-md-1">
+          <input class="btn btn-primary" type="submit" value="Submit">
+      </div>
+
+
+  </div>
+
+
+         </form>
+
+
+
+
+
+<div>
+ {% autoescape off %}
+  {{ plot_div }}
+  {% endautoescape %}
+
+</div>
+
+{%  endblock %}
