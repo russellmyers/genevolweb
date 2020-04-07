@@ -1,6 +1,10 @@
 # Russell
 svd_venv/
 svd_.idea/
+test_data/
+getools/align_copied_from_dna.py
+getools/dnautils_copied_from_dna.py
+
 
 
 # Byte-compiled / optimized / DLL files

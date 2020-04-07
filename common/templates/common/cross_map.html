@@ -38,7 +38,7 @@ Genetic Cross Mapping
         </div>
 
 
-<div class="container mt-5">
+<div class="container mt-1">
         <div class="row">
 
             <div class="col-sm-5">
@@ -104,6 +104,10 @@ Genetic Cross Mapping
     {%  endif %}
 
 <br>
+ <p class="h5">
+     <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
+    Calculate  Phase, gene order and linkage
+ </p>
 
 <div class="row">
     <div class="col-sm-2">
@@ -112,20 +116,10 @@ Genetic Cross Mapping
 <div class="col-sm" id="answer_div" style="visibility:hidden">
 Answer:
         {{  org_het_phase }}
-    {{ recomb_fraction_list }}
-    <br>
-    {{ org1.genotype  }}
-    <br>
-    {{  pairs_list }}
-    <br>
-{{  pairs_cis }}
-<br>    {{  dists  }}
-<br> {{  parentals }}
-<br> {{  double_crossovers }}
-
-<br> {{  phen_combs_per_pair }}
-<br> {{  positions }}
-<br> {{ parental_gametes_het }}
+    <br>Recombination fractions:
+    {%for phen_combs in recomb_fraction_list_with_p %}
+        {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2 }})
+    {%  endfor %}
 </div>
 
   </div>

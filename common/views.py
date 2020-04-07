@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from getools.popdist import PopDist
-from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele
+from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
 import plotly.graph_objs as go
 import plotly
 from .forms import AlleleFreakForm
@@ -136,7 +136,9 @@ def children_stats(children):
     for phen_combs in phen_combinations_per_pair:
         observed = [count for key, count in phen_combs.items()]
         chisq, p = chisquare(observed, ddof=1)
-        phen_combs['p'] = p
+        phen_combs['abbrev'] =  list(phen_combs.keys())[0].replace('+','')
+        phen_combs['abbrev'] = phen_combs['abbrev'].replace('-','')
+        phen_combs['p'] = '{:.2e}'.format(p)
 
     print(phen_combinations)
     phen_combinations_list = [(key, count) for key, count in phen_combinations.items()]
@@ -175,6 +177,18 @@ def children_stats(children):
                             recomb_fraction_list]
     recomb_fraction_list.sort(key=lambda x: x[1])
 
+    recomb_fraction_list_with_p = []
+    for rf in recomb_fraction_list:
+        rf_with_p = rf[:]
+        rf_with_p.append(-1)
+        for phen_combs in phen_combinations_per_pair:
+            if phen_combs['abbrev']== rf_with_p[0]:
+               rf_with_p[-1] = phen_combs['p']
+               break
+
+        recomb_fraction_list_with_p.append(rf_with_p)
+
+
     gamete_counts_het = {}
     for child in children:
 
@@ -184,7 +198,7 @@ def children_stats(children):
         else:
             gamete_counts_het[gamete] = 1
 
-    return phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, gamete_counts_het
+    return phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, gamete_counts_het, recomb_fraction_list_with_p
 
 def create_children(org_het, org_hom_rec, num_samples=1000):
     children = []
@@ -268,7 +282,7 @@ def cross_map(request):
             try:
                 children_list = request.session['gcm_children']
                 children = [Organism._from_attr_dict(child_dict) for child_dict in children_list]
-                phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het = children_stats(
+                phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(
                     children)
                 show_cross = True
                 org_het_phase = org_het.genome.get_phase(alpha_sort=True)
@@ -286,7 +300,8 @@ def cross_map(request):
                                        'double_crossovers': double_crossovers,
                                        'recomb_fraction_list': recomb_fraction_list,
                                        'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair,
-                                       'parental_gametes_het': parental_gametes_het})
+                                       'parental_gametes_het': parental_gametes_het,
+                                       'recomb_fraction_list_with_p': recomb_fraction_list_with_p})
 
 
             except:
@@ -300,7 +315,7 @@ def cross_map(request):
             cross_type = request.session.get('gcm_cross_type', 'p')
             children = create_children(org_het, org_hom_rec, num_samples=num_samples)
 
-            phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het = children_stats(children)
+            phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(children)
             show_cross = True
             org_het_phase = org_het.genome.get_phase(alpha_sort=True)
             positions = org_het.genome.genome_template.positions()
@@ -319,7 +334,8 @@ def cross_map(request):
                                    'org2_phen': org_hom_rec.genome.phenotype(), 'children_phenotypes': phenotypes,
                                    'pairs_cis': pairs_cis, 'dists': dists, 'parentals': parentals,
                                    'double_crossovers': double_crossovers, 'recomb_fraction_list': recomb_fraction_list,
-                                   'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair, 'parental_gametes_het': parental_gametes_het})
+                                   'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair, 'parental_gametes_het': parental_gametes_het,
+                                   'recomb_fraction_list_with_p': recomb_fraction_list_with_p})
 
         genome_name = org_het.genome.genome_template.name
         phen_descriptions = get_phen_descriptions(genome_name)
@@ -370,9 +386,9 @@ def cross_map(request):
         chroms = [int(chrom)for chrom in chroms_in.split(',')]
 
 
-    g1 = Gene([Allele('A'),Allele('a')],positions[0])
-    g2 = Gene([Allele('B'),Allele('b')],positions[1])
-    g3 = Gene([Allele('C'),Allele('c')],positions[2])
+    g1 = Gene(AlleleSet.default_alleleset_from_symbol('A'),positions[0])
+    g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'),positions[1])
+    g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'),positions[2])
     genes = [g1,g2,g3]
     chr1_genes = []
     chr2_genes = []
