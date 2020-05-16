@@ -1,0 +1,408 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Cross Sim Test
+{% endblock %}
+
+
+{%  block app_title %}
+Cross Simulator Test
+{% endblock  %}
+
+{%  block content %}
+
+<!--div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Allele Freak</h1>
+
+</div-->
+<form method="POST" id="type_form" action="{%  url 'cross_sim_test' %}">
+{% csrf_token %}
+    <div class = "container">
+
+        <div class = "row">
+            <div class = "col-sm-3">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                # Traits: &nbsp;
+                    {% for radio in form.alleles %}
+                        <div class="myradio3 btn btn-secondary btn-sm">
+                            {{ radio }}
+                        </div>
+                    {% endfor %}
+                 </div>
+            </div>
+            <div class =  "col-sm-4">
+                Cross Type: {{ form.cross_type }}
+            </div>
+           <div class = "col-sm-4">
+               <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    Show: &nbsp;
+                    {% for radio in form.gen_phen %}
+                        <div class="myradio4 btn btn-secondary btn-sm">
+                            {{ radio }}
+                        </div>
+                    {% endfor %}
+                 </div>
+           </div>
+
+        </div>
+        <div class="row mt-2">
+
+            <div class="col-sm-6">
+                 Parent 1
+                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    {% for radio in form.p1 %}
+                        <div class="myradio1 btn btn-secondary btn-sm">
+                            {{ radio }}
+                        </div>
+                    {% endfor %}
+                 </div>
+                 <br>
+                <span id="p1_gen">{{ p1 }}</span>
+                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->
+                <img id="p1_img" data-toggle="tooltip" title= "Phase:&#10;{{ parents.0.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.0 }}" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.0.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
+            </div>
+            <div class = "col-sm-6">
+             Parent 2
+             <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                {% for radio in form.p2 %}
+                    <div class="myradio2 btn btn-secondary btn-sm">
+                        {{ radio }}
+                    </div>
+                {% endfor %}
+             </div>
+             <br>
+             <span id="p2_gen">{{ p2 }}</span>
+            <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->
+            <img id="p2_img"  title="Phase:&#10;{{ parents.1.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.1 }}&#10;"src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.1.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
+            </div>
+        </div>
+    </div>
+
+
+{#     <div class = "container">#}
+{#        <div class="row">#}
+{##}
+{#            <div class="col-sm-6">#}
+{#                Parent 1#}
+{#                <div class="btn-group btn-group-toggle" data-toggle="buttons">#}
+{#                  <label class="btn btn-secondary" id="lab_option1_1" >#}
+{#                    <input type="radio" name="options_1" id="option1_1"  value=1 onchange="handleClick(this);" > Hom Dominant#}
+{#                  </label>#}
+{#                  <label class="btn btn-secondary active" id="lab_option2_1">#}
+{#                    <input type="radio" name="options_1" onchange="handleClick(this);" id="option2_1" value=2 checked> Heterozygous#}
+{#                  </label>#}
+{#                  <label class="btn btn-secondary">#}
+{#                    <input type="radio" name="options_1" onchange="handleClick(this);" id="option3_1" value=3> Hom Recessive#}
+{#                  </label>#}
+{#                </div>#}
+{#                <br>#}
+{#                <span id="p1_gen">{{ p1 }}</span>#}
+{#                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->#}
+{#                <img id="p1_img" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.0.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >#}
+{#                <br>#}
+{#                <span id = "p1_gams">{{  parent_poss_gametes.0 }}</span>#}
+{#                <span id = "p1_gen_phase">{{  parents.0.gen_phase }}</span>#}
+{#            </div>#}
+{#            <div class="col-sm-6">#}
+{#                Parent 2#}
+{#                <div class="btn-group btn-group-toggle" data-toggle="buttons">#}
+{#                  <label class="btn btn-secondary">#}
+{#                    <input type="radio" name="options_2" id="option1_2"  onchange="handleClick(this);" value=1> Hom Dominant#}
+{#                  </label>#}
+{#                  <label class="btn btn-secondary">#}
+{#                    <input type="radio" name="options_2" id="option2_2"  onchange="handleClick(this);" value=2> Heterozygous#}
+{#                  </label>#}
+{#                  <label class="btn btn-secondary active">#}
+{#                    <input type="radio" name="options_2" id="option3_2"  checked onchange="handleClick(this);" value=3> Hom Recessive#}
+{#                  </label>#}
+{#                </div>#}
+{#                <br>#}
+{#                <span id="p2_gen">{{ p1 }}</span>#}
+{#                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->#}
+{#                <img id="p2_img" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.1.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >#}
+{#                <br>#}
+{#                <span id = "p2_gams">{{  parent_poss_gametes.1 }}</span>#}
+{#                <span id = "p2_gen_phase">{{  parents.1.gen_phase }}</span>#}
+{#            </div>#}
+{#        </div>#}
+{#        </div>#}
+
+        <div class="row">
+            <div class="col text-center">
+              <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
+            </div>
+        </div>
+
+{#        <div class ="row">#}
+{#            <div class="col text-center">#}
+{#                {%  for child in children %}#}
+{#                    {{ child}}#}
+{#                {%  endfor %}#}
+{#            </div>#}
+{##}
+{#        </div>#}
+
+
+{#      <div class ="row">#}
+{#            <div class="col text-center" height="50px" style="overflow-y:auto">#}
+{##}
+{#                {%  for child_unique_phenotype, count in children_unique_phenotypes.items %}#}
+{#                    {{ child_unique_phenotype}}: {{  count }}#}
+{#                    <br>#}
+{#                {%  endfor %}#}
+{#            </div>#}
+{##}
+{#        </div>#}
+
+
+        <div id="test_class" class="text-center mt-1">
+
+                <br>
+                {%  for child_unique_genotype, count in children_unique_genotypes.items %}
+                    {{ child_unique_genotype}}: {{  count }}
+                    <br>
+                {%  endfor %}
+        </div>
+
+       {{ parents|json_script:"hello-data" }}
+
+    </div>
+</form>
+
+
+
+{%  endblock %}
+
+{%  block script %}
+{{ orgs | json_script:"j_orgs" }}
+{{ poss_gametes | json_script:"j_poss_gametes" }}
+<script>
+function showAnswer() {
+  var el = document.getElementById('answer_div');
+  if (el.style.visibility === "visible") {
+      el.style.visibility = "hidden";
+  }
+  else {
+      document.getElementById('answer_div').style.visibility = "visible";
+  }
+}
+
+/*
+$("#option1_2").click(function () {
+    alert('ahhha');
+    return false;
+});
+*/
+
+function handleClick(radio) {
+
+    var parents = JSON.parse(document.getElementById('hello-data').textContent);
+    var orgs = JSON.parse(document.getElementById('j_orgs').textContent);
+    var poss_gametes = JSON.parse(document.getElementById('j_poss_gametes').textContent);
+    //alert('radio val: ' + (parseInt(radio.value)-1))
+    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(radio.value)-1].phen + ".png"
+    //alert('src: ' + src_txt)
+    if (radio.name == "options_1") {
+        p_num = 'p1';
+    }
+    else {
+        p_num = 'p2';
+    }
+    document.getElementById(p_num + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(radio.value)-1].phen + ".png"
+    document.getElementById(p_num + "_gen").innerText = orgs[parseInt(radio.value)-1].gen;
+    document.getElementById(p_num + "_gen_phase").innerText = orgs[parseInt(radio.value)-1].gen_phase
+    document.getElementById(p_num + "_gams").innerText = poss_gametes[parseInt(radio.value) -1];
+
+}
+
+function getSource() {
+    src =  "{% get_static_prefix %}img/pea/pea_" + orgs[0].phen + ".png";
+    return src;
+}
+
+function selectedOption(name) {
+    var options = document.getElementsByName(name);
+    var selected;
+
+    for(var i = 0; i < options.length; i++) {
+       if(options[i].checked)
+           selected = options[i].value;
+     }
+    return selected;
+}
+function selectCrossType() {
+
+    var p1_sel = selectedOption('p1');
+    var p2_sel = selectedOption('p2');
+
+    p1_sel = parseInt(p1_sel) - 1;
+    p2_sel = parseInt(p2_sel) - 1;
+
+    var crossType;
+    if ((p1_sel == 0) && (p2_sel == 2)
+        || (p1_sel == 2) && p2_sel == 0)
+
+    {
+       crossType = '1';
+    }
+    else if ((p1_sel == 1) && (p2_sel == 2)
+              || (p1_sel == 2) && (p2_sel == 1)){
+        crossType = '2';
+    }
+    else if ((p1_sel == 1) && (p2_sel == 1)) {
+        crossType = '3';
+    }
+    else {
+        crossType = '4';
+    }
+    x = 1;
+    el = document.getElementById('id_cross_type');
+    if (el.value == crossType) {
+
+    }
+    else {
+        el.value = crossType;
+    }
+}
+
+function crossTypeChanged(e) {
+    el = e.target;
+    val = el.value;
+    var p1_val;
+    var p2_val;
+
+    switch (val) {
+        case '1':
+            p1_val = 0;
+            p2_val = 2;
+            break;
+        case '2':
+            p1_val = 1;
+            p2_val = 2;
+            break;
+        case '3':
+            p1_val = 1;
+            p2_val = 1;
+            break;
+        default:
+            p1_val = 0;
+            p2_val = 0;
+            break;
+
+    }
+
+    for (i = 0; i < 3; ++i) {
+        el1 = document.getElementById("id_p1_" + i);
+        if (i == p1_val) {
+            el1.parentElement.parentElement.classList.add('active');
+        } else {
+            el1.parentElement.parentElement.classList.remove('active');
+        }
+
+        el2 = document.getElementById("id_p2_" + i);
+        if (i == p2_val) {
+            el2.parentElement.parentElement.classList.add('active');
+        } else {
+            el2.parentElement.parentElement.classList.remove('active');
+        }
+    }
+
+
+    showOrg('p1',p1_val);
+    showOrg('p2',p2_val);
+}
+
+function showOrg(parent, orgNum) {
+    el = document.getElementById('id_' + parent + '_' + orgNum);
+
+    var parents = JSON.parse(document.getElementById('hello-data').textContent);
+    var orgs = JSON.parse(document.getElementById('j_orgs').textContent);
+    var poss_gametes = JSON.parse(document.getElementById('j_poss_gametes').textContent);
+    //alert('radio val: ' + (parseInt(radio.value)-1))
+    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[orgNum].phen + ".png"
+    //alert('src: ' + src_txt)
+
+    document.getElementById(parent + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[orgNum].phen + ".png"
+    document.getElementById(parent + "_gen").innerText = orgs[orgNum].gen;
+
+}
+
+function showChange(e) {
+    //alert("oh I see " + e.target.id);
+    el = e.target;
+    var parents = JSON.parse(document.getElementById('hello-data').textContent);
+    var orgs = JSON.parse(document.getElementById('j_orgs').textContent);
+    var poss_gametes = JSON.parse(document.getElementById('j_poss_gametes').textContent);
+    //alert('radio val: ' + (parseInt(radio.value)-1))
+    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(el.value)-1].phen + ".png"
+    //alert('src: ' + src_txt)
+    if (el.name == "p1") {
+        p_num = 'p1';
+    }
+    else {
+        p_num = 'p2';
+    }
+    document.getElementById(p_num + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(el.value)-1].phen + ".png"
+    document.getElementById(p_num + "_gen").innerText = orgs[parseInt(el.value)-1].gen;
+    //document.getElementById(p_num + "_gen_phase").innerText = orgs[parseInt(el.value)-1].gen_phase;
+    //document.getElementById(p_num + "_gams").innerText = poss_gametes[parseInt(el.value) -1];
+
+    selectCrossType();
+
+}
+
+window.onload = function(){
+       var orgs = JSON.parse(document.getElementById('j_orgs').textContent)
+       var options_1 = document.getElementsByName("options_1");
+       var selectedOption1;
+
+       for(var i = 0; i < options_1.length; i++) {
+           if(options_1[i].checked)
+             selectedOption1 = options_1[i].value;
+       }
+       //document.getElementById('p1_img').src="{% get_static_prefix %}img/{{ genome_name }}/{{ genome_name }}_" + orgs[selectedOption1 - 1].phen + ".png";
+
+
+}
+//radioEls = document.getElementsByName("p2");
+//for (el in radioEls) {
+//    el.onchange = showChange;
+//}
+el = document.getElementById("id_p1_0");
+el.onchange = showChange;
+
+el = document.getElementById("id_p1_" + {{ sel_p1 }});
+el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
+el = document.getElementById("id_p2_" + {{ sel_p2 }});
+el.parentElement.parentElement.classList.add('active')
+
+//el_lab.className ='active';
+el = document.getElementById("id_p1_1");
+el.onchange = showChange;
+el = document.getElementById("id_p1_2");
+el.onchange = showChange;
+
+el = document.getElementById("id_p2_0");
+el.onchange = showChange;
+el = document.getElementById("id_p2_1");
+el.onchange = showChange;
+el = document.getElementById("id_p2_2");
+el.onchange = showChange;
+
+el = document.getElementById("id_alleles_" + "2");
+el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
+
+el = document.getElementById("id_cross_type");
+el.onchange = crossTypeChanged;
+
+el = document.getElementById("id_gen_phen_" + "0");
+el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
+
+
+selectCrossType()
+//x=1;
+
+
+</script>
+
+{%  endblock %}

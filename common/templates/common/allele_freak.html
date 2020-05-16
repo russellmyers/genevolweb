@@ -17,7 +17,7 @@ Allele Freak
 </div-->
 
 
-<form action="" method="post">
+<form id="allelefreakform" action="" method="post" >
          {% csrf_token %}
   <div class="row form-group">
 
@@ -49,7 +49,14 @@ Allele Freak
           {{ form.fitness_aa }}
       </div>
 
-
+          Show allele: &nbsp;
+     <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        {% for radio in form.show_allele %}
+            <div class="showallele btn btn-secondary btn-sm">
+                {{ radio }}
+            </div>
+        {% endfor %}
+     </div>
 
 
   </div>
@@ -80,19 +87,26 @@ Allele Freak
 
       <div class = "col-md-1">
           <div class = "btn-group">
-            <input class="btn btn-primary" name="submit" type="submit" value="Submit">
+            <input class="btn btn-primary" name="submitform" type="submit" value="Submit">
             &nbsp;&nbsp;
             <input class="btn btn-secondary" name="clear"  type="submit" value="Clear">
           </div>
       </div>
 
 
+
+
   </div>
+
 
 
          </form>
 
-
+<div>
+{%  if no_data %}
+    <p class="display-4 text-center">Enter data and press submit</p>
+{%  endif %}
+</div>
 
 
 
@@ -102,5 +116,37 @@ Allele Freak
   {% endautoescape %}
 
 </div>
+
+{%  endblock %}
+
+{%  block script %}
+<script>
+
+function showChange(e) {
+    el = e.target;
+    for (i = 0; i < 2; ++i) { // change to 3 if both option is added
+        el1 = document.getElementById("id_show_allele_" + i);
+        if (el1 == el) {
+            el1.parentElement.parentElement.classList.add('active');
+        } else {
+            el1.parentElement.parentElement.classList.remove('active');
+        }
+    }
+    f =   document.getElementById("allelefreakform");
+    f.submit();
+
+}
+
+el = document.getElementById("id_show_allele_" + {{ sel_allele }});
+el.parentElement.parentElement.classList.add('active');  // className = 'active' //addClass('active') // = el.labels[0];
+
+el = document.getElementById("id_show_allele_0");
+el.onchange = showChange;
+el = document.getElementById("id_show_allele_1");
+el.onchange = showChange;
+{#el = document.getElementById("id_show_allele_2");#}
+{#el.onchange = showChange;#}
+
+</script>
 
 {%  endblock %}

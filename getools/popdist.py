@@ -116,9 +116,12 @@ class PopDist:
     def __str__(self):
         return ('Init fA/fa: %f %f' % (self.init_fA,self.init_fa))
 
-    def get_plot_data(self):
+    def get_plot_data(self, allele = 1):
+        #alleles: 0 - A, 1 - a, 2 - both
+        #TODO  (both alleles not implemented yet)
+        print('allele choice: ',allele)
         x_data = [i for i in range(len(self.gens))]
-        y_data = [round(gen.out_fa, 3) for gen in self.gens]
+        y_data = [round(gen.out_fa if allele == 1 else gen.out_fA, 3) for gen in self.gens]
         return {'x_data': x_data, 'y_data': y_data}
 
 #    @staticmethod

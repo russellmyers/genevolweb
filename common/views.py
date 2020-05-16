@@ -3,12 +3,13 @@ from getools.popdist import PopDist
 from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm
+from .forms import AlleleFreakForm, CrossSimForm
 from itertools import combinations
 from scipy.stats import chisquare
 import random
 
 def index(request):
+    print('home page')
     context = {}
     return render(request, 'common/index.html', context)
 
@@ -31,21 +32,28 @@ def build_data(form):
     # return {'x_data': x_data,'y_data': y_data}
     return pd
 
-def plot_graph_as_div(data_in):
+def plot_graph_as_div(data_in, show_allele = 1):
 
     if len(data_in) == 0:
         return ''
 
+    if show_allele == 1:
+        line_type = 'solid'
+    else:
+        line_type = 'dash'
     data_list = []
     marker_colors = ['green','blue','orange','yellow','red','black','purple']
     for i,data in enumerate(data_in):
-        data_list.append(go.Scatter(x=data['x_data'],y=data['y_data'],mode='lines',name='run: ' + str(i),
-                                    opacity=0.8,marker_color=marker_colors[i % len(marker_colors)]))
+        data_list.append(go.Scatter(x=data['x_data'],y=data['y_data'],mode='lines',line={'dash': line_type, 'color': marker_colors[i % len(marker_colors)]}, name='run: ' + str(i+1),
+                                    opacity=0.8))#,marker_color=marker_colors[i % len(marker_colors)]))
 
+
+    allele_text = "a" if show_allele == 1 else "A"
 
     plot_div = plotly.offline.plot({"data": data_list,
                                     "layout": go.Layout(xaxis_title="Generations",
-                                                        yaxis_title="Allele a Frequency",
+                                                        yaxis_title="Allele " + allele_text + " Frequency",
+                                                        title="Allele Frequencies over Generations",
                                                         yaxis=dict(
                                                             range=[0, 1]),
                                                         plot_bgcolor="rgb(240,240,240)")},
@@ -53,41 +61,62 @@ def plot_graph_as_div(data_in):
 
     return plot_div
 
-def show_graph(request,form,add_new_plot_from_form=False):
+def show_graph(request,form,add_new_plot_from_form=False, show_allele=1):
 
     saved_pop_dists = request.session.get('saved_pop_dists', [])
+
+    context = {}
+
+    if len(saved_pop_dists) == 0 and (not add_new_plot_from_form):
+       context['no_data'] = True
+
     plot_data = []
     for saved_pop_dist in saved_pop_dists:
         pd = PopDist.pop_dist_from_json(saved_pop_dist)
-        plot_data.append(pd.get_plot_data())
+        plot_data.append(pd.get_plot_data(allele = show_allele))
 
     if add_new_plot_from_form:
         new_pd = build_data(form)
-        data = new_pd.get_plot_data()
+        data = new_pd.get_plot_data(show_allele)
         plot_data.append(data)
         saved_pop_dists.append(new_pd.to_json())
         request.session['saved_pop_dists'] = saved_pop_dists
         request.session.modified = True
 
-    plot_div = plot_graph_as_div(plot_data)
+    plot_div = plot_graph_as_div(plot_data, show_allele)
+    context['plot_div'] = plot_div
+    context['form']  = form
+    context['sel_allele'] = show_allele
 
-    return render(request, "common/allele_freak.html", context={'plot_div': plot_div,'form':form})
+    return render(request, "common/allele_freak.html", context=context)
 
 
 def allele_freak(request):
-
+    print('in allele')
 
     if request.method == 'POST':
 
+        show_allele_choice = 1
 
         form = AlleleFreakForm(request.POST)
+        if 'show_allele' in request.POST:
+            print('aha - show allele')
+
+            if form.is_valid():
+                show_allele_choice = int(form.cleaned_data['show_allele']) - 1
+                print('allele choice selected: ',show_allele_choice)
+            else:
+                print('form not valid')
+
         if 'clear' in request.POST:
             print('clear pressed')
             request.session['saved_pop_dists'] = []
-            return show_graph(request, form, add_new_plot_from_form=False)
-        else:
+            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice)
+        elif 'submitform' in request.POST:
            if form.is_valid():
-                return show_graph(request,form,add_new_plot_from_form=True)
+                return show_graph(request,form,add_new_plot_from_form=True, show_allele = show_allele_choice)
+        else:
+            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice)
     else:
         form = AlleleFreakForm()
 
@@ -249,9 +278,75 @@ def generate_positions(positions_in):
 
 
     else:
-        [int(pos) for pos in positions_in.split(',')]
+        positions = [int(pos) for pos in positions_in.split(',')]
 
     return positions
+
+def create_genome_template(request, positions_in = 'rand', chroms_in='rand', genome_names = ['dog','fish','pea']):
+    positions = generate_positions(positions_in)
+
+    lowest_pos_index = positions.index(min(positions))
+    highest_pos_index = positions.index(max(positions))
+    all_position_indexes = [0, 1, 2]
+    for ind in range(3):
+        if ind == lowest_pos_index:
+            pass
+        elif ind == highest_pos_index:
+            pass
+        else:
+            middle_pos_index = ind
+            break
+
+    if chroms_in == 'rand':
+        chroms = [1, 1, 1]
+        if positions[middle_pos_index] - positions[lowest_pos_index] >= 42000000:
+            chroms[middle_pos_index] = chroms[lowest_pos_index] + 1
+        if positions[highest_pos_index] - positions[middle_pos_index] >= 42000000:
+            chroms[highest_pos_index] = chroms[middle_pos_index] + 1
+        else:
+            chroms[highest_pos_index] = chroms[middle_pos_index]
+
+    else:
+        chroms = [int(chrom) for chrom in chroms_in.split(',')]
+
+    g1 = Gene(AlleleSet.default_alleleset_from_symbol('A'), positions[0])
+    g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'), positions[1])
+    g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'), positions[2])
+    genes = [g1, g2, g3]
+    chr1_genes = []
+    chr2_genes = []
+    chr3_genes = []
+    for i, chrom in enumerate(chroms):
+        if chrom == 1:
+            chr1_genes.append(genes[i])
+        elif chrom == 2:
+            chr2_genes.append(genes[i])
+        else:
+            chr3_genes.append(genes[i])
+
+    chrom_list = []
+    chr1 = ChromosomeTemplate('XL', 350, chr1_genes)
+    chrom_list.append(chr1)
+    chr2 = None
+    if len(chr2_genes) > 0:
+        chr2 = ChromosomeTemplate('XR', 400, chr2_genes)
+        chrom_list.append(chr2)
+    chr3 = None
+    if len(chr3_genes) > 0:
+        chr3 = ChromosomeTemplate('4', 500, chr3_genes)
+        chrom_list.append(chr3)
+
+    # chr2 = ChromosomeTemplate('XR',2000,[g3])
+    r = random.randint(0, len(genome_names) - 1)
+    genome_name = genome_names[r]
+    if genome_name == 'pea':  # make little less likely to generate pea
+        r = random.randint(0, len(genome_names) - 1)
+        genome_name = genome_names[r]
+
+    gt = GenomeTemplate(ploidy=2, chromosomes=chrom_list, name=genome_name)
+
+    return gt
+
 
 def cross_map(request):
 
@@ -358,69 +453,71 @@ def cross_map(request):
 
     num_samples = 1000
 
-    positions = generate_positions(positions_in)
+    # positions = generate_positions(positions_in)
+    #
+    # if positions_in == 'rand':
+    #    lowest_pos_index = positions.index(min(positions))
+    #    highest_pos_index =  positions.index(max(positions))
+    #    all_position_indexes = [0, 1, 2]
+    #    for ind in range(3):
+    #        if ind == lowest_pos_index:
+    #            pass
+    #        elif ind == highest_pos_index:
+    #            pass
+    #        else:
+    #            middle_pos_index = ind
+    #            break
+    #
+    # if chroms_in == 'rand':
+    #    chroms = [1,1,1]
+    #    if positions[middle_pos_index] - positions[lowest_pos_index] >= 42000000:
+    #        chroms[middle_pos_index] = chroms[lowest_pos_index] + 1
+    #    if positions[highest_pos_index] - positions[middle_pos_index] >= 42000000:
+    #        chroms[highest_pos_index] = chroms[middle_pos_index] + 1
+    #    else:
+    #        chroms[highest_pos_index] = chroms[middle_pos_index]
+    #
+    # else:
+    #     chroms = [int(chrom)for chrom in chroms_in.split(',')]
+    #
+    #
+    # g1 = Gene(AlleleSet.default_alleleset_from_symbol('A'),positions[0])
+    # g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'),positions[1])
+    # g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'),positions[2])
+    # genes = [g1,g2,g3]
+    # chr1_genes = []
+    # chr2_genes = []
+    # chr3_genes = []
+    # for i,chrom in enumerate(chroms):
+    #     if chrom == 1:
+    #         chr1_genes.append(genes[i])
+    #     elif chrom == 2:
+    #         chr2_genes.append(genes[i])
+    #     else:
+    #         chr3_genes.append(genes[i])
+    #
+    # chrom_list = []
+    # chr1 = ChromosomeTemplate('XL', 350, chr1_genes)
+    # chrom_list.append(chr1)
+    # chr2 = None
+    # if len(chr2_genes) > 0:
+    #     chr2 = ChromosomeTemplate('XR', 400, chr2_genes)
+    #     chrom_list.append(chr2)
+    # chr3 = None
+    # if len(chr3_genes) > 0:
+    #     chr3 = ChromosomeTemplate('4', 500, chr3_genes)
+    #     chrom_list.append(chr3)
+    #
+    # #chr2 = ChromosomeTemplate('XR',2000,[g3])
+    # r = random.randint(0, len(genome_names)-1)
+    # genome_name = genome_names[r]
+    # if genome_name == 'pea':  # make little less likely to generate pea
+    #    r = random.randint(0, len(genome_names) - 1)
+    #    genome_name = genome_names[r]
+    #
+    # gt = GenomeTemplate(ploidy=2,chromosomes = chrom_list,name=genome_name)
 
-    if positions_in == 'rand':
-       lowest_pos_index = positions.index(min(positions))
-       highest_pos_index =  positions.index(max(positions))
-       all_position_indexes = [0, 1, 2]
-       for ind in range(3):
-           if ind == lowest_pos_index:
-               pass
-           elif ind == highest_pos_index:
-               pass
-           else:
-               middle_pos_index = ind
-               break
-
-    if chroms_in == 'rand':
-       chroms = [1,1,1]
-       if positions[middle_pos_index] - positions[lowest_pos_index] >= 42000000:
-           chroms[middle_pos_index] = chroms[lowest_pos_index] + 1
-       if positions[highest_pos_index] - positions[middle_pos_index] >= 42000000:
-           chroms[highest_pos_index] = chroms[middle_pos_index] + 1
-       else:
-           chroms[highest_pos_index] = chroms[middle_pos_index]
-
-    else:
-        chroms = [int(chrom)for chrom in chroms_in.split(',')]
-
-
-    g1 = Gene(AlleleSet.default_alleleset_from_symbol('A'),positions[0])
-    g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'),positions[1])
-    g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'),positions[2])
-    genes = [g1,g2,g3]
-    chr1_genes = []
-    chr2_genes = []
-    chr3_genes = []
-    for i,chrom in enumerate(chroms):
-        if chrom == 1:
-            chr1_genes.append(genes[i])
-        elif chrom == 2:
-            chr2_genes.append(genes[i])
-        else:
-            chr3_genes.append(genes[i])
-
-    chrom_list = []
-    chr1 = ChromosomeTemplate('XL', 350, chr1_genes)
-    chrom_list.append(chr1)
-    chr2 = None
-    if len(chr2_genes) > 0:
-        chr2 = ChromosomeTemplate('XR', 400, chr2_genes)
-        chrom_list.append(chr2)
-    chr3 = None
-    if len(chr3_genes) > 0:
-        chr3 = ChromosomeTemplate('4', 500, chr3_genes)
-        chrom_list.append(chr3)
-
-    #chr2 = ChromosomeTemplate('XR',2000,[g3])
-    r = random.randint(0, len(genome_names)-1)
-    genome_name = genome_names[r]
-    if genome_name == 'pea':  # make little less likely to generate pea
-       r = random.randint(0, len(genome_names) - 1)
-       genome_name = genome_names[r]
-
-    gt = GenomeTemplate(ploidy=2,chromosomes = chrom_list,name=genome_name)
+    gt = create_genome_template(request, chroms_in=chroms_in, positions_in=positions_in)
 
     org_het = Organism.organism_with_het_genotype(gt, rand_phase=True)
     print(org_het)
@@ -539,3 +636,92 @@ def cross_map(request):
                                    'org2_phen': org_hom_rec.genome.phenotype()})
 
     #return render(request, "common/cross_map.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
+
+def cross_type_for_orgs(orgs):
+    if orgs[0] == 0 and orgs[1] == 2:
+        return '1'
+    elif  orgs[0] == 1 and orgs[1] == 2:
+        return '2'
+    elif  orgs[0] == 1 and orgs[1] == 1:
+        return '3'
+    else:
+        return '4'
+
+
+def cross_sim_test(request):
+
+
+    if request.method == 'POST':
+        try:
+             organisms = [Organism._from_attr_dict(org_flat) for org_flat in request.session['cs_organisms']]
+             x=1
+             form = CrossSimForm(request.POST)
+             if form.is_valid():
+                 x=1
+                 p1_choice = int(form.cleaned_data['p1']) - 1
+                 p2_choice = int(form.cleaned_data['p2']) - 1
+                 p1 = organisms[p1_choice]
+                 p2 = organisms[p2_choice]
+                 x=1
+                 children = []
+                 for i in range(0,1000):
+                    child = p1.mate(p2)
+                    children.append(child)
+
+                 unique_genotypes = Organism.unique_genotypes(children)
+                 unique_genotypes = {k: v for k, v in sorted(unique_genotypes.items(), key=lambda item: item[1], reverse=True)}
+                 org_gen_phens = [org.gen_phen() for org in organisms]
+                 poss_gametes = [org.genome.possible_gametes_formatted(dec_places=3) for org in organisms]
+
+                 parents = [org_gen_phens[p1_choice], org_gen_phens[p2_choice]]
+                 parent_poss_gametes = [poss_gametes[p1_choice], poss_gametes[p2_choice]]
+
+                 possibles = [p1.genome.chromosome_pairs[0]]
+                 return render(request, "common/cross_sim_test.html",
+                               context={'form': form, 'p1': organisms[p1_choice], 'p2': organisms[p2_choice], 'sel_p1':p1_choice,'sel_p2': p2_choice, 'parents': parents,
+                                        'parent_poss_gametes': parent_poss_gametes, 'genome_name': 'dog',
+                                        'org1_phen': 'a+b+c+', 'organims': organisms, 'orgs': org_gen_phens,
+                                        'poss_gametes': poss_gametes, 'children':children, 'children_unique_genotypes':unique_genotypes, 'children_unique_phenotypes':Organism.unique_phenotypes(children)})
+
+
+
+
+        except Exception as e:
+                print('No organisms in session',e)
+
+    else:
+
+        default_cross_type = '2'
+        default_gen_phen = '1'
+        form = CrossSimForm(initial={'p1': '2','p2':'3', 'alleles':'3', 'cross_type': default_cross_type, 'gen_phen':default_gen_phen})
+        gt = create_genome_template(request, positions_in='10000000,200000000,500000000')
+        p1 = Organism.organism_with_het_genotype(gt, rand_phase=True)
+        p2 = Organism.organism_with_hom_recessive_genotype(gt)
+
+        organisms = [Organism.organism_with_hom_dominant_genotype(gt),
+                     Organism.organism_with_het_genotype(gt, rand_phase=True),
+                     Organism.organism_with_hom_recessive_genotype(gt)]
+
+        request.session['cs_organisms'] = [org._to_attr_dict() for org in organisms]
+
+        org_gen_phens = [org.gen_phen() for org in organisms]
+        poss_gametes = [org.genome.possible_gametes_formatted(dec_places=3) for org in organisms]
+
+        sel_p1 = 1
+        sel_p2 = 2
+        cross_type = cross_type_for_orgs([sel_p1,sel_p2])
+
+        parents = [org_gen_phens[sel_p1],org_gen_phens[sel_p2]]
+        parent_poss_gametes = [poss_gametes[sel_p1],poss_gametes[sel_p2]]
+
+        possibles = [p1.genome.chromosome_pairs[0]]
+        return render(request, "common/cross_sim_test.html",
+                              context={'form':form,'p1':organisms[sel_p1],'p2': organisms[sel_p2], 'sel_p1':1, 'sel_p2':'2', 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name':'dog','org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes})
+
+def support(request):
+
+    return render(request, "common/support.html")
+
+def about(request):
+
+    return render(request, "common/about.html")

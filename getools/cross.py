@@ -1,5 +1,6 @@
 import random
 import math
+import itertools
 
 debug = 0
 from getools.gen import SerialiserMixin
@@ -167,6 +168,13 @@ class ChromosomeTemplate(SerialiserMixin):
             chrom_pair.append(chromosome)
         return ChromosomePair(self, chrom_pair)
 
+    def generate_hom_dominant_pair(self, ploidy):
+        chrom_pair = []
+        for i in range(ploidy):
+            chromosome = self.generate_hom_dominant_chromosome()
+            chrom_pair.append(chromosome)
+        return ChromosomePair(self, chrom_pair)
+
     def generate_het_pair(self, ploidy, rand_phase=False):
         chrom_pair = []
         if rand_phase:
@@ -218,25 +226,27 @@ class GenomeTemplate(SerialiserMixin):
     def chromosome_names(self):
         return [chrom.name for chrom in self.chromosomes]
 
-    def generate_random_sex_pair(self):
+    def generate_random_sex_pair(self, sex=None):
         if self.X_chromosome is None:
             return None
 
 
         chrom_1 = self.X_chromosome.generate_random_chromosome() # at least 1 X
-        if self.Y_chromosome is None:
+        if (self.Y_chromosome is None) or (sex == Genome.FEMALE):
             r = 0
+        elif sex == Genome.MALE:
+            r = 1
         else:
             r = random.randint(0,1)
         chrom_2_template = self.X_chromosome if r == 0 else self.Y_chromosome
         chrom_2 = chrom_2_template.generate_random_chromosome()
         return ChromosomeSexPair([chrom_1,chrom_2],self.X_chromosome, chrom_2_template)
 
-    def generate_random_genome(self):
+    def generate_random_genome(self, sex=None):
         chrom_pairs = []
         for chromosome in self.chromosomes:
             chrom_pairs.append(chromosome.generate_random_pair(self.ploidy))
-        sex_pair = self.generate_random_sex_pair()
+        sex_pair = self.generate_random_sex_pair(sex=sex)
         return Genome(self,chrom_pairs, sex_pair = sex_pair)
 
     def generate_hom_recessive_genome(self):
@@ -244,6 +254,12 @@ class GenomeTemplate(SerialiserMixin):
         for chromosome in self.chromosomes:
             chrom_pairs.append(chromosome.generate_hom_recessive_pair(self.ploidy))
         return Genome(self,chrom_pairs)
+
+    def generate_hom_dominant_genome(self):
+        chrom_pairs = []
+        for chromosome in self.chromosomes:
+            chrom_pairs.append(chromosome.generate_hom_dominant_pair(self.ploidy))
+        return Genome(self, chrom_pairs)
 
     def generate_het_genome(self, rand_phase=False):
         chrom_pairs = []
@@ -386,7 +402,8 @@ class ChromosomePair(SerialiserMixin):
             for allele in allele_pair:
                 if not (allele.isupper()):
                     num_lower +=1
-                    lower_allele = allele
+                lower_allele = allele.lower()
+
 
             phen += lower_allele
             phen += '+' if num_lower < 2 else '-'
@@ -407,7 +424,6 @@ class ChromosomePair(SerialiserMixin):
         return Chromosome(self.chromosome_template,new_alleles)
 
 
-
     def all_unlinked(self):
         all_positions = [gene.position for gene in self.chromosome_template.genes]
         highest = max(all_positions)
@@ -416,7 +432,70 @@ class ChromosomePair(SerialiserMixin):
             return True
         return False
 
-    def crossover(self):
+    def allele_pairs(self):
+        pairs = []
+        for  i in range(self.num_genes()):
+            pair = [(self.chrom_pair[0].alleles[i],0),(self.chrom_pair[1].alleles[i],1)]
+            pairs.append(pair)
+
+        return pairs
+
+    def possible_gametes(self):
+        probs = self.crossover_probabilities()
+
+
+        possibles = list(itertools.product(*self.allele_pairs()))
+
+        possibles_with_prob = []
+
+        for possible in possibles:
+            prob = 0.5
+            for i, (allele,phase) in enumerate(possible):
+                if i == 0:
+                    prev_phase = phase
+                else:
+                    this_prob = 1 - probs[i-1] if phase == prev_phase else  probs[i-1]
+                    prob *= this_prob
+                    prev_phase = phase
+
+
+                #print(allele,phase)
+
+            alleles_only = [p[0] for p in possible]
+            found = False
+            for p_with_prob in possibles_with_prob:
+                if alleles_only == p_with_prob[0]:
+                    p_with_prob[1] += prob
+                    p_with_prob[2] += 1
+                    found = True
+                    break
+            if not found:
+                possibles_with_prob.append([alleles_only, prob, 1, len(possibles)])
+
+        return possibles_with_prob
+
+    def crossover_probabilities(self):
+
+        probs = []
+
+        for i in range(self.num_genes()-1):
+            gene1 = self.chromosome_template.genes[i]
+            gene2 = self.chromosome_template.genes[i+1]
+            dist = gene1.distance(gene2)
+            if debug > 0:
+                print('dist: ', gene1, gene2, dist)
+            prob_crossover = (dist / 1000000) / 100.0
+            if debug > 0:
+                print('prob: ',prob_crossover)
+            if prob_crossover > 0.5:
+                prob_crossover = 0.5
+            probs.append(prob_crossover)
+
+        return probs
+
+    def meiosis(self):
+
+        probs = self.crossover_probabilities()
 
         crossovers = []
         for i in range(self.num_genes()-1):
@@ -439,6 +518,11 @@ class ChromosomePair(SerialiserMixin):
 
         if debug > 0:
             print(crossovers)
+
+
+        if len(crossovers) == 0:  # Only 1 gene. Pick chromosome at random
+            r = random.randint(0, len(self.chrom_pair) - 1)
+            return self.chrom_pair[r]
 
         new_alleles = []
         for i,cr in enumerate(crossovers):
@@ -466,27 +550,22 @@ class ChromosomePair(SerialiserMixin):
 
         return Chromosome(self.chromosome_template, new_alleles)
 
-    def recombine(self):
-
-        if debug > 0:
-             print('crossing over')
-        return self.crossover()
-        #r = random.randint(0, len(self.chrom_pair) - 1)
-        #return Chromosome(self.chromosome_template,self.chrom_pair[r].alleles.copy())
 
 
     def mate(self,other_chrom_pair):
 
-        if (self.num_genes() == 1):
-            new_chrom_pair = []
-            r = random.randint(0,len(self.chrom_pair)-1)
-            new_chrom_pair.append(self.chrom_pair[r])
-            r = random.randint(0,len(other_chrom_pair.chrom_pair)-1)
-            new_chrom_pair.append(other_chrom_pair.chrom_pair[r])
+        # if (self.num_genes() == 1):
+        #     new_chrom_pair = []
+        #     r = random.randint(0,len(self.chrom_pair)-1)
+        #     new_chrom_pair.append(self.chrom_pair[r])
+        #     r = random.randint(0,len(other_chrom_pair.chrom_pair)-1)
+        #     new_chrom_pair.append(other_chrom_pair.chrom_pair[r])
+        #
+        #     return ChromosomePair(self.chromosome_template,new_chrom_pair)
+        # else:
+        #     return ChromosomePair(self.chromosome_template,[self.meiosis(),other_chrom_pair.meiosis()])
 
-            return ChromosomePair(self.chromosome_template,new_chrom_pair)
-        else:
-            return ChromosomePair(self.chromosome_template,[self.recombine(),other_chrom_pair.recombine()])
+        return ChromosomePair(self.chromosome_template, [self.meiosis(), other_chrom_pair.meiosis()])
 
 class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
     def __init__(self,chrom_pair, chrom_1_template, chrom_2_template):
@@ -525,7 +604,7 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
 
             else:
                 allele_pair.append('X' + str(self.chrom_pair[0].alleles[i]))
-                allele_pair.append('Y_')
+                allele_pair.append('Y ')
 
             if sort:
                 allele_pair.sort()
@@ -538,7 +617,7 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
                 return ''
 
 
-            allele_pair.append('Y' + str(self.chrom_pair[1].alleles[i]))
+            allele_pair.append('Y' + str(self.chrom_pair[1].alleles[i]) + 'X ')
 
 
             if sort:
@@ -568,6 +647,85 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
 
         return len(self.chrom_2_template.genes)
 
+    def meiosis(self):
+
+        if self.chrom_2_template == ChromosomeTemplate.X:
+            return super().meiosis()
+        else:
+            r = random.randint(0,1) # male or female!
+            return self.chrom_pair[r]
+
+        # crossovers = []
+        # for i in range(self.num_genes() - 1):
+        #     gene1 = self.chromosome_template.genes[i]
+        #     gene2 = self.chromosome_template.genes[i + 1]
+        #     dist = gene1.distance(gene2)
+        #     if debug > 0:
+        #         print('dist: ', gene1, gene2, dist)
+        #     prob_crossover = (dist / 1000000) / 100.0
+        #     if debug > 0:
+        #         print('prob: ', prob_crossover)
+        #     if prob_crossover >= 0.5:
+        #         crossovers.append('Rand')
+        #     else:
+        #         r = random.random()
+        #         if r < prob_crossover:
+        #             crossovers.append('Yes')
+        #         else:
+        #             crossovers.append('No')
+        #
+        # if debug > 0:
+        #     print(crossovers)
+        #
+        # if len(crossovers) == 0:  # Only 1 gene. Pick chromosome at random
+        #     r = random.randint(0, len(self.chrom_pair) - 1)
+        #     return self.chrom_pair[r]
+        #
+        # new_alleles = []
+        # for i, cr in enumerate(crossovers):
+        #     if i == 0:  # Pick which chrom pair to start with
+        #         pair_num = random.randint(0, len(self.chrom_pair) - 1)
+        #         if debug > 0:
+        #             print('first choice: ', pair_num, self.chrom_pair[pair_num].alleles[i])
+        #         new_alleles.append(self.chrom_pair[pair_num].alleles[i])
+        #     if crossovers[i] == 'Rand':
+        #         pair_num = random.randint(0, len(self.chrom_pair) - 1)
+        #         if debug > 0:
+        #             print('random choice', pair_num, self.chrom_pair[pair_num].alleles[i + 1])
+        #         new_alleles.append(self.chrom_pair[pair_num].alleles[i + 1])
+        #     else:
+        #         if crossovers[i] == 'Yes':
+        #             pair_num = 0 if pair_num == 1 else 1
+        #         if debug > 0:
+        #             print(crossovers[i] + ' choice', pair_num, self.chrom_pair[pair_num].alleles[i + 1])
+        #         new_alleles.append(self.chrom_pair[pair_num].alleles[i + 1])
+        #
+        # if debug > 0:
+        #     print('new alleles: ')
+        #     for allele in new_alleles:
+        #         print(allele)
+        #
+        # return Chromosome(self.chromosome_template, new_alleles)
+
+    def mate(self, other_chrom_pair):
+
+        # if (self.num_genes() == 1):
+        #     new_chrom_pair = []
+        #     r = random.randint(0,len(self.chrom_pair)-1)
+        #     new_chrom_pair.append(self.chrom_pair[r])
+        #     r = random.randint(0,len(other_chrom_pair.chrom_pair)-1)
+        #     new_chrom_pair.append(other_chrom_pair.chrom_pair[r])
+        #
+        #     return ChromosomePair(self.chromosome_template,new_chrom_pair)
+        # else:
+        #     return ChromosomePair(self.chromosome_template,[self.meiosis(),other_chrom_pair.meiosis()])
+
+        chrom_1 = self.meiosis()
+        chrom_2 = other_chrom_pair.meiosis()
+
+        return ChromosomeSexPair([chrom_1,chrom_2], chrom_1.chromosome_template, chrom_2.chromosome_template)
+
+
 
 
     def __str__(self):
@@ -576,6 +734,8 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
         for i in range(self.num_X_genes()):
             allele_pair = self.get_allele_X_pair(i)
             out_str +=  ''.join(allele_pair)
+
+        out_str += ' '
 
         for i in range(self.num_Y_genes()):
             allele_pair = self.get_allele_Y_pair(i)
@@ -603,21 +763,24 @@ class Genome(SerialiserMixin):
         for chrom_pair in self.chromosome_pairs:
             out_str += str(chrom_pair)
 
-        if self.sex_pair is None:
-            pass
-        else:
-            out_str += str(self.sex_pair)
+
 
         str_list = []
         for i in range(int(len(out_str) / 2)):
             str_list.append(out_str[i * 2:i * 2 + 2])
-        str_list.sort(key=lambda x: x[0])
+        str_list.sort(key=lambda x: x[0].upper())
 
+        out_str = ''.join(str_list)
+
+        if self.sex_pair is None:
+            pass
+        else:
+            out_str += '  ' + str(self.sex_pair)
 
         if self.sex() == Genome.UNKNOWN:
-            return ''.join(str_list)
+            return out_str
         else:
-            return self.sex() + ': ' + ''.join(str_list)
+            return self.sex() + ': ' + out_str
         #return out_str
 
     @staticmethod
@@ -672,12 +835,48 @@ class Genome(SerialiserMixin):
 
         return phen
 
+    def gen_phen(self):
+        return {'gen':str(self),'phen':self.phenotype(), 'gen_phase':self.genotype()}
 
-    def mate(self,genome):
+
+    def possible_gametes(self):
+        all_possibles_with_prob = []
+        for i, cp in enumerate(self.chromosome_pairs):
+            possibles_with_prob  = cp.possible_gametes()
+            all_possibles_with_prob.append(possibles_with_prob)
+
+        possibles = list(itertools.product(*all_possibles_with_prob))
+
+        combined_possibles = []
+        for possible in possibles:
+            combined_alleles = []
+            combined_freq = 1
+            combined_prob = 1
+            combined_tot_possible = 1
+            for chrom_possible in possible:
+                combined_alleles.extend(chrom_possible[0])
+                combined_freq *= chrom_possible[1]
+                combined_prob *= chrom_possible[2]
+                combined_tot_possible *= chrom_possible[3]
+            combined_possibles.append([combined_alleles, combined_freq, combined_prob, combined_tot_possible])
+
+
+        return combined_possibles
+
+    def possible_gametes_formatted(self, dec_places=3):
+        possibles = [[''.join([str(p) for p in possible[0]]),round(possible[1],dec_places),possible[2],possible[3]] for possible in self.possible_gametes()]
+        return possibles
+
+    def mate(self, other_genome):
         new_chrom_pairs = []
         for i,cp in enumerate(self.chromosome_pairs):
-            new_chrom_pairs.append(cp.mate(genome.chromosome_pairs[i]))
-        return Genome(self.genome_template,new_chrom_pairs)
+            new_chrom_pairs.append(cp.mate(other_genome.chromosome_pairs[i]))
+
+        if self.sex_pair is None:
+            new_sex_pair = None
+        else:
+            new_sex_pair = self.sex_pair.mate(other_genome.sex_pair)
+        return Genome(self.genome_template,new_chrom_pairs, new_sex_pair)
 
     def sex(self):
         if self.sex_pair is None:
@@ -693,13 +892,18 @@ class Organism(SerialiserMixin):
        self.genome = genome
 
     @staticmethod
-    def organism_with_random_genotype(genome_template):
-        genome = genome_template.generate_random_genome()
+    def organism_with_random_genotype(genome_template, sex=None):
+        genome = genome_template.generate_random_genome(sex=sex)
         return Organism(genome)
 
     @staticmethod
     def organism_with_hom_recessive_genotype(genome_template):
         genome = genome_template.generate_hom_recessive_genome()
+        return Organism(genome)
+
+    @staticmethod
+    def organism_with_hom_dominant_genotype(genome_template):
+        genome = genome_template.generate_hom_dominant_genome()
         return Organism(genome)
 
     @staticmethod
@@ -715,6 +919,9 @@ class Organism(SerialiserMixin):
     def genotype(self):
         return self.genome.genotype()
 
+    def gen_phen(self):
+        return self.genome.gen_phen()
+
     def __str__(self):
         return str(self.genome)
 
@@ -723,6 +930,28 @@ class Organism(SerialiserMixin):
         genome =  Genome._from_attr_dict(attr_dict['genome'])
         obj = Organism(genome)
         return obj
+
+
+    @staticmethod
+    def unique_genotypes(organisms):
+        unique_gens = {}
+        for organism in organisms:
+            if str(organism) in unique_gens:
+                unique_gens[str(organism)] +=1
+            else:
+                unique_gens[str(organism)] = 1
+        return unique_gens
+
+    @staticmethod
+    def unique_phenotypes(organisms):
+        unique_phens = {}
+        for organism in organisms:
+            phen = organism.genome.phenotype()
+            if phen in unique_phens:
+                unique_phens[phen] +=1
+            else:
+                unique_phens[phen] = 1
+        return unique_phens
 
 if __name__ == '__main__':
     debug = 0
@@ -762,11 +991,17 @@ if __name__ == '__main__':
     c4 = ChromosomeTemplate('XChrom',30000000,[g6],type=ChromosomeTemplate.X)
     c5 = ChromosomeTemplate('YChrom', 10000000, [g7], type=ChromosomeTemplate.Y)
 
+
     gt = GenomeTemplate(ploidy=2,chromosomes = [c1,c2,c3], X_chromosome=c4, Y_chromosome=c5, name='Fivechroms')
     print(str(gt))
 
     gt_attr_dict = gt._to_attr_dict()
 
+
+    gt_prob_test = GenomeTemplate(ploidy=2,chromosomes = [c2], name='Probtest')
+    org_prob_test = Organism.organism_with_het_genotype(gt_prob_test, rand_phase=True)
+    print(org_prob_test.genome.possible_gametes_formatted())
+    print('org prob test genotype: ',org_prob_test.genotype())
 
 
     org = Organism.organism_with_random_genotype(gt)
@@ -784,6 +1019,7 @@ if __name__ == '__main__':
 
     org1 = Organism.organism_with_random_genotype(gt2)
     print('org1: ',org1)
+
     org1_deflated = org1._to_attr_dict()
     org1_inflated = Organism._from_attr_dict(org1_deflated)
     print('org1 inflated: ',org1_inflated)
@@ -803,9 +1039,10 @@ if __name__ == '__main__':
     new = org1.mate(org2)
     print('new:\n', new.genotype())
 
-    org11 = Organism.organism_with_random_genotype(gt)
-    org22 = Organism.organism_with_random_genotype(gt)
+    org11 = Organism.organism_with_random_genotype(gt, sex=Genome.MALE)
+    org22 = Organism.organism_with_random_genotype(gt, sex=Genome.FEMALE)
 
+    org11.genome.chromosome_pairs[1].possible_gametes()
     print(str(org22))
     print('Org11')
     print(org11.genotype())
@@ -820,6 +1057,9 @@ if __name__ == '__main__':
     for i in range(50):
         children.append(org11.mate(org22))
 
+    print('A\u00B2') #Superscript
+    print('A\u2082') #subscript
+    print('X\u00BFX\u208f')
     print('org11: ',org11)
     print('org22: ',org22)
     if debug > 0:
