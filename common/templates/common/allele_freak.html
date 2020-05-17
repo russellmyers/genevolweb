@@ -49,14 +49,6 @@ Allele Freak
           {{ form.fitness_aa }}
       </div>
 
-          Show allele: &nbsp;
-     <div class="btn-group btn-group-toggle" data-toggle="buttons">
-        {% for radio in form.show_allele %}
-            <div class="showallele btn btn-secondary btn-sm">
-                {{ radio }}
-            </div>
-        {% endfor %}
-     </div>
 
 
   </div>
@@ -85,13 +77,22 @@ Allele Freak
           {{ form.inbreeding_coefficient }}
       </div>
 
-      <div class = "col-md-1">
+      <div class = "col-md-2">
           <div class = "btn-group">
             <input class="btn btn-primary" name="submitform" type="submit" value="Submit">
             &nbsp;&nbsp;
             <input class="btn btn-secondary" name="clear"  type="submit" value="Clear">
+
           </div>
+
       </div>
+      <div class = "col-md-1">
+          <b>{{ form.auto_clear.label_tag }}</b>
+      </div>
+      <div class = "col-md-1">
+          {{ form.auto_clear }}
+      </div>
+
 
 
 
@@ -100,7 +101,7 @@ Allele Freak
 
 
 
-         </form>
+
 
 <div>
 {%  if no_data %}
@@ -111,12 +112,33 @@ Allele Freak
 
 
 <div class = "container">
- {% autoescape off %}
-  {{ plot_div }}
-  {% endautoescape %}
+ <div class ="row">
+    <div class="col-10">
+         {% autoescape off %}
+          {{ plot_div }}
+          {% endautoescape %}
+    </div>
+    <div class="col-2">
+        {%  if no_data %}
+            <div hidden>
+        {%  endif %}
+                  Show allele: &nbsp;
+                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {% for radio in form.show_allele %}
+                            <div class="showallele btn btn-secondary btn-sm">
+                                {{ radio }}
+                            </div>
+                        {% endfor %}
+                     </div>
+        {%  if no_data %}
+            </div>
+        {%  endif %}
+
+    </div>
+ </div>
 
 </div>
-
+</form>
 {%  endblock %}
 
 {%  block script %}
