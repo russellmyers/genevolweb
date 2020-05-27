@@ -213,7 +213,10 @@ def children_stats(children):
     recomb_fraction_list = [[pair[0], pair[1] / num_samples] if pair[1] < num_samples / 2 else [pair[0], (
             num_samples - pair[1]) / num_samples] for pair in
                             recomb_fraction_list]
-    recomb_fraction_list.sort(key=lambda x: x[1])
+    recomb_fraction_list.sort(key=lambda x: x[0])
+    tmp = recomb_fraction_list[2]
+    recomb_fraction_list[2] = recomb_fraction_list[1].copy()
+    recomb_fraction_list[1] = tmp.copy()
 
     recomb_fraction_list_with_p = []
     for rf in recomb_fraction_list:
@@ -356,6 +359,25 @@ def create_genome_template(request, positions_in = 'rand', chroms_in='rand', gen
 
     return gt
 
+def parse_het_phase(request, phase):
+    chroms = phase.split(';')
+    first = ''
+    for chrom in chroms:
+        first = first + chrom.split('//')[0]
+    first = first.replace('-','')
+    linkage = 'LL'
+    if len(chroms) == 3:
+        linkage = 'UU'
+    elif len(chroms) == 2:
+        if len(chroms[0].split('//')[0].replace('-','')) == 1:
+            linkage =  'UL'
+        else:
+            linkage = 'LU'
+    else:
+        linkage = 'LL'
+
+    return {'order': first, 'linkage': linkage }
+
 
 def cross_map(request):
 
@@ -365,6 +387,12 @@ def cross_map(request):
     positions_in = request.GET.get('pos','rand')
     chroms_in = request.GET.get('chroms','rand')
 
+    proposed = {'order': 'ABC',
+                'linkage' : 'LL',
+                'rd1' : 0.0,
+                'rd2' : 0.0,
+                'rd3' : 0.0
+                }
 
 
     num_samples = 1000
@@ -390,6 +418,8 @@ def cross_map(request):
                     children)
                 show_cross = True
                 org_het_phase = org_het.genome.get_phase(alpha_sort=True)
+                parsed_order = parse_het_phase(request, org_het_phase)
+
                 positions = org_het.genome.genome_template.positions()
                 genome_name = org_het.genome.genome_template.name
                 phen_descriptions = get_phen_descriptions(genome_name)
@@ -405,7 +435,9 @@ def cross_map(request):
                                        'recomb_fraction_list': recomb_fraction_list,
                                        'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair,
                                        'parental_gametes_het': parental_gametes_het,
-                                       'recomb_fraction_list_with_p': recomb_fraction_list_with_p})
+                                       'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
+                                       'proposed': proposed,
+                                       'parsed_order': parsed_order})
 
 
             except:
@@ -422,6 +454,8 @@ def cross_map(request):
             phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(children)
             show_cross = True
             org_het_phase = org_het.genome.get_phase(alpha_sort=True)
+            parsed_order  = parse_het_phase(request, org_het_phase)
+
             positions = org_het.genome.genome_template.positions()
 
             child_list = [child._to_attr_dict() for child in children]
@@ -439,7 +473,9 @@ def cross_map(request):
                                    'pairs_cis': pairs_cis, 'dists': dists, 'parentals': parentals,
                                    'double_crossovers': double_crossovers, 'recomb_fraction_list': recomb_fraction_list,
                                    'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair, 'parental_gametes_het': parental_gametes_het,
-                                   'recomb_fraction_list_with_p': recomb_fraction_list_with_p})
+                                   'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
+                                   'proposed': proposed,
+                                   'parsed_order': parsed_order})
 
         genome_name = org_het.genome.genome_template.name
         phen_descriptions = get_phen_descriptions(genome_name)
@@ -447,7 +483,8 @@ def cross_map(request):
                           context={'genome_name': genome_name,'phen_descriptions': phen_descriptions,
                                    'show_cross': False, 'cross_type': cross_type,  'org1': org_het,
                                    'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-                                   'org2_phen': org_hom_rec.genome.phenotype()})
+                                   'org2_phen': org_hom_rec.genome.phenotype(),
+                                   'proposed': proposed})
 
 
 
@@ -542,6 +579,7 @@ def cross_map(request):
         del request.session['gcm_children']
 
     org_het_phase = org_het.genome.get_phase(alpha_sort=True)
+    parsed_order = parse_het_phase(request, org_het_phase)
 
     # children = []
     # for i in range(num_samples):
@@ -642,7 +680,9 @@ def cross_map(request):
                           context={'genome_name':gt.name,'phen_descriptions': phen_descriptions,
                                    'show_cross': False, 'cross_type': cross_type,  'org1': org_het,
                                    'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-                                   'org2_phen': org_hom_rec.genome.phenotype()})
+                                   'org2_phen': org_hom_rec.genome.phenotype(),
+                                   'proposed' : proposed,
+                                   'parsed_order': parsed_order})
 
     #return render(request, "common/cross_map.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
 

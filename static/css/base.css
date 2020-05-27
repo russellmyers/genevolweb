@@ -3,3 +3,44 @@
 	 height:150px;
   	 overflow-y: scroll;
 }
+
+.gcm-gene {
+            background-color: powderblue;
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+}
+
+.gcm-linkdiv {
+            display: inline-block;
+}
+
+.gcm-rdinput {
+            margin-right: 10px;
+            width: 50px;
+}
+
+#gcm-link1 {
+            margin-left: 0px;
+            margin-right: 0px;
+}
+
+#gcm-link2 {
+            margin-left: 0px;
+            margin-right: 0px;
+}
+
+.gcm-gene.over {
+     border: 2px dashed #000;
+}
+
+.noSelect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
