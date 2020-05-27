@@ -57,7 +57,10 @@ Genetic Cross Mapping
             <div class="col-sm-1">
                 <form class="form" method="POST" id="cross_form" action="">
                     {% csrf_token %}
-                <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
+                    {%  if show_cross %}
+                    {%  else %}
+                        <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
+                    {%  endif %}
                  </form>
             </div>
 
@@ -106,50 +109,68 @@ Genetic Cross Mapping
 <br>
  <p class="h5">
      <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
-    Propose Phase (heterozygote), gene order and linkage
+    Specify Phase (heterozygote), gene order, linkage and recombination fractions:
  </p>
-    <div>
-        <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
-            A
+        <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-3">
+            Gene order, parental phase, linkage:
         </div>
-        <div class = "gcm-linkdiv" id="gcm-link1">
-            <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" id="gcm-linkimg1" title="linked" width="50px" height="20px">
+        <div class="col-9">
+            <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
+                A
+            </div>
+            <div class = "gcm-linkdiv" id="gcm-link1">
+                <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" id="gcm-linkimg1" title="linked" width="50px" height="20px">
 
-        </div>
-        <div class="gcm-gene" id="gcm-gene2" draggable="true">
-        B
-        </div>
-        <div class="gcm-linkdiv" id="gcm-link2">
-            <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" id="gcm-linkimg2" title="linked" width="50px" height="20px">
-        </div>
-        <div class="gcm-gene" id="gcm-gene3" draggable="true">
-        C
+            </div>
+            <div class="gcm-gene" id="gcm-gene2" draggable="true">
+            B
+            </div>
+            <div class="gcm-linkdiv" id="gcm-link2">
+                <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" id="gcm-linkimg2" title="linked" width="50px" height="20px">
+            </div>
+            <div class="gcm-gene" id="gcm-gene3" draggable="true">
+            C
+            </div>
         </div>
     </div>
     <br>
-    <div>
-        <label for="rd1">ab</label><input id="rd1" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
-        <label for="rd2">bc</label><input id = "rd2" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
-        <label for="rd3">ac</label><input id="rd3" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
+    <div class="row">
+        <div class="col-3">
+            Recombination fractions:
+        </div>
+        <div class="col-9">
+            <label for="rd1">ab</label><input id="rd1" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
+            <label for="rd2">bc</label><input id = "rd2" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
+            <label for="rd3">ac</label><input id="rd3" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
+        </div>
     </div>
 
 <div class="row">
     <div class="col-sm-2">
-        <button name="show_answer" class="btn btn-info" onclick="showAnswer();">Check Answer</button>
+        <button name="show_answer" class="btn btn-primary" onclick="showAnswer();">Check</button>
     </div>
+
     <div class="col-sm" id="answer_div" style="visibility:hidden">
+          Linkage: <img id="tick_img_linkage" class ="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">  Gene order: <img id="tick_img_order" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Phase:  <img id="tick_img_phase" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Recombination fractions: <img id="tick_img_fractions" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">
+
+    </div>
+
+</div>
+<div class="row">
+   <div class="col-sm-2">
+        <button name="cheat_answer"  style="visibility:hidden" id="cheatButton" class="btn btn-info mt-2" onclick="cheatAnswer();">Show Answer</button>
+    </div>
+    <div id="answer_div_ticks" style="visibility:hidden">
         Answer:
             {{  org_het_phase }}
         <br>Recombination fractions:
         {%for phen_combs in recomb_fraction_list_with_p %}
              {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2 }})
         {%  endfor %}
-    </div>
-
-</div>
-<div class="row">
-    <div id="answer_div_ticks" style="visibility:hidden">
-        Linkage: <img id="tick_img_linkage" class ="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">  Gene order: <img id="tick_img_order" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Phase:  <img id="tick_img_phase" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Recombination fractions: <img id="tick_img_fractions" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">
     </div>
 </div>
 </div>
@@ -304,10 +325,8 @@ function setTickImgs(order, linkage, phase, fractions) {
 
 }
 
-function showAnswer() {
-
-
-      if (parsedOrder.linkage == 'LL') {
+function checkAnswer() {
+          if (parsedOrder.linkage == 'LL') {
 
           linkage = false;
           if (parsedOrder.linkage == proposed.linkage) {
@@ -336,29 +355,45 @@ function showAnswer() {
       else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'LU')) {
           checked =  checkChars(0, 2, 0, 2);
           fractionsOk = checkRecombinationFractions();
-          setTickImgs(true, checked.charsMatch, checked.phaseMatch, fractionsOk);
+          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
           //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
       }
       else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'UL')) {
           checked =  checkChars(1, 3, 1, 3);
           fractionsOk = checkRecombinationFractions();
-          setTickImgs(true, checked.charsMatch, checked.phaseMatch, fractionsOk);
+          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
           //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
       }
       else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'UL')) {
           checked =  checkChars(0, 2, 1, 3);
           fractionsOk = checkRecombinationFractions();
-          setTickImgs(true, checked.charsMatch, checked.phaseMatch, fractionsOk);
-          alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
+          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
       }
       else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'LU')) {
           checked =  checkChars(1, 3, 0, 2);
           fractionsOk = checkRecombinationFractions();
-          setTickImgs(true, checked.charsMatch, checked.phaseMatch, frationsOk);
-          alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
+          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+      }
+      else {
+               checked =  checkChars(0, 3, 0, 3);
+               fractionsOk = checkRecombinationFractions();
+               setTickImgs(checked.charsMatch, false, checked.phaseMatch, fractionsOk);
+
       }
 
 
+
+
+
+
+}
+
+function showAnswer() {
+
+
+   checkAnswer();
 
   {#    else if (parsedOrder.linkage == 'UU') {#}
   {#        alert('Linkage correct. (Order and phase n/a)');#}
@@ -405,13 +440,16 @@ function showAnswer() {
   var el = document.getElementById('answer_div');
   var other_el = document.getElementById('answer_div_ticks');
   if (el.style.visibility === "visible") {
-      el.style.visibility = "hidden";
-      other_el.style.visibility = "hidden";
+      //el.style.visibility = "hidden";
+      //other_el.style.visibility = "hidden";
   }
   else {
       document.getElementById('answer_div').style.visibility = "visible";
-      other_el.style.visibility = "visible";
+      //other_el.style.visibility = "visible";
   }
+
+  cheatBut  = document.getElementById('cheatButton');
+  cheatBut.style.visibility="visible";
 }
 
 var dragSrcEl = null;
@@ -430,7 +468,27 @@ var dragSrcEl = null;
       for ( i =0; i < genes.length; ++i) {
           genes[i].classList.remove('over');
       }
+
   }
+
+function cheatAnswer() {
+
+      el = document.getElementById('answer_div_ticks');
+      if (el.style.visibility === "visible") {
+          el.style.visibility = "hidden";
+          but = document.getElementById('cheatButton');
+          but.innerHTML = 'Show Answer';
+
+      }
+      else {
+          el.style.visibility = "visible";
+          but = document.getElementById('cheatButton');
+          but.innerHTML = 'Hide Answer';
+      }
+
+
+}
+
 function handleDragEnter(e) {
   // this / e.target is the current hover target.
   this.classList.add('over');
@@ -562,7 +620,10 @@ function setLinks() {
            linkimgs[i].title = "unlinked";
            linkimgs[i].src = "{%  static 'img/gcm/unlink.PNG' %}";
       }
-  }
+    }
+
+    checkAnswer();
+
 
 }
 
@@ -572,6 +633,8 @@ function setGenes() {
   for (var i = 0; i < proposed.order.length; ++i) {
       genes[i].innerHTML = proposed.order[i];
   }
+
+  checkAnswer();
 }
 
 function setRDs() {
@@ -649,6 +712,9 @@ function handleRDChange(e) {
       {#    var m = e.target.value * 200;#}
       {#    setMargins(lk,m);#}
       {#}#}
+
+      checkAnswer();
+
       return false;
 }
 function linkSpan(linkNum) {

@@ -40,7 +40,9 @@ def plot_graph_as_div(data_in, show_allele = 1):
     if show_allele == 1:
         line_type = 'solid'
     else:
-        line_type = 'dash'
+        #line_type = 'dash'
+        line_type = 'solid' #changed mind. Show both as solid
+
     data_list = []
     marker_colors = ['green','blue','orange','yellow','red','black','purple']
     for i,data in enumerate(data_in):
@@ -52,8 +54,8 @@ def plot_graph_as_div(data_in, show_allele = 1):
 
     plot_div = plotly.offline.plot({"data": data_list,
                                     "layout": go.Layout(xaxis_title="Generations",
-                                                        yaxis_title="Allele " + allele_text + " Frequency",
-                                                        title="Allele Frequencies over Generations",
+                                                        yaxis_title="Allele <b>" + allele_text + "</b> Frequency",
+                                                        title="Allele '<b>" + allele_text + "'</b> - Frequencies over Generations",
                                                         yaxis=dict(
                                                             range=[0, 1]),
                                                         plot_bgcolor="rgb(240,240,240)")},

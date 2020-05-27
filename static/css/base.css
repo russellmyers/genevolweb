@@ -11,6 +11,7 @@
             display: inline-block;
             text-align: center;
             cursor: pointer;
+            border-radius: 50%;
 }
 
 .gcm-linkdiv {
@@ -19,7 +20,7 @@
 
 .gcm-rdinput {
             margin-right: 10px;
-            width: 50px;
+            width: 80px;
 }
 
 #gcm-link1 {
