@@ -34,9 +34,6 @@ def build_data(form):
 
 def plot_graph_as_div(data_in, show_allele = 1):
 
-    if len(data_in) == 0:
-        return ''
-
     if show_allele == 1:
         line_type = 'solid'
     else:
@@ -49,8 +46,19 @@ def plot_graph_as_div(data_in, show_allele = 1):
         data_list.append(go.Scatter(x=data['x_data'],y=data['y_data'],mode='lines',line={'dash': line_type, 'color': marker_colors[i % len(marker_colors)]}, name='run: ' + str(i+1),
                                     opacity=0.8))#,marker_color=marker_colors[i % len(marker_colors)]))
 
+    if len(data_in) == 0:
+        data_list.append(go.Scatter(x=[], y=[], mode='lines',
+                                line={'dash': line_type, 'color': marker_colors[0 % len(marker_colors)]},
+                                name='run: ' + str(0),
+                                opacity=0.8))  # ,marker_color=marker_colors[i % len(marker_colors)]))
 
     allele_text = "a" if show_allele == 1 else "A"
+
+    if len(data_in) == 0:
+        x_limit = 400
+    else:
+        x_limit = data_in[0]['x_data'][-1]
+
 
     plot_div = plotly.offline.plot({"data": data_list,
                                     "layout": go.Layout(xaxis_title="Generations",
@@ -58,6 +66,7 @@ def plot_graph_as_div(data_in, show_allele = 1):
                                                         title="Allele '<b>" + allele_text + "'</b> - Frequencies over Generations",
                                                         yaxis=dict(
                                                             range=[0, 1]),
+                                                        xaxis=dict( range=[0,x_limit]),
                                                         plot_bgcolor="rgb(240,240,240)")},
                                    output_type='div')
 
@@ -450,7 +459,7 @@ def cross_map(request):
 
 
         else:  ## cross post
-            cross_type = request.session.get('gcm_cross_type', 'p')
+            cross_type = request.session.get('gcm_cross_type', 'g')
             children = create_children(org_het, org_hom_rec, num_samples=num_samples)
 
             phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(children)
@@ -493,7 +502,7 @@ def cross_map(request):
     else:
         cross_type = request.GET.get('type')
         if cross_type is None:
-            cross_type = request.session.get('gcm_cross_type', 'p')
+            cross_type = request.session.get('gcm_cross_type', 'g')
         else:
             request.session['gcm_cross_type'] = cross_type
 

@@ -101,16 +101,6 @@ Allele Freak
 
 
 
-
-
-<div>
-{%  if no_data %}
-    <p class="display-4 text-center">Enter data and press submit</p>
-{%  endif %}
-</div>
-
-
-
 <div class = "container">
  <div class ="row">
     <div class="col-10">
@@ -119,20 +109,14 @@ Allele Freak
           {% endautoescape %}
     </div>
     <div class="col-2">
-        {%  if no_data %}
-            <div hidden>
-        {%  endif %}
-                  Show allele: &nbsp;
-                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                        {% for radio in form.show_allele %}
-                            <div class="showallele btn btn-secondary btn-sm">
-                                {{ radio }}
-                            </div>
-                        {% endfor %}
-                     </div>
-        {%  if no_data %}
-            </div>
-        {%  endif %}
+              Show allele: &nbsp;
+                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    {% for radio in form.show_allele %}
+                        <div class="showallele btn btn-info btn-sm">
+                            {{ radio }}
+                        </div>
+                    {% endfor %}
+                 </div>
 
     </div>
  </div>
