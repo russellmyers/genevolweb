@@ -94,11 +94,14 @@ def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_cl
         request.session['saved_pop_dists'] = saved_pop_dists
         request.session.modified = True
 
-    plot_div = plot_graph_as_div(plot_data, show_allele)
+    #plot_div = plot_graph_as_div(plot_data, show_allele)  old code to generate plot js code n python
+    plot_div = ''  #<div>Hello</div>
     context['plot_div'] = plot_div
     context['form']  = form
     context['sel_allele'] = show_allele
     context['auto_clear'] = auto_clear
+    context['plot_data'] = plot_data
+    context['show_allele'] = show_allele
 
     return render(request, "common/allele_freak.html", context=context)
 

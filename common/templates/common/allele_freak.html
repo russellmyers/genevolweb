@@ -104,9 +104,7 @@ Allele Freak
 <div class = "container">
  <div class ="row">
     <div class="col-10">
-         {% autoescape off %}
-          {{ plot_div }}
-          {% endautoescape %}
+        <div id="plotDiv" style="width:100%;height:400px;"></div>
     </div>
     <div class="col-2">
               Show allele: &nbsp;
@@ -126,7 +124,16 @@ Allele Freak
 {%  endblock %}
 
 {%  block script %}
+
+{{ plot_data | json_script:"jPlotData" }}
+{{ show_allele | json_script:"jShowAllele" }}
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 <script>
+var plotData = JSON.parse(document.getElementById('jPlotData').textContent);
+var showAllele = JSON.parse(document.getElementById('jShowAllele').textContent);
+
 
 function showChange(e) {
     el = e.target;
@@ -152,6 +159,63 @@ el = document.getElementById("id_show_allele_1");
 el.onchange = showChange;
 {#el = document.getElementById("id_show_allele_2");#}
 {#el.onchange = showChange;#}
+
+
+function showGraph(pDiv) {
+
+    var lineType;
+    var alleleText;
+
+    if (showAllele == 1) {
+        lineType = 'solid';
+    }
+    else {
+        lineTtype = 'solid'; //changed mind. Show both as solid
+    }
+
+    dataList = [];
+    markerColors = ['green','blue','orange','yellow','red','black','purple'];
+
+    for (i = 0;i < plotData.length; ++i) {
+        var trace = {
+          x: plotData[i].x_data,
+          y: plotData[i].y_data,
+          {#mode: 'markers',#}
+          type: 'line',
+          name: 'Run ' + (i+1),
+          marker: {color: markerColors[i % markerColors.length]}
+      };
+      dataList.push(trace);
+    }
+
+    if (showAllele == 1) {
+        alleleText = 'a';
+    }
+    else {
+        alleleText = 'A';
+    }
+
+    xLimit = 400;
+    if (plotData.length > 0) {
+        xLimit = plotData[0].x_data.length;
+    }
+
+    var layout = {
+      xaxis: {
+        range: [ 0, xLimit ]
+      },
+      yaxis: {
+        range: [0, 1]
+      },
+      title:"Allele '<b>" + alleleText + "</b>' - Frequency over Generations"
+    };
+
+    Plotly.newPlot(pDiv, dataList, layout);
+
+}
+
+showGraph('plotDiv');
+
 
 </script>
 
