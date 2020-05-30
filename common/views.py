@@ -3,10 +3,11 @@ from getools.popdist import PopDist
 from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm, CrossSimForm
+from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthFrom
 from itertools import combinations
 from scipy.stats import chisquare
 import random
+import math
 
 def index(request):
     print('home page')
@@ -146,6 +147,87 @@ def allele_freak(request):
     return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
     #return render(request, "common/allele_freak.html", {'form':form})
 
+def pg_calc_final_pop(n0, r, t):
+    nt = n0 * math.exp(r * t)
+    return nt
+
+def pg_calc_init_pop(nt, r, t):
+    n0 = nt / (math.exp(r*t))
+    return n0
+
+def pg_calc_time(n0: object, nt: object, r: object) -> object:
+    t = math.log(nt / n0) / r
+    return t
+
+def pg_calc_r(n0, nt, t):
+    r = math.log(nt / n0) / t
+    return r
+
+
+def pg_calc_missing(form):
+    n0 = form.cleaned_data['init_pop']
+    nt = form.cleaned_data['final_pop']
+    r = form.cleaned_data['growth_rate']
+    t = form.cleaned_data['time']
+
+    if nt is None:
+        nt = pg_calc_final_pop(n0, r, t)
+        answer_title =  'Final Population (Nt)'
+        answer = int(round(nt))
+    elif n0 is None:
+        n0 = pg_calc_init_pop(nt, r, t)
+        answer_title =  'Initial Population (N0)'
+        answer = n0
+    elif t is None:
+        t = pg_calc_time(n0, nt, r)
+        answer_title = 'Time in years (t)'
+        answer = t
+    elif r is None:
+        r = pg_calc_time(n0, nt, t)
+        answer_title = 'Growth Rate (r)'
+        answer = r
+    else:
+        answer_title = 'Error'
+        answer = -1
+
+    x_data = []
+    y_data = []
+
+    for i in range(0, math.ceil(t)+1):
+        x_data.append(i)
+        if i == 0:
+            pop = n0
+        else:
+            pop = pg_calc_final_pop(pop, r, 1)
+        y_data.append(pop)
+
+    plot_data = [{'x_data': x_data, 'y_data':y_data}]
+
+    return answer_title, answer, plot_data
+
+def population_growth(request):
+    print('in pop growth')
+
+    context = {}
+
+    if request.method == 'POST':
+
+        form = PopulationGrowthFrom(request.POST)
+        context['form'] = form
+
+        if form.is_valid():
+                context['answer_title'], context['answer'],context['plot_data'] = pg_calc_missing(form)
+
+                return render(request, "common/pop_growth.html", context=context)
+                #show_allele_choice = int(form.cleaned_data['show_allele']) - 1
+        else:
+                print('form not valid')
+
+    else:
+        form = PopulationGrowthFrom()
+        context['form'] = form
+
+    return render(request, "common/pop_growth.html", context=context)
 
 def children_stats(children):
 

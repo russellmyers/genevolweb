@@ -45,3 +45,7 @@
     -ms-user-select: none;
     user-select: none;
 }
+
+.narrow-select {
+    width: 120px;
+}
