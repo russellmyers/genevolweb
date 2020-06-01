@@ -16,7 +16,7 @@ class AlleleFreakForm(forms.Form):
 
 class PopulationGrowthSolverForm(forms.Form):
     init_pop = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
-    growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.01'}))
+    growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.000001'}))
     time = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
     final_pop = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
 
@@ -40,7 +40,7 @@ class PopulationGrowthSolverForm(forms.Form):
 
 class PopulationGrowthGeneratorForm(forms.Form):
     init_pop_generator = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select','min':'1'}))
-    growth_rate_generator = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.01'}))
+    growth_rate_generator = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.000001'}))
     time_generator = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
     final_pop_generator = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
     answer_field = forms.CharField(widget = forms.HiddenInput(), required = False)
