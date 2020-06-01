@@ -14,14 +14,14 @@ class AlleleFreakForm(forms.Form):
     show_allele = forms.ChoiceField(widget=forms.RadioSelect, choices=ALLELE_CHOICES)
     auto_clear = forms.BooleanField(widget=forms.CheckboxInput(attrs={}),required=False,initial=False)
 
-class PopulationGrowthFrom(forms.Form):
-    init_pop = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select'}))
-    final_pop = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select'}))
-    growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select'}))
-    time = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select'}))
+class PopulationGrowthSolverForm(forms.Form):
+    init_pop = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
+    growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.01'}))
+    time = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
+    final_pop = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
 
     def clean(self):
-        cleaned_data = super(PopulationGrowthFrom, self).clean()
+        cleaned_data = super(PopulationGrowthSolverForm, self).clean()
         num_missing = 0
         for form_field in cleaned_data:
             if cleaned_data[form_field] is None:
@@ -37,6 +37,13 @@ class PopulationGrowthFrom(forms.Form):
             self._errors["password"] = ["Password do not match"]  # Will raise a error message
             del form_data['password']
         return form_data
+
+class PopulationGrowthGeneratorForm(forms.Form):
+    init_pop_generator = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select','min':'1'}))
+    growth_rate_generator = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.01'}))
+    time_generator = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
+    final_pop_generator = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
+    answer_field = forms.CharField(widget = forms.HiddenInput(), required = False)
 
 class CrossSimForm(forms.Form):
     GEN_CHOICES = [('1', 'Hom Dominant'), ('2', 'Heterozygous'), ('3', 'Hom Recessive') ]

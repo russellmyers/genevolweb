@@ -10,82 +10,133 @@ Population Growth
 {% endblock  %}
 
 {%  block content %}
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="solver-tab" data-toggle="tab" href="#solver" role="tab" aria-controls="solver" aria-selected="true">Problem Solver</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="generator-tab" data-toggle="tab" href="#generator" role="tab" aria-controls="generator" aria-selected="false">Test  yourself</a>
+  </li>
 
-<div class = "container">
-    <div class="row">
-        <div class = "col-5">
-            <p class="lead">
-                <b>Enter 3 parameters to calculate the 4th:</b>
-            </p>
-            <form id="popgrowthform" action="" method="post" >
-                     {% csrf_token %}
-            {#  <div class="row form-group">#}
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="solver" role="tabpanel" aria-labelledby="solver-tab">
+      <div class = "container">
+            <div class="row">
+                <div class = "col-5 mt-1">
+                    <p class="lead">
+                        <b>Enter 3 parameters to calculate the 4th:</b>
+                    </p>
+                    <form id="popgrowthsolverform" action="" method="post" >
+                             {% csrf_token %}
+                               <div class="form-group">
+                                  {{ form.as_p }}
+                                   <input class="btn btn-primary" name="solverSubmit" type="submit" value="Calculate">
+                                   <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+                              </div>
+                    </form>
+                </div>
+                <div class = "col-5">
+                    <div id="answer_div" class="answer_div">
+                    <p class="lead">
+                        <b>{{ answer_title }} {{  answer }}</b>
+                    </p>
 
-                       <div class="form-group">
+                         <div id="plotDiv" style="width:100%;height:300px;">
 
-                          {{ form.as_p }}
+                         </div>
 
-                           <input class="btn btn-primary" type="submit" value="Submit">
-
-                    {#      <div class="col-md-1">#}
-                    {##}
-                    {#      </div>#}
-                    {#      <div class="col-md-1">#}
-                    {#        <b>{{ form.init_pop.label_tag }}</b>#}
-                    {#      </div>#}
-                    {#      <div class = "col-md-1">#}
-                    {#          {{ form.init_pop }}#}
-                    {#      </div>#}
-                    {#          <div class="col-md-1">#}
-                    {#        <b>{{ form.growth_rate.label_tag }}</b>#}
-                    {#      </div>#}
-                    {#      <div class = "col-md-1">#}
-                    {#          {{ form.growth_rate }}#}
-                    {#      </div>#}
-                    {#     <div class="col-md-1">#}
-                    {#        <b>{{ form.time.label_tag }}</b>#}
-                    {#      </div>#}
-                    {#      <div class = "col-md-1">#}
-                    {#          {{ form.time }}#}
-                    {#      </div>#}
-                    {#      <div class="col-md-1">#}
-                    {#        <b>{{ form.final_pop.label_tag }}</b>#}
-                    {#      </div>#}
-                    {#      <div class = "col-md-1">#}
-                    {#          {{ form.final_pop }}#}
-                    {#      </div>#}
-
-
-
-                      </div>
-
-
-            </form>
-        </div>
-        <div class = "col-5">
-            <div id="answer_div" class="answer_div">
-            <p class="lead">
-                <b>{{ answer_title }}: {{  answer }}</b>
-            </p>
-
-                 <div id="plotDiv" style="width:100%;height:300px;">
-
-                 </div>
-
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+      </div>
+  </div>
+  <div class="tab-pane fade" id="generator" role="tabpanel" aria-labelledby="generator-tab">
+           <div class = "container">
+            <div class="row">
+                <div class = "col-5">
+
+                    <p></p>
+                    <form id="popgrowthggeneratorform" action="" method="post" >
+                             {% csrf_token %}
+
+                              {% for f in form %}
+                                 {%  if f.name == chosen_target  %}
+
+                                 {%  else %}
+                                     {%  if f.name == 'answer_field' %}
+                                         {{ f }}
+                                     {% else %}
+                                         <p>
+                                             {{ f.label_tag }}
+                                             {{ f }}
+                                         </p>
+                                     {%  endif %}
+
+                                 {%  endif %}
+                              {%  endfor %}
+
+                             {%  if plot_data %}
+                             {%  else %}
+                                <p class="lead"><b>Please calculate:</b></p>
+                             {%  endif %}
+                             {% for f in form %}
+                                 {% if f.name == chosen_target  %}
+                                     <p>
+                                     <b>
+                                     {{ f.label_tag }}
+                                     </b>
+                                     {{ f }}
+                                     {% if plot_data  %}
+                                         {%  if correct_flag %}
+                                             <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                          {%  else %}
+                                             <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">
+                                           {% endif  %}
+                                     {%  endif %}
+                                     </p>
+                                 {%  else %}
+
+                                 {%  endif %}
+
+                            {%  endfor %}
+
+                            <input class="btn btn-primary" name="generatorSubmit" type="submit" value="Check Answer">
+                            <input class="btn btn-secondary" name="anotherButton" type="button" value="New" onclick="getAnother()">
+                    </form>
+                </div>
+                <div class = "col-5">
+                    <div id="answer_div_generator" class="answer_div">
+                    <p class="lead">
+                        {{ correct_answer }}
+                        <b>{{ answer_title }} {{  answer }}</b>
+                    </p>
+
+                         <div id="plotDivGenerator" style="width:500px;height:300px;">
+
+                         </div>
+
+                    </div>
+                </div>
+            </div>
+      </div>
+  </div>
 </div>
+
+
+
 
 {%  endblock %}
 
 {%  block script %}
 {{ plot_data | json_script:"jPlotData" }}
+{{  default_tab  | json_script:"jDefaultTab" }}
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <script>
 var plotData = JSON.parse(document.getElementById('jPlotData').textContent);
+var defaultTab = JSON.parse(document.getElementById('jDefaultTab').textContent);;
 
 function showGraph(pDiv) {
 
@@ -124,6 +175,59 @@ function showGraph(pDiv) {
 
 }
 
+
+function getAnother() {
+    var url = "{% url 'population_growth' %}";
+    url += '?tab=generator-tab';
+    document.location.href = url;
+
+}
+
+function setTab(tabEl) {
+    for (i = 0;i < myTabs.length;++i) {
+       myTabs[i].classList.remove("active");
+    }
+    tabEl.classList.add("active");
+
+    for (i = 0;i < myPanes.length;++i) {
+        myPanes[i].classList.remove("show");
+        myPanes[i].classList.remove("active");
+
+    }
+    const anchorReference = tabEl;
+    const activePaneID = anchorReference.getAttribute("href");
+    const activePane = document.querySelector(activePaneID);
+    activePane.classList.add("active");
+    activePane.classList.add("show");
+
+
+
+}
+
+function clearSolverForm(e) {
+
+    var inputEls = document.getElementsByClassName('solver-input');
+    for (var i = 0; i < inputEls.length; i += 1) {
+        inputEls[i].value = '';
+    }
+}
+
+function handleTabClick(e) {
+    setTab(e.target);
+    var url = "{% url 'population_growth' %}";
+    url += '?tab=';
+    url += e.target.id;
+    if (e.target.id  == 'solver-tab') {
+        url +='&r=' + document.getElementById('id_growth_rate_generator').value;
+        url +='&t=' + document.getElementById('id_time_generator').value;
+        url +='&n0=' + document.getElementById('id_init_pop_generator').value;
+        url +='&nt=' + document.getElementById('id_final_pop_generator').value;
+    }
+
+   // var id = $(this).attr('id');
+    document.location.href = url;
+}
+
 //showGraph('plotDiv');
 
 if (plotData.length == 0) {
@@ -132,7 +236,20 @@ if (plotData.length == 0) {
 else {
     document.getElementById('answer_div').style.visibility === "visible";
     showGraph('plotDiv');
+   document.getElementById('answer_div_generator').style.visibility === "visible";
+    showGraph('plotDivGenerator');
 }
+
+var myTabs = document.getElementsByClassName('nav-link');
+var myPanes = document.getElementsByClassName('tab-pane');
+
+for (i = 0;i < myTabs.length;++i) {
+    myTabs[i].addEventListener("click",handleTabClick,false );
+}
+var x = 1;
+
+var currTabEl = myTabs[defaultTab];
+setTab(currTabEl);
 
 
 </script>

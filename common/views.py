@@ -3,7 +3,7 @@ from getools.popdist import PopDist
 from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthFrom
+from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, PopulationGrowthGeneratorForm
 from itertools import combinations
 from scipy.stats import chisquare
 import random
@@ -163,32 +163,7 @@ def pg_calc_r(n0, nt, t):
     r = math.log(nt / n0) / t
     return r
 
-
-def pg_calc_missing(form):
-    n0 = form.cleaned_data['init_pop']
-    nt = form.cleaned_data['final_pop']
-    r = form.cleaned_data['growth_rate']
-    t = form.cleaned_data['time']
-
-    if nt is None:
-        nt = pg_calc_final_pop(n0, r, t)
-        answer_title =  'Final Population (Nt)'
-        answer = int(round(nt))
-    elif n0 is None:
-        n0 = pg_calc_init_pop(nt, r, t)
-        answer_title =  'Initial Population (N0)'
-        answer = n0
-    elif t is None:
-        t = pg_calc_time(n0, nt, r)
-        answer_title = 'Time in years (t)'
-        answer = t
-    elif r is None:
-        r = pg_calc_time(n0, nt, t)
-        answer_title = 'Growth Rate (r)'
-        answer = r
-    else:
-        answer_title = 'Error'
-        answer = -1
+def pg_generate_plot_data(n0, r, t):
 
     x_data = []
     y_data = []
@@ -203,29 +178,207 @@ def pg_calc_missing(form):
 
     plot_data = [{'x_data': x_data, 'y_data':y_data}]
 
+    return plot_data
+
+def pg_calc(n0, nt, r, t):
+    if nt is None:
+        nt = pg_calc_final_pop(n0, r, t)
+        return nt
+    elif n0 is None:
+        n0 = pg_calc_init_pop(nt, r, t)
+        return n0
+    elif t is None:
+        t = pg_calc_time(n0, nt, r)
+        return t
+    elif r is None:
+        r = pg_calc_time(n0, nt, t)
+        return r
+    else:
+        return -1
+
+def pg_calc_missing(form):
+    n0 = form.cleaned_data['init_pop']
+    nt = form.cleaned_data['final_pop']
+    r = form.cleaned_data['growth_rate']
+    t = form.cleaned_data['time']
+
+    form.data = form.data.copy()
+
+
+    if nt is None:
+        nt = pg_calc_final_pop(n0, r, t)
+        answer_title =  'Final Population (Nt)'
+        answer = nt
+        #form.fields['final_pop'].initial = answer
+        form.data['final_pop'] = int(round(nt))
+    elif n0 is None:
+        n0 = pg_calc_init_pop(nt, r, t)
+        answer_title =  'Initial Population (N0)'
+        answer = n0
+        #form.fields['init_pop'].initial = answer
+        form.data['init_pop'] = int(round(n0))
+    elif t is None:
+        t = pg_calc_time(n0, nt, r)
+        answer_title = 'Time in years (t)'
+        answer = t
+        #form.fields['time'].initial = answer
+        form.data['time'] = int(round(t))
+    elif r is None:
+        r = pg_calc_time(n0, nt, t)
+        answer_title = 'Growth Rate (r)'
+        answer = r
+        #form.fields['growth_rate'].initial = answer
+        form.data['growth_rate'] = round(r,3)
+    else:
+        answer_title = 'Error'
+        answer = -1
+
+    plot_data= pg_generate_plot_data(n0, r, t)
+
     return answer_title, answer, plot_data
+
+def pg_pick_field(request, form):
+    x = 1
+    ranges = {'init_pop_generator':[100,10000000], 'final_pop_generator':[10000000,100000000], 'growth_rate_generator':[0.001,0.5],'time_generator':[1,50]}
+    num_fields = len(ranges)
+    r = random.randint(0,num_fields-1)
+    picked_field = list(ranges.keys())[r]
+    values = {picked_field: None}
+
+    satisfactory = False
+    while not satisfactory:
+        for field in ranges:
+            if field == picked_field:
+                pass
+            else:
+                if field == 'growth_rate_generator':
+                    r = random.uniform(ranges[field][0],ranges[field][1])
+                    r = round(r,2)
+                else:
+                    r = random.randint(ranges[field][0],ranges[field][1])
+                values[field] = r
+                form.fields[field].initial = r
+                #form.fields[field].disabled = True
+                form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+        answer = pg_calc(values['init_pop_generator'], values['final_pop_generator'], values['growth_rate_generator'],values['time_generator'])
+        if (answer >= ranges[picked_field][0]) and (answer <= ranges[picked_field][1]):
+            satisfactory = True
+    return picked_field, values
+
+
+def pg_check_answer(form):
+
+    fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+    n0 = None if  form.cleaned_data['answer_field'] == 'init_pop_generator' else form.cleaned_data['init_pop_generator']
+    nt = None if form.cleaned_data['answer_field'] == 'final_pop_generator' else form.cleaned_data['final_pop_generator']
+    r = None if form.cleaned_data['answer_field'] == 'growth_rate_generator' else form.cleaned_data['growth_rate_generator']
+    t = None if form.cleaned_data['answer_field'] == 'time_generator' else form.cleaned_data['time_generator']
+
+    correct_answer_title = ''
+    for field in fields:
+        if field == form.cleaned_data['answer_field']:
+            correct_answer_title = form.fields[field].label
+        else:
+            form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+
+    correct_answer = pg_calc(n0, nt, r, t)
+    supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
+
+    correct_flag = False
+    if form.cleaned_data['answer_field'] == 'growth_rate_generator':
+        if abs(correct_answer - supplied_answer) < 0.01:
+            correct_flag = True
+    else:
+        if abs(correct_answer - supplied_answer) < 1:
+            correct_flag = True
+
+
+    plot_data = pg_generate_plot_data(correct_answer if n0 is None else n0, correct_answer if r is None else r, correct_answer if t is None else t)
+
+    return correct_answer, correct_answer_title, correct_flag, plot_data
+
+    for field in form.fields:
+        if 'readonly' in form.fields[field].widget.attrs:
+            if form.fields[field].widget.attrs['readonly'] == 'readonly':
+                 print('aha')
+            else:
+                print('noope')
+        else:
+            print('nope')
+
 
 def population_growth(request):
     print('in pop growth')
+
+    tab_requested = request.GET.get('tab', 'solver-tab')
+
+    init_n0 = request.GET.get('n0', None)
+    init_nt = request.GET.get('nt', None)
+    init_t = request.GET.get('t', None)
+    init_r = request.GET.get('r', None)
+
+    default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
 
     context = {}
 
     if request.method == 'POST':
 
-        form = PopulationGrowthFrom(request.POST)
+        if 'solverSubmit' in request.POST:
+            default_tab = 0
+            form = PopulationGrowthSolverForm(request.POST)
+            if form.is_valid():
+                context['default_tab'] = default_tab
+                context['form'] = form
+                context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
+                return render(request, "common/pop_growth.html", context=context)
+            else:
+                print('solver form not valid')
+        else:
+            default_tab = 1
+            form = PopulationGrowthGeneratorForm(request.POST)
+            if form.is_valid():
+                context['default_tab'] = default_tab
+                context['form'] = form
+                #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
+                context['answer'], context['answer_title'], context['correct_flag'], context['plot_data'] = pg_check_answer(form)
+                context['chosen_target'] = form.cleaned_data['answer_field']
+                return render(request, "common/pop_growth.html", context=context)
+            else:
+                print('generator form not valid')
+
         context['form'] = form
 
-        if form.is_valid():
-                context['answer_title'], context['answer'],context['plot_data'] = pg_calc_missing(form)
+        context['default_tab'] = default_tab
 
-                return render(request, "common/pop_growth.html", context=context)
-                #show_allele_choice = int(form.cleaned_data['show_allele']) - 1
-        else:
-                print('form not valid')
+        # if form.is_valid():
+        #         context['answer_title'], context['answer'],context['plot_data'] = pg_calc_missing(form)
+        #         return render(request, "common/pop_growth.html", context=context)
+        #         #show_allele_choice = int(form.cleaned_data['show_allele']) - 1
+        # else:
+        #         print('form not valid')
 
     else:
-        form = PopulationGrowthFrom()
+        if default_tab == 0:
+            form = PopulationGrowthSolverForm()
+            if init_n0 is not None:
+                form.fields['init_pop'].initial = init_n0
+            if init_nt is not None:
+                form.fields['final_pop'].initial = init_nt
+            if init_r is not None:
+                form.fields['growth_rate'].initial = init_r
+            if init_t is not None:
+                form.fields['time'].initial = init_t
+
+        else:
+            form = PopulationGrowthGeneratorForm()
+            chosen_target, other_values = pg_pick_field(request, form)
+            form.fields['answer_field'].initial = chosen_target
+            context['chosen_target'] = chosen_target
+            context['other_values'] = other_values
+            x = 1
+
         context['form'] = form
+        context['default_tab'] = default_tab
 
     return render(request, "common/pop_growth.html", context=context)
 
