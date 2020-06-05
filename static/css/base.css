@@ -49,3 +49,20 @@
 .narrow-select {
     width: 120px;
 }
+
+.pc-pg-init-pop {
+    color: dodgerblue;
+}
+.pc-pg-final-pop {
+    color: orange;
+}
+.pc-pg-growth-rate {
+    color: deeppink;
+}
+.pc-pg-time {
+    color: limegreen;
+}
+
+.card-ge {
+    width: 12rem;
+}

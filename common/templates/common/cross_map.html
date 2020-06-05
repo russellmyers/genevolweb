@@ -1,12 +1,12 @@
 {%  extends 'common/base.html' %}
 {%  load static %}
  {% block title %}
-Genetic Cross Mapping
+Test Cross Linkage
 {% endblock %}
 
 
 {%  block app_title %}
-Genetic Cross Mapping
+Test Cross Linkage
 {% endblock  %}
 
 {%  block content %}
@@ -22,7 +22,7 @@ Genetic Cross Mapping
 <button name="phenotype_type" class="btn btn-sm ml-3 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
 <button name="gamete_type" class="btn btn-sm {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
 {%  if show_cross %}
-<a class="btn btn-secondary btn-sm ml-5" href="{%  url 'cross_map' %}" role="button">New parent</a>
+    <a class="btn btn-info btn-sm ml-5" href="{%  url 'cross_map' %}" role="button">New problem</a>  <small>(3 different genes)</small>
 {% endif %}
 </form>
 </div>
@@ -469,6 +469,8 @@ var dragSrcEl = null;
           genes[i].classList.remove('over');
       }
 
+      dragSrcEl = null;
+
   }
 
 function cheatAnswer() {
@@ -516,7 +518,28 @@ function handleDrop(e) {
   }
 
   // Don't do anything if dropping the same column we're dragging.
-  if (dragSrcEl != this) {
+
+  if (dragSrcEl == null) {
+       return false;
+  }
+
+
+  if ((dragSrcEl.classList.contains('gcm-gene')) && (this.classList.contains('gcm-gene'))) {
+      if (dragSrcEl.id  == this.id) {
+
+      dragSrcEl= null;
+      return false; //drop dest is same
+      }
+  }
+  else {
+      x = 1;
+      dragSrcEl = null;
+      return false; // not dragging gene or dropping on an gene
+
+  }
+
+
+ // if (dragSrcEl != this) {
     // Set the source column's HTML to the HTML of the column we dropped on.
     srcInd = getGeneIndex(dragSrcEl);
     newSrcText = this.innerHTML;
@@ -529,11 +552,11 @@ function handleDrop(e) {
     linkSpans();
     {#dragSrcEl.innerHTML = this.innerHTML;#}
     {#this.innerHTML = e.dataTransfer.getData('text/html');#}
-  }
+//  }
 
 
 
-
+  dragSrcEl = null;
   return false;
 }
 

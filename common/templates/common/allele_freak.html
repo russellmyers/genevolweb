@@ -202,10 +202,12 @@ function showGraph(pDiv) {
 
     var layout = {
       xaxis: {
-        range: [ 0, xLimit ]
+        range: [ 0, xLimit ],
+        title: "Generation"
       },
       yaxis: {
-        range: [0, 1]
+        range: [0, 1],
+        title: "Allele <b>" + alleleText + "</b> Frequency"
       },
       title:"Allele '<b>" + alleleText + "</b>' - Frequency over Generations"
     };

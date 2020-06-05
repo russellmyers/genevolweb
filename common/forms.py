@@ -15,10 +15,10 @@ class AlleleFreakForm(forms.Form):
     auto_clear = forms.BooleanField(widget=forms.CheckboxInput(attrs={}),required=False,initial=False)
 
 class PopulationGrowthSolverForm(forms.Form):
-    init_pop = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
+    init_pop = forms.IntegerField(label='Initial Population size (N<sub>0</sub>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
     growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.000001'}))
     time = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
-    final_pop = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
+    final_pop = forms.IntegerField(label='Final Population size (N<sub>t</sub>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
 
     def clean(self):
         cleaned_data = super(PopulationGrowthSolverForm, self).clean()
@@ -27,7 +27,7 @@ class PopulationGrowthSolverForm(forms.Form):
             if cleaned_data[form_field] is None:
                 num_missing += 1
         if num_missing > 1:
-           raise ValidationError("Only 1 missing field allowed")
+           raise ValidationError("Please enter 3 fields")
         if num_missing == 0:
            raise ValidationError("Please leave 1 field missing")
         return cleaned_data
@@ -39,11 +39,24 @@ class PopulationGrowthSolverForm(forms.Form):
         return form_data
 
 class PopulationGrowthGeneratorForm(forms.Form):
-    init_pop_generator = forms.IntegerField(label='Initial Population (N0)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select','min':'1'}))
-    growth_rate_generator = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.000001'}))
-    time_generator = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
-    final_pop_generator = forms.IntegerField(label='Final Population (Nt)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
+    init_pop_generator = forms.IntegerField(label='Initial Population size (<span class = "pc-pg-init-pop">N<sub>0</sub></span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select','min':'1'}))
+    growth_rate_generator = forms.FloatField(label='Growth rate (<span class = "pc-pg-growth-rate">r</span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.000001'}))
+    time_generator = forms.IntegerField(label='Time in years (<span class = "pc-pg-time">t</span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
+    final_pop_generator = forms.IntegerField(label='Final Population size (<span class = "pc-pg-final-pop">N<sub>t</sub></span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
     answer_field = forms.CharField(widget = forms.HiddenInput(), required = False)
+
+    def clean(self):
+        cleaned_data = super(PopulationGrowthGeneratorForm, self).clean()
+        num_missing = 0
+        for form_field in cleaned_data:
+            if cleaned_data[form_field] is None:
+                num_missing += 1
+        if num_missing > 0:
+           raise ValidationError("Please enter your answer")
+
+        return cleaned_data
+
+
 
 class CrossSimForm(forms.Form):
     GEN_CHOICES = [('1', 'Hom Dominant'), ('2', 'Heterozygous'), ('3', 'Hom Recessive') ]

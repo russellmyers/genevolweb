@@ -239,7 +239,7 @@ def pg_calc_missing(form):
 
 def pg_pick_field(request, form):
     x = 1
-    ranges = {'init_pop_generator':[100,10000000], 'final_pop_generator':[10000000,100000000], 'growth_rate_generator':[0.001,0.5],'time_generator':[1,50]}
+    ranges = {'init_pop_generator':[100,10000000], 'final_pop_generator':[10000000,100000000], 'growth_rate_generator':[0.001,0.2],'time_generator':[25,100]}
     num_fields = len(ranges)
     r = random.randint(0,num_fields-1)
     picked_field = list(ranges.keys())[r]
@@ -282,6 +282,8 @@ def pg_check_answer(form):
             form.fields[field].widget.attrs.update({'readonly': 'readonly'})
 
     correct_answer = pg_calc(n0, nt, r, t)
+    correct_answer_rounded = round(correct_answer,2) if form.cleaned_data['answer_field'] == 'growth_rate_generator' else round(correct_answer)
+
     supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
 
     correct_flag = False
@@ -295,7 +297,7 @@ def pg_check_answer(form):
 
     plot_data = pg_generate_plot_data(correct_answer if n0 is None else n0, correct_answer if r is None else r, correct_answer if t is None else t)
 
-    return correct_answer, correct_answer_title, correct_flag, plot_data
+    return correct_answer, correct_answer_rounded, correct_answer_title, correct_flag, plot_data
 
     for field in form.fields:
         if 'readonly' in form.fields[field].widget.attrs:
@@ -340,7 +342,7 @@ def population_growth(request):
                 context['default_tab'] = default_tab
                 context['form'] = form
                 #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
-                context['answer'], context['answer_title'], context['correct_flag'], context['plot_data'] = pg_check_answer(form)
+                context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = pg_check_answer(form)
                 context['chosen_target'] = form.cleaned_data['answer_field']
                 return render(request, "common/pop_growth.html", context=context)
             else:
@@ -500,15 +502,15 @@ def create_children(org_het, org_hom_rec, num_samples=1000):
 
 def get_phen_descriptions(genome_name):
     if genome_name == 'dog':
-        phen_descriptions = ['aa - green eyes (AA/Aa = blue eyes)', 'bb - pink coat (BB/Bb = brown coat)',
-                             'cc - spotted (CC/Cc = unspotted)']
+        phen_descriptions = ['aa - green eyes (AA or Aa = blue eyes)', 'bb - pink coat (BB or Bb = brown coat)',
+                             'cc - spotted (CC or Cc = unspotted)']
     elif genome_name == 'fish':
-        phen_descriptions = ['aa - grey body (AA/Aa = gold body)', 'bb - small eyes (BB/Bb = big eyes)',
-                             'cc - no scales (CC/Cc = scales)']
+        phen_descriptions = ['aa - grey body (AA or Aa = gold body)', 'bb - small eyes (BB or Bb = big eyes)',
+                             'cc - no scales (CC or Cc = scales)']
 
     elif genome_name == 'pea':
-        phen_descriptions = ['aa - wrinked (AA/Aa = round)', 'bb - green (BB/Bb = yellow)',
-                             'cc - spotted (CC/Cc = unspotted)']
+        phen_descriptions = ['aa - wrinked (AA or Aa = round)', 'bb - green (BB or Bb = yellow)',
+                             'cc - spotted (CC or Cc = unspotted)']
     else:
         phen_descriptions = ['phenotypes unknown','phenotypes unknown','phenotypes unknown']
 
@@ -744,7 +746,7 @@ def cross_map(request):
         else:
             request.session['gcm_cross_type'] = cross_type
 
-    show_cross = False
+    show_cross = True
 
     num_samples = 1000
 
@@ -827,8 +829,27 @@ def cross_map(request):
     if 'gcm_children' in request.session:
         del request.session['gcm_children']
 
+
+
+#    org_het_phase = org_het.genome.get_phase(alpha_sort=True)
+#    parsed_order = parse_het_phase(request, org_het_phase)
+
+    children = create_children(org_het, org_hom_rec, num_samples=num_samples)
+
+    phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(
+        children)
+    show_cross = True
     org_het_phase = org_het.genome.get_phase(alpha_sort=True)
     parsed_order = parse_het_phase(request, org_het_phase)
+
+    positions = org_het.genome.genome_template.positions()
+
+    child_list = [child._to_attr_dict() for child in children]
+    request.session['gcm_children'] = child_list
+
+    genome_name = org_het.genome.genome_template.name
+    phen_descriptions = get_phen_descriptions(genome_name)
+
 
     # children = []
     # for i in range(num_samples):
@@ -925,13 +946,28 @@ def cross_map(request):
 
     phen_descriptions = get_phen_descriptions(gt.name)
 
+    # return render(request, "common/cross_map.html",
+    #                       context={'genome_name':gt.name,'phen_descriptions': phen_descriptions,
+    #                                'show_cross': show_cross, 'cross_type': cross_type,  'org1': org_het,
+    #                                'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
+    #                                'org2_phen': org_hom_rec.genome.phenotype(),
+    #                                'proposed' : proposed,
+    #                                'parsed_order': parsed_order})
+
     return render(request, "common/cross_map.html",
-                          context={'genome_name':gt.name,'phen_descriptions': phen_descriptions,
-                                   'show_cross': False, 'cross_type': cross_type,  'org1': org_het,
-                                   'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-                                   'org2_phen': org_hom_rec.genome.phenotype(),
-                                   'proposed' : proposed,
-                                   'parsed_order': parsed_order})
+                  context={'genome_name': genome_name, 'phen_descriptions': phen_descriptions,
+                           'org_het_phase': org_het_phase,
+                           'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,
+                           'positions': positions, 'chroms_in': chroms_in, 'org1': org_het,
+                           'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
+                           'org2_phen': org_hom_rec.genome.phenotype(), 'children_phenotypes': phenotypes,
+                           'pairs_cis': pairs_cis, 'dists': dists, 'parentals': parentals,
+                           'double_crossovers': double_crossovers, 'recomb_fraction_list': recomb_fraction_list,
+                           'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair,
+                           'parental_gametes_het': parental_gametes_het,
+                           'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
+                           'proposed': proposed,
+                           'parsed_order': parsed_order})
 
     #return render(request, "common/cross_map.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
 
