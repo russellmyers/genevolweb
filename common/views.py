@@ -8,6 +8,7 @@ from itertools import combinations
 from scipy.stats import chisquare
 import random
 import math
+from .models import PopGrowthProblem
 
 def index(request):
     print('home page')
@@ -314,10 +315,10 @@ def population_growth(request):
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
-    init_n0 = request.GET.get('n0', None)
-    init_nt = request.GET.get('nt', None)
-    init_t = request.GET.get('t', None)
-    init_r = request.GET.get('r', None)
+    # init_n0 = request.GET.get('n0', None)
+    # init_nt = request.GET.get('nt', None)
+    # init_t = request.GET.get('t', None)
+    # init_r = request.GET.get('r', None)
 
     default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
 
@@ -327,10 +328,12 @@ def population_growth(request):
 
         if 'solverSubmit' in request.POST:
             default_tab = 0
-            form = PopulationGrowthSolverForm(request.POST)
+            pg = PopGrowthProblem(PopGrowthProblem.create_solver_form_from_query_params(request, post=True), None)
+            form = pg.solver_form
             if form.is_valid():
                 context['default_tab'] = default_tab
                 context['form'] = form
+                ans = pg.calc_missing()
                 context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
                 return render(request, "common/pop_growth.html", context=context)
             else:
@@ -349,31 +352,16 @@ def population_growth(request):
                 print('generator form not valid')
 
         context['form'] = form
-
         context['default_tab'] = default_tab
-
-        # if form.is_valid():
-        #         context['answer_title'], context['answer'],context['plot_data'] = pg_calc_missing(form)
-        #         return render(request, "common/pop_growth.html", context=context)
-        #         #show_allele_choice = int(form.cleaned_data['show_allele']) - 1
-        # else:
-        #         print('form not valid')
 
     else:
         if default_tab == 0:
-            form = PopulationGrowthSolverForm()
-            if init_n0 is not None:
-                form.fields['init_pop'].initial = init_n0
-            if init_nt is not None:
-                form.fields['final_pop'].initial = init_nt
-            if init_r is not None:
-                form.fields['growth_rate'].initial = init_r
-            if init_t is not None:
-                form.fields['time'].initial = init_t
-
+            pg = PopGrowthProblem(PopGrowthProblem.create_solver_form_from_query_params(request),None)
+            form = pg.solver_form
         else:
-            form = PopulationGrowthGeneratorForm()
-            chosen_target, other_values = pg_pick_field(request, form)
+            pg = PopGrowthProblem(None, PopGrowthProblem.create_generator_form())
+            form = pg.generator_form
+            chosen_target, other_values = pg.pick_field()
             form.fields['answer_field'].initial = chosen_target
             context['chosen_target'] = chosen_target
             context['other_values'] = other_values
