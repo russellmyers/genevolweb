@@ -19,6 +19,7 @@ class PopulationGrowthSolverForm(forms.Form):
     growth_rate = forms.FloatField(label='Growth rate (r)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.000001'}))
     time = forms.IntegerField(label='Time in years (t)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
     final_pop = forms.IntegerField(label='Final Population size (N<sub>t</sub>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'1'}))
+    answer_field = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     def clean(self):
         cleaned_data = super(PopulationGrowthSolverForm, self).clean()
@@ -26,36 +27,41 @@ class PopulationGrowthSolverForm(forms.Form):
         for form_field in cleaned_data:
             if cleaned_data[form_field] is None:
                 num_missing += 1
-        if num_missing > 1:
-           raise ValidationError("Please enter 3 fields")
-        if num_missing == 0:
-           raise ValidationError("Please leave 1 field missing")
+        if cleaned_data['answer_field'] is None or cleaned_data['answer_field'] == '': #solver
+            if num_missing > 1:
+               raise ValidationError("Please enter 3 fields")
+            if num_missing == 0:
+               raise ValidationError("Please leave 1 field missing")
+        else: #generator
+            if num_missing > 0:
+               raise ValidationError("Please enter your answer")
+
         return cleaned_data
 
 
-        if form_data['password'] != form_data['password_repeat']:
-            self._errors["password"] = ["Password do not match"]  # Will raise a error message
-            del form_data['password']
-        return form_data
-
-class PopulationGrowthGeneratorForm(forms.Form):
-    init_pop_generator = forms.IntegerField(label='Initial Population size (<span class = "pc-pg-init-pop">N<sub>0</sub></span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select','min':'1'}))
-    growth_rate_generator = forms.FloatField(label='Growth rate (<span class = "pc-pg-growth-rate">r</span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'step':'0.000001'}))
-    time_generator = forms.IntegerField(label='Time in years (<span class = "pc-pg-time">t</span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
-    final_pop_generator = forms.IntegerField(label='Final Population size (<span class = "pc-pg-final-pop">N<sub>t</sub></span>)', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select', 'min':'1'}))
-    answer_field = forms.CharField(widget = forms.HiddenInput(), required = False)
+class BreedersEquationSolverForm(forms.Form):
+    av_starting_phen = forms.FloatField(label='Average Starting Phenotype', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.001'}))
+    av_selected_phen = forms.FloatField(label='Average Selected Phenotype', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.001'}))
+    av_response_phen = forms.FloatField(label='Average Response Phenotype', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'step':'0.001'}))
+    broad_heritability = forms.FloatField(label='Broad Heritability', required=False, widget=forms.NumberInput(attrs={'class': 'form-control narrow-select solver-input', 'min':'0', 'max':'1', 'step':'0.001'}))
+    answer_field = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     def clean(self):
-        cleaned_data = super(PopulationGrowthGeneratorForm, self).clean()
+        cleaned_data = super(BreedersEquationSolverForm, self).clean()
         num_missing = 0
         for form_field in cleaned_data:
             if cleaned_data[form_field] is None:
                 num_missing += 1
-        if num_missing > 0:
-           raise ValidationError("Please enter your answer")
+        if cleaned_data['answer_field'] is None or cleaned_data['answer_field'] == '': #solver
+            if num_missing > 1:
+               raise ValidationError("Please enter 3 fields")
+            if num_missing == 0:
+               raise ValidationError("Please leave 1 field missing")
+        else: #generator
+            if num_missing > 0:
+               raise ValidationError("Please enter your answer")
 
         return cleaned_data
-
 
 
 class CrossSimForm(forms.Form):

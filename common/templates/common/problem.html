@@ -1,0 +1,214 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Problem Central
+{% endblock %}
+
+
+{%  block app_title %}
+Problem Central
+{% endblock  %}
+
+{%  block content %}
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="solver-tab" data-toggle="tab" href="#solver" role="tab" aria-controls="solver" aria-selected="true">Problem Solver</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="generator-tab" data-toggle="tab" href="#generator" role="tab" aria-controls="generator" aria-selected="false">Test  yourself</a>
+  </li>
+
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="solver" role="tabpanel" aria-labelledby="solver-tab">
+           {% block problem_solver_leader %}
+           {%  endblock problem_solver_leader %}
+
+      <div class = "container">
+            <div class="row">
+                <div class = "col-5 mt-1">
+                     {% block problem_solver_header %}
+                    {%  endblock problem_solver_header %}
+
+                    {%  block problem_solver_form %}
+                    {%  endblock problem_solver_form %}
+                </div>
+                <div class = "col-7">
+                     <div id="answer_div" class="answer_div">
+                        {%  block problem_solver_answer %}
+                        {%  endblock problem_solver_answer %}
+                     </div>
+                </div>
+            </div>
+      </div>
+  </div>
+  <div class="tab-pane fade" id="generator" role="tabpanel" aria-labelledby="generator-tab">
+          {% block problem_generator_leader %}
+          {%  endblock problem_generator_leader %}
+
+           <div class = "container">
+            <div class="row">
+                <div class = "col-5">
+
+                     {% block problem_generator_header %}
+                    {%  endblock problem_generator_header %}
+
+                    {%  block problem_generator_form %}
+                    {%  endblock problem_generator_form %}
+
+                </div>
+
+                <div class = "col-7">
+                    <div id="answer_div_generator" class="answer_div">
+
+                        {%  block problem_generator_answer %}
+                        {%  endblock problem_generator_answer %}
+
+                    </div>
+                </div>
+            </div>
+      </div>
+  </div>
+</div>
+
+
+
+
+{%  endblock %}
+
+{%  block script %}
+    {%  block problem_script %}
+
+{{ plot_data | json_script:"jPlotData" }}
+{{  default_tab  | json_script:"jDefaultTab" }}
+{{  correct_flag | json_script:"jCorrectFlag" }}
+{{ url_name  | json_script:"jUrlName" }}
+{{  answer_title  |  json_script:"jAnswerTitle"}}
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+var plotData = JSON.parse(document.getElementById('jPlotData').textContent);
+var defaultTab = JSON.parse(document.getElementById('jDefaultTab').textContent);
+var correctFlag = JSON.parse(document.getElementById('jCorrectFlag').textContent);
+var urlName = JSON.parse(document.getElementById('jUrlName').textContent);
+var answerTitle = JSON.parse(document.getElementById('jAnswerTitle').textContent);
+
+{%  block show_graph %}
+function showGraph(pDiv) {
+
+    var lineType;
+
+    lineType = 'solid';
+
+    dataList = [];
+    markerColors = ['green','blue','orange','yellow','red','black','purple'];
+
+    for (i = 0;i < plotData.length; ++i) {
+        var trace = {
+          x: plotData[i].x_data,
+          y: plotData[i].y_data,
+          {#mode: 'markers',#}
+          type: 'line',
+          name: 'Run ' + (i+1),
+          marker: {color: markerColors[i % markerColors.length]}
+      };
+      dataList.push(trace);
+    }
+
+
+    var layout = {
+      title:"Generic Problem Graph"
+    };
+
+    Plotly.newPlot(pDiv, dataList, layout);
+
+}
+{%  endblock show_graph %}
+
+{%  block assemble_url %}
+    function assembleUrl() {
+        var url = '';
+        return url;
+
+    }
+{%  endblock assemble_url %}
+
+
+function getAnother() {
+    var url =assembleUrl();
+    url += '?tab=generator-tab';
+    document.location.href = url;
+
+}
+
+function setTab(tabEl) {
+    for (i = 0;i < myTabs.length;++i) {
+       myTabs[i].classList.remove("active");
+    }
+    tabEl.classList.add("active");
+
+    for (i = 0;i < myPanes.length;++i) {
+        myPanes[i].classList.remove("show");
+        myPanes[i].classList.remove("active");
+
+    }
+    const anchorReference = tabEl;
+    const activePaneID = anchorReference.getAttribute("href");
+    const activePane = document.querySelector(activePaneID);
+    activePane.classList.add("active");
+    activePane.classList.add("show");
+
+}
+
+function clearSolverForm(e) {
+
+    var inputEls = document.getElementsByClassName('solver-input');
+    for (var i = 0; i < inputEls.length; i += 1) {
+        inputEls[i].value = '';
+    }
+}
+
+function handleTabClick(e) {
+    setTab(e.target);
+    var url =  assembleUrl();
+    url += '?tab=';
+    url += e.target.id;
+    if (e.target.id  == 'solver-tab') {
+        {%  block handle_tab_click_url %}
+        {%  endblock handle_tab_click_url %}
+    }
+    document.location.href = url;
+}
+
+
+if (answerTitle.length == 0) {
+
+}
+else {
+    document.getElementById('answer_div').style.visibility === "visible";
+    showGraph('plotDiv');
+    if (correctFlag) { //only show graph if correct answer
+        document.getElementById('answer_div_generator').style.visibility === "visible";
+        showGraph('plotDivGenerator');
+    }
+}
+
+var myTabs = document.getElementsByClassName('nav-link');
+var myPanes = document.getElementsByClassName('tab-pane');
+
+for (i = 0;i < myTabs.length;++i) {
+    myTabs[i].addEventListener("click",handleTabClick,false );
+}
+var x = 1;
+
+var currTabEl = myTabs[defaultTab];
+setTab(currTabEl);
+
+
+</script>
+{%  block problem_script_specific %}
+ {%  endblock problem_script_specific %}
+
+   {%  endblock problem_script %}
+{%  endblock script %}

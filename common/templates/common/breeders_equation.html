@@ -1,0 +1,146 @@
+{%  extends 'common/problem.html' %}
+{%  load static %}
+ {% block title %}
+Breeders Equation
+{% endblock %}
+
+
+{%  block app_title %}
+Breeders Equation
+{% endblock  %}
+
+{%  block problem_solver_leader %}
+          <p class = "lead mt-4 ml-2">
+          </p>
+{%  endblock problem_solver_leader %}
+
+
+{%  block problem_solver_header %}
+                    <p class="lead">
+                        <b>Enter 3 parameters to calculate the 4th:</b>
+                    </p>
+{%  endblock problem_solver_header %}
+
+{%  block problem_solver_form %}
+            <form id="breedersequationsolverform" action="" method="post" >
+                     {% csrf_token %}
+                       <div class="form-group">
+                          <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+
+                          {{ form.as_p }}
+                           <input class="btn btn-primary" name="solverSubmit" type="submit" value="Calculate">
+                           <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+                      </div>
+            </form>
+{%  endblock problem_solver_form %}
+
+{%  block problem_solver_answer %}
+            <p class="lead">
+                <b>{{ answer_title|safe }} {{  answer }}</b>
+            </p>
+
+                 <div id="plotDiv" style="width:100%;height:400px;">
+
+                 </div>
+{%  endblock problem_solver_answer %}
+
+{%  block problem_generator_leader %}
+          <p class = "lead mt-4 ml-2">
+
+          </p>
+{%  endblock problem_generator_leader %}
+
+{%  block problem_generator_form %}
+
+            <form id="breedersequationgeneratorform" action="" method="post" >
+                     {% csrf_token %}
+
+                          <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+
+                      {% for f in form %}
+                         {%  if f.name == chosen_target  %}
+
+                         {%  else %}
+                             {%  if f.name == 'answer_field' %}
+                                 {{ f }}
+                             {% else %}
+                                 <p>
+                                      {{ f.label_tag }}
+                                      {{  f }}
+
+                                 </p>
+                             {%  endif %}
+
+                         {%  endif %}
+                      {%  endfor %}
+
+                     {%  if plot_data %}
+                     {%  else %}
+                        <p class="lead"><b>Please calculate:</b></p>
+                     {%  endif %}
+                     {% for f in form %}
+                         {% if f.name == chosen_target  %}
+                             <p>
+                              <b>
+                                  {{ f.label_tag }}
+                                  {{ f }}
+
+                                 </b>
+                                 {% if answer_title  %}
+                                     {%  if correct_flag %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                      {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px"> ( Correct answer: {{  answer_rounded }} )
+                                       {% endif  %}
+                                 {%  endif %}
+                             </p>
+                         {%  else %}
+
+                         {%  endif %}
+
+                    {%  endfor %}
+
+                    <input class="btn btn-primary" name="generatorSubmit" type="submit" value="Check Answer">
+                    <input class="btn btn-secondary" name="anotherButton" type="button" value="New" onclick="getAnother()">
+            </form>
+{%  endblock problem_generator_form %}
+
+ {%  block problem_generator_answer %}
+            <p class="lead">
+            {%  if correct_flag %}
+                {{ correct_answer }}
+
+                <b>{{ answer_title|safe }}: {{  answer }}</b>
+            {%  endif %}
+            </p>
+
+             <div id="plotDivGenerator" style="width:600px;height:400px;">
+
+             </div>
+{% endblock problem_generator_answer %}
+
+{%  block show_graph %}
+    function showGraph(pDiv) {
+
+
+    }
+{%  endblock show_graph %}
+
+{%  block assemble_url %}
+    function assembleUrl() {
+        var url = "{% url 'breeders_equation' %}";
+        return url;
+
+    }
+{%  endblock assemble_url %}
+
+{%  block handle_tab_click_url %}
+        url +='&av_starting_phen=' + document.getElementById('id_av_starting_phen').value;
+        url +='&av_selected_phen=' + document.getElementById('id_av_selected_phen').value;
+        url +='&av_response_phen=' + document.getElementById('id_av_response_phen').value;
+        url +='&broad_heritability=' + document.getElementById('id_broad_heritability').value;
+{%  endblock handle_tab_click_url %}
