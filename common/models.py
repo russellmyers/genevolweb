@@ -221,8 +221,8 @@ class BreedersEquationProblem(Problem):
 
     def __init__(self, solver_form):
 
-        ranges =  {'av_starting_phen': [0.5,10.0], 'av_selected_phen': [0.5, 10.0],
-                      'av_response_phen': [0.5, 10], 'broad_heritability': [0.0, 1.0]}
+        ranges =  {'av_starting_phen': [20.0,100.0], 'av_selected_phen': [0.1, 100.0],
+                      'av_response_phen': [0.1, 100.0], 'broad_heritability': [0.0, 1.0]}
 
         super().__init__('Breeders Equation', solver_form, ranges=ranges)
 
@@ -351,7 +351,19 @@ class BreedersEquationProblem(Problem):
 
     def generate_plot_data(self, correct_answer=None):
 
-        plot_data = []
+
+        values = {}
+        for field in self.ranges:
+            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field else self.solver_form.cleaned_data[field]
+
+        st_p = correct_answer if values['av_starting_phen'] is None else values['av_starting_phen']
+        se_p = correct_answer if values['av_selected_phen'] is None else values['av_selected_phen']
+        re_p = correct_answer if values['av_response_phen'] is None else values['av_response_phen']
+        bh = correct_answer if values['broad_heritability'] is None else values['broad_heritability']
+
+
+        plot_data = [{'x_data': [st_p, se_p, re_p], 'y_data': [0,0,0]}]
+
         return plot_data
 
     @staticmethod

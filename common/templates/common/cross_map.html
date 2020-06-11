@@ -15,168 +15,302 @@ Test Cross Linkage
   <h1 class="display-4">Allele Freak</h1>
 
 </div-->
-<div class="row">
-<div class="col-sm-4">
-<form method="POST" id="type_form" action="{%  url 'cross_map' %}">
-{% csrf_token %}
-<button name="phenotype_type" class="btn btn-sm ml-3 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
-<button name="gamete_type" class="btn btn-sm {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
-{%  if show_cross %}
-    <a class="btn btn-info btn-sm ml-5" href="{%  url 'cross_map' %}" role="button">New problem</a>  <small>(3 different genes)</small>
-{% endif %}
-</form>
-</div>
-        <div class="col-sm-3">
-           <small>
-                  {% for descr in phen_descriptions %}
-                    {{  descr }}
-                    <br>
-                  {%  endfor %}
-           </small>
-           </div>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link" id="solver-tab" data-toggle="tab" href="#solver" role="tab" aria-controls="solver" aria-selected="false">Problem Solver</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" id="generator-tab" data-toggle="tab" href="#generator" role="tab" aria-controls="generator" aria-selected="true">Test  yourself</a>
+  </li>
 
-        </div>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade" id="solver" role="tabpanel" aria-labelledby="solver-tab">
+      <p class="h4 mt-4 ml-4">Problem Solver for Test Cross Linkage: under construction</p>
+  </div>
+    <div class="tab-pane fade show active" id="generator" role="tabpanel" aria-labelledby="generator-tab">
 
 
-<div class="container mt-1">
-        <div class="row">
-
-            <div class="col-sm-5">
-                   {{  org1 }}
-
-
-                    <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ org1_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
-
-                     <span class="display-4"><b>X</b></span>
-
-                     {{  org2 }}
-
-                     <img src="{% get_static_prefix %}img/{{  genome_name }}/{{  genome_name }}_{{ org2_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
-
-            </div>
-            <div class="col-sm-1">
-                <form class="form" method="POST" id="cross_form" action="">
-                    {% csrf_token %}
-                    {%  if show_cross %}
-                    {%  else %}
-                        <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
-                    {%  endif %}
-                 </form>
-            </div>
+        <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">
+        {% csrf_token %}
+            <div class="container">
+                    <div class="row">
+                                  <div class="col-sm-3">
+                                    {%  if show_cross %}
+                                            <a class="btn btn-info btn-sm mt-1 " href="{%  url 'cross_map' %}" role="button">New problem</a><br>  <!--small>(3 different genes)</small-->
+                                            <small><i>(3 different genes)</i></small>
+                                    {% endif %}
+                                  </div>
+                                  <div class="col-sm-3">
+                                    <button name="gamete_type" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+                                    <button name="phenotype_type" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
+                                 </div>
 
 
 
 
 
 
-        </div>
-
-    {%  if show_cross %}
-
-    <div class="mt-4">
-
-    <p class="h5">
-        {% if cross_type == 'p' %}
-             Phenotypes observed
-        {%  else %}
-             Gametes observed (heterozygote)
-        {%  endif %}
-    </p>
+                    </div>
+             </div>
+        </form>
 
 
-    {%  if cross_type == 'p' %}
 
-        {% for key, values in children_phenotypes.items %}
-              {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
-              <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-              {%  if row == '4th' %}
-                  <br>
-              {%  endif %}
+            <div class="container mt-1">
 
-        {%  endfor %}
-    {%  else %}
-        {% for key,item in parental_gametes_het.items %}
-            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
-            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;
-             {%  if row == '4th' %}
-                  <br>
+                <div class="row center-block">
+
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-7">
+
+                            <div class="row">
+                            <div class="col-3">
+                            <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ org1_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+                                <br>&nbsp; &nbsp;{{  org1 }}
+                            </div>
+                            <div class="col-1">
+                             <span class="display-4"><b>X</b></span>
+                            </div>
+
+                            <div class="col-3 ml-4">
+                             <img src="{% get_static_prefix %}img/{{  genome_name }}/{{  genome_name }}_{{ org2_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+                             <br>&nbsp; &nbsp;{{  org2 }}
+                            </div>
+                            </div>
+                    </div>
+                    <div class="col-sm-3">
+                               <small>
+                                      {% for descr in phen_descriptions %}
+                                        {{  descr }}
+                                        <br>
+                                      {%  endfor %}
+                               </small>
+                         </div>
+                    <div class="col-sm-1">
+                        <form class="form" method="POST" id="cross_form" action="">
+                            {% csrf_token %}
+                            {%  if show_cross %}
+                            {%  else %}
+                                <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
+                            {%  endif %}
+                         </form>
+                    </div>
+
+                </div>
+
+            {%  if show_cross %}
+
+            <div class="mt-4">
+
+            <p class="h5">
+                {% if cross_type == 'p' %}
+                     Offspring phenotypes observed (Total: 1000)
+                {%  else %}
+                     Gametes observed from Heterozygote (Total: 1000)
+                {%  endif %}
+            </p>
+
+             {%  if cross_type == 'g' %}
+                 <div class="row form-group mt-4">
+                      <div class = "col-md-1">
+                      </div>
+
+                     <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.ABC.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.ABC }}
+                             </div>
+                         </div>
+                      </div>
+                      <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.ABc.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.ABc }}
+                             </div>
+                         </div>
+                      </div>
+                    <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.AbC.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.AbC }}
+                             </div>
+                         </div>
+                      </div>
+                      <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.Abc.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.Abc }}
+                             </div>
+                         </div>
+                      </div>
+
+
+                  </div>
+                 <div class="row form-group">
+                      <div class = "col-md-1">
+                      </div>
+                      <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.aBC.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.aBC }}
+                             </div>
+                         </div>
+                      </div>
+                      <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.aBc.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.aBc }}
+                             </div>
+                         </div>
+                      </div>
+                     <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.abC.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.abC }}
+                             </div>
+                         </div>
+                      </div>
+                      <div class="col-md-2">
+                         <div class="row">
+                             <div class="col-md-4">
+                                 <b>{{ form.abc.label_tag }}</b>
+                             </div>
+                             <div class = "col-md-7">
+                              {{ form.abc }}
+                             </div>
+                         </div>
+                      </div>
+
+
+                 </div>
+            {% endif %}
+
+
+            {%  if cross_type == 'p' %}
+
+                {% for key, values in children_phenotypes.items %}
+                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
+                      <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                      {%  if row == '4th' %}
+                          <br>
+                      {%  endif %}
+
+                {%  endfor %}
+            {%  else %}
+        {#        {% for key,item in parental_gametes_het.items %}#}
+        {#            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
+        {#            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;#}
+        {#             {%  if row == '4th' %}#}
+        {#                  <br>#}
+        {#            {%  endif %}#}
+        {#        {% endfor %}#}
+        {#        <br>#}
+
+
             {%  endif %}
-            {% endfor %}
+
         <br>
+         <p class="h5">
+             <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
+            Use results above to predict Phase (heterozygote), gene order, linkage and recombination fractions:
+         </p>
+                <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
+            <br>
+            <br>
+            <div class="row">
+                <div class="col-4">
+                    Gene order, *parental phase, linkage:
+                    <br><small class=""><i>(*Choose either parental phase)</i></small>
+                </div>
+                <div class="col-8">
+                    <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
+                        A
+                    </div>
+                    <div class = "gcm-linkdiv" id="gcm-link1">
+                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" id="gcm-linkimg1" title="linked" width="50px" height="20px">
 
-    {%  endif %}
+                    </div>
+                    <div class="gcm-gene" id="gcm-gene2" draggable="true">
+                    B
+                    </div>
+                    <div class="gcm-linkdiv" id="gcm-link2">
+                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" id="gcm-linkimg2" title="linked" width="50px" height="20px">
+                    </div>
+                    <div class="gcm-gene" id="gcm-gene3" draggable="true">
+                    C
+                    </div>
 
-<br>
- <p class="h5">
-     <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
-    Specify Phase (heterozygote), gene order, linkage and recombination fractions:
- </p>
-        <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
-    <br>
-    <br>
-    <div class="row">
-        <div class="col-3">
-            Gene order, parental phase, linkage:
+
+                </div>
+
+
+
+            </div>
+            <br>
+
+            <div class="row">
+                <div class="col-4">
+                    Recombination fractions:
+                </div>
+                <div class="col-8">
+                        <label for="rd1">ab</label><input id="rd1" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
+                        <label for="rd2">bc</label><input id = "rd2" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
+                    <label for="rd3">ac</label><input id="rd3" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
+                </div>
+            </div>
+
+        <div class="row">
+            <div class="col-sm-2">
+                <button name="show_answer" class="btn btn-primary" onclick="showAnswer();">Check Answer</button>
+            </div>
+
+            <div class="col-sm" id="answer_div" style="visibility:hidden">
+                  Linkage: <img id="tick_img_linkage" class ="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">  Gene order: <img id="tick_img_order" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Phase:  <img id="tick_img_phase" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Recombination fractions: <img id="tick_img_fractions" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">
+
+            </div>
+
         </div>
-        <div class="col-9">
-            <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
-                A
+        <div class="row">
+           <div class="col-sm-2">
+                <button name="cheat_answer"  style="visibility:hidden" id="cheatButton" class="btn btn-info mt-2" onclick="cheatAnswer();">Show Answer</button>
             </div>
-            <div class = "gcm-linkdiv" id="gcm-link1">
-                <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" id="gcm-linkimg1" title="linked" width="50px" height="20px">
-
-            </div>
-            <div class="gcm-gene" id="gcm-gene2" draggable="true">
-            B
-            </div>
-            <div class="gcm-linkdiv" id="gcm-link2">
-                <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" id="gcm-linkimg2" title="linked" width="50px" height="20px">
-            </div>
-            <div class="gcm-gene" id="gcm-gene3" draggable="true">
-            C
+            <div id="answer_div_ticks" style="visibility:hidden">
+                Answer:
+                    {{  org_het_phase }}
+                <br>Recombination fractions:
+                {%for phen_combs in recomb_fraction_list_with_p %}
+                     {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2 }})
+                {%  endfor %}
             </div>
         </div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="col-3">
-            Recombination fractions:
         </div>
-        <div class="col-9">
-            <label for="rd1">ab</label><input id="rd1" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
-            <label for="rd2">bc</label><input id = "rd2" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
-            <label for="rd3">ac</label><input id="rd3" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.00">
-        </div>
+
+            {%  endif %}
+            </div>
     </div>
-
-<div class="row">
-    <div class="col-sm-2">
-        <button name="show_answer" class="btn btn-primary" onclick="showAnswer();">Check</button>
-    </div>
-
-    <div class="col-sm" id="answer_div" style="visibility:hidden">
-          Linkage: <img id="tick_img_linkage" class ="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">  Gene order: <img id="tick_img_order" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Phase:  <img id="tick_img_phase" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Recombination fractions: <img id="tick_img_fractions" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">
-
-    </div>
-
 </div>
-<div class="row">
-   <div class="col-sm-2">
-        <button name="cheat_answer"  style="visibility:hidden" id="cheatButton" class="btn btn-info mt-2" onclick="cheatAnswer();">Show Answer</button>
-    </div>
-    <div id="answer_div_ticks" style="visibility:hidden">
-        Answer:
-            {{  org_het_phase }}
-        <br>Recombination fractions:
-        {%for phen_combs in recomb_fraction_list_with_p %}
-             {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2 }})
-        {%  endfor %}
-    </div>
-</div>
-</div>
-
-    {%  endif %}
-    </div>
 {%  endblock %}
 
 {%  block script %}
@@ -707,7 +841,7 @@ function setRDLinkSpan(el) {
               linkId = "gcm-link2";
           }
           lk = document.getElementById(linkId);
-          var m = el.value * 200;
+          var m = el.value * 50;
           setMargins(lk,m);
       }
 

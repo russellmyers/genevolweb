@@ -126,6 +126,71 @@ Breeders Equation
 {%  block show_graph %}
     function showGraph(pDiv) {
 
+       /* plotData = [{
+          x_data: [1, 100, 23],
+          y_data: [0, 0, 0],
+          type: 'scatter'
+        }];
+    */
+
+        var layout = {
+          xaxis: {
+            title: 'Phenotype averages',
+            showgrid: false,
+            zeroline: false
+            //range:[0,120]
+          },
+          yaxis: {
+
+            showgrid: false,
+            zeroline: true,
+            zerolinecolor: 'black',
+            zerolinewidth:3,
+            showticklabels: false,
+            range: [0,0]
+
+          },
+         annotations: [
+        {
+          x: plotData[0].x_data[0],
+          y: plotData[0].y_data[0],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-init-pop">Start<sub>av</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: -20
+        },
+        {
+          x: plotData[0].x_data[1],
+          y: plotData[0].y_data[1],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-final-pop">Selected<sub>av</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: -20
+        },
+
+        {
+          x: plotData[0].x_data[2],
+          y: plotData[0].y_data[2],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-final-pop">Response<sub>av</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: -40
+        }
+
+    ]
+
+        };
+        Plotly.newPlot(pDiv, plotData, layout);
+
 
     }
 {%  endblock show_graph %}

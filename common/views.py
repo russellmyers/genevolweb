@@ -3,7 +3,7 @@ from getools.popdist import PopDist
 from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm
+from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm
 from itertools import combinations
 from scipy.stats import chisquare
 import random
@@ -562,6 +562,8 @@ def cross_map(request):
                 genome_name = org_het.genome.genome_template.name
                 phen_descriptions = get_phen_descriptions(genome_name)
 
+                form = GCMSolverForm(initial=parental_gametes_het)
+
                 return render(request, "common/cross_map.html",
                               context={'genome_name':genome_name,'phen_descriptions': phen_descriptions, 'org_het_phase': org_het_phase,
                                        'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,
@@ -575,6 +577,7 @@ def cross_map(request):
                                        'parental_gametes_het': parental_gametes_het,
                                        'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
                                        'proposed': proposed,
+                                       'form': form,
                                        'parsed_order': parsed_order})
 
 
@@ -841,6 +844,8 @@ def cross_map(request):
     #                                'proposed' : proposed,
     #                                'parsed_order': parsed_order})
 
+    form = GCMSolverForm(initial=parental_gametes_het)
+
     return render(request, "common/cross_map.html",
                   context={'genome_name': genome_name, 'phen_descriptions': phen_descriptions,
                            'org_het_phase': org_het_phase,
@@ -854,6 +859,7 @@ def cross_map(request):
                            'parental_gametes_het': parental_gametes_het,
                            'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
                            'proposed': proposed,
+                           'form': form,
                            'parsed_order': parsed_order})
 
     #return render(request, "common/cross_map.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})

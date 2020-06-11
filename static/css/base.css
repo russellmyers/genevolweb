@@ -20,7 +20,7 @@
 
 .gcm-rdinput {
             margin-right: 10px;
-            width: 80px;
+            width: 70px;
 }
 
 #gcm-link1 {
@@ -48,6 +48,10 @@
 
 .narrow-select {
     width: 120px;
+}
+
+.very-narrow-select {
+    width: 60px;
 }
 
 .pc-pg-init-pop {
