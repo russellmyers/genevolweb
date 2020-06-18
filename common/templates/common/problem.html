@@ -170,11 +170,18 @@ function setTab(tabEl) {
 
 }
 
-function clearSolverForm(e) {
+function clearSolverForm(e, zeroise) {
+
+    var zeroise = zeroise  || false;
 
     var inputEls = document.getElementsByClassName('solver-input');
     for (var i = 0; i < inputEls.length; i += 1) {
-        inputEls[i].value = '';
+        if (zeroise) {
+            inputEls[i].value = '0';
+        }
+        else {
+            inputEls[i].value = '';
+        }
     }
 }
 

@@ -85,6 +85,17 @@ class GCMSolverForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(GCMSolverForm, self).clean()
+        tot_number = 0
+        for form_field in cleaned_data:
+            if cleaned_data[form_field] is None:
+                pass
+            elif form_field == 'answer_field':
+                pass
+            else:
+                tot_number += int(cleaned_data[form_field])
+        if tot_number == 0:
+            raise ValidationError("Please enter data")
+
         return cleaned_data
 
 

@@ -10,8 +10,6 @@ Test Cross Linkage
 {% endblock  %}
 
 {%  block problem_solver_leader %}
-{#    <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">#}
-{#        {% csrf_token %}#}
 
        <div class="container mt-2">
                     <div class="row">
@@ -21,18 +19,9 @@ Test Cross Linkage
                                     <button name="gamete_type" id="solverGameteBut" onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
                                     <button name="phenotype_type" id="solverPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
                                  </div>
-
-
-
-
-
-
-                    </div>
+                   </div>
         </div>
         <input type="hidden" name="pgAnswer" id="pgAnswer">
-{#    </form>#}
-
-
 
     <div class="container mt-4">
 
@@ -104,7 +93,6 @@ Test Cross Linkage
                             {{  form.non_field_errors }}
                           </div>
 
-{#           {%  if cross_type == 'g' %}#}
                <div id="solverGameteDiv" >
                      <div class="row form-group mt-4">
                           <!--div class = "col-md-1">
@@ -112,7 +100,7 @@ Test Cross Linkage
 
                          <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverABCTag">
+                                 <div class="col-md-6 text-md-right" id="solverABCTag">
                                      <b>{{ form.ABC.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -122,7 +110,7 @@ Test Cross Linkage
                           </div>
                           <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverABcTag">
+                                 <div class="col-md-6 text-md-right" id="solverABcTag">
                                      <b>{{ form.ABc.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -132,7 +120,7 @@ Test Cross Linkage
                           </div>
                         <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverAbCTag">
+                                 <div class="col-md-6 text-md-right" id="solverAbCTag">
                                      <b>{{ form.AbC.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -142,7 +130,7 @@ Test Cross Linkage
                           </div>
                           <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverAbcTag">
+                                 <div class="col-md-6 text-md-right" id="solverAbcTag">
                                      <b>{{ form.Abc.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -158,7 +146,7 @@ Test Cross Linkage
                           </div-->
                           <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solveraBCTag">
+                                 <div class="col-md-6 text-md-right" id="solveraBCTag">
                                      <b>{{ form.aBC.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -168,7 +156,7 @@ Test Cross Linkage
                           </div>
                           <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solveraBcTag">
+                                 <div class="col-md-6 text-md-right" id="solveraBcTag">
                                      <b>{{ form.aBc.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -178,7 +166,7 @@ Test Cross Linkage
                           </div>
                          <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverabCTag">
+                                 <div class="col-md-6 text-md-right" id="solverabCTag">
                                      <b>{{ form.abC.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -188,7 +176,7 @@ Test Cross Linkage
                           </div>
                           <div class="col-md-3">
                              <div class="row">
-                                 <div class="col-md-6" id="solverabcTag">
+                                 <div class="col-md-6 text-md-right" id="solverabcTag">
                                      <b>{{ form.abc.label_tag }}</b>
                                  </div>
                                  <div class = "col-md-6">
@@ -200,60 +188,8 @@ Test Cross Linkage
 
                      </div>
                </div>
-{#            {% endif %}#}
 
 
-{#            {%  if cross_type == 'p' %}#}
-{#                <div id="solverPhenotypeDiv">#}
-{##}
-{#                    <div class="row form-group mt-4">#}
-{#                          <!--div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something"  class="ml-4"> &nbsp;{{ form.ABC }}#}
-{#                             <!--/div>#}
-{#                          </div-->#}
-{#                          <!--div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.ABc }}#}
-{#                             <!--/div>#}
-{#                          </div-->#}
-{#                        <!--div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.AbC }}#}
-{#                             <!--/div>#}
-{#                          </div-->#}
-{#                          <!--div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.Abc }}#}
-{#                             <!--/div>#}
-{#                          </div-->#}
-{##}
-{##}
-{#                    </div>#}
-{#                    <div class="row form-group mt-4">#}
-{#                          <!--div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4" > &nbsp;{{ form.aBC }}#}
-{#                             <!--/div>#}
-{#                          </div>#}
-{#                          <div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.aBc }}#}
-{#                             <!--/div>#}
-{#                          </div>#}
-{#                        <div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.abC }}#}
-{#                             <!--/div>#}
-{#                          </div>#}
-{#                          <div class="col-md-3">#}
-{#                             <div class="row"-->#}
-{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.abc }}#}
-{#                             <!--/div>#}
-{#                          </div-->#}
-{##}
-{##}
-{#                    </div>#}
 
     {#                {% for key, value in proposed.phenotypes.items %}#}
     {#                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
@@ -263,25 +199,9 @@ Test Cross Linkage
     {#                      {%  endif %}#}
     {##}
     {#                {%  endfor %}#}
-    {#            {%  else %}#}
-            {#        {% for key,item in parental_gametes_het.items %}#}
-            {#            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
-            {#            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;#}
-            {#             {%  if row == '4th' %}#}
-            {#                  <br>#}
-            {#            {%  endif %}#}
-            {#        {% endfor %}#}
-            {#        <br>#}
                 </div>
-
-
-{#            {%  endif %}#}
-
-
-
-
                            <input class="btn btn-primary" name="solverSubmit" type="submit" value="Calculate">
-                           <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+                           <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearGCMSolverForm(event)">
 
                 {{ form.answer_field }}
         </form>
@@ -305,8 +225,6 @@ Test Cross Linkage
 {%  endblock problem_generator_answer_column_size %}
 
 {%  block problem_generator_leader %}
-{#    <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">#}
-{#        {% csrf_token %}#}
 
        <div class="container mt-2">
                     <div class="row">
@@ -320,18 +238,9 @@ Test Cross Linkage
                                     <button name="gamete_type_generator" id="generatorGameteBut"  onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
                                     <button name="phenotype_type_generator" id="generatorPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
                                  </div>
-
-
-
-
-
-
                     </div>
         </div>
          <input type="hidden" id="pgAnswer" name="pgAnswer" value="3487">
-{#    </form>#}
-
-
 
     <div class="container mt-1">
 
@@ -395,47 +304,46 @@ Test Cross Linkage
                 {%  endif %}
             </p>
 
-{#             {%  if cross_type == 'g' %}#}
                  <div class="row form-group mt-4">
-                      <div class = "col-md-1">
-                      </div>
+                      <!--div class = "col-md-1">
+                      </div-->
 
-                     <div class="col-md-2">
+                     <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorABCTag">
+                             <div class="col-md-6 text-md-right" id="generatorABCTag">
                                  <b>{{ form.ABC.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.ABC }}
                              </div>
                          </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorABcTag">
+                             <div class="col-md-6 text-md-right" id="generatorABcTag">
                                  <b>{{ form.ABc.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.ABc }}
                              </div>
                          </div>
                       </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorAbCTag">
+                             <div class="col-md-6 text-md-right" id="generatorAbCTag">
                                  <b>{{ form.AbC.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.AbC }}
                              </div>
                          </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorAbcTag">
+                             <div class="col-md-6 text-md-right" id="generatorAbcTag">
                                  <b>{{ form.Abc.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.Abc }}
                              </div>
                          </div>
@@ -444,44 +352,44 @@ Test Cross Linkage
 
                   </div>
                  <div class="row form-group">
-                      <div class = "col-md-1">
-                      </div>
-                      <div class="col-md-2">
+                      <!--div class = "col-md-1">
+                      </div-->
+                      <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatoraBCTag">
+                             <div class="col-md-6 text-md-right" id="generatoraBCTag">
                                  <b>{{ form.aBC.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.aBC }}
                              </div>
                          </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatoraBcTag">
+                             <div class="col-md-6 text-md-right" id="generatoraBcTag">
                                  <b>{{ form.aBc.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.aBc }}
                              </div>
                          </div>
                       </div>
-                     <div class="col-md-2">
+                     <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorabCTag">
+                             <div class="col-md-6 text-md-right" id="generatorabCTag">
                                  <b>{{ form.abC.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.abC }}
                              </div>
                          </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-3">
                          <div class="row">
-                             <div class="col-md-4" id="generatorabcTag">
+                             <div class="col-md-6 text-md-right" id="generatorabcTag">
                                  <b>{{ form.abc.label_tag }}</b>
                              </div>
-                             <div class = "col-md-7">
+                             <div class = "col-md-6">
                               {{ form.abc }}
                              </div>
                          </div>
@@ -489,32 +397,6 @@ Test Cross Linkage
 
 
                  </div>
-{#            {% endif %}#}
-
-
-{#            {%  if cross_type == 'p' %}#}
-{##}
-{#                {% for key, values in children_phenotypes.items %}#}
-{#                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
-{#                      <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;#}
-{#                      {%  if row == '4th' %}#}
-{#                          <br>#}
-{#                      {%  endif %}#}
-{##}
-{#                {%  endfor %}#}
-{#            {%  else %}#}
-        {#        {% for key,item in parental_gametes_het.items %}#}
-        {#            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
-        {#            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;#}
-        {#             {%  if row == '4th' %}#}
-        {#                  <br>#}
-        {#            {%  endif %}#}
-        {#        {% endfor %}#}
-        {#        <br>#}
-{##}
-{##}
-{#            {%  endif %}#}
-
 
         <br>
         </div>
@@ -541,7 +423,7 @@ Test Cross Linkage
 {%  block answer_below %}
 
     {%  if show_answer_div_below %}
-        <div class = "container">
+        <div class = "container" id="answerDivBelow">
                {%  if default_tab == 1 %}
                         <p class="h5" ondragstart="return false;">
                              <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
@@ -642,80 +524,6 @@ Test Cross Linkage
 
  {%  block show_graph %}
     function showGraph(pDiv) {
-
-    var lineType;
-
-    lineType = 'solid';
-
-    dataList = [];
-    markerColors = ['green','blue','orange','yellow','red','black','purple'];
-
-    for (i = 0;i < plotData.length; ++i) {
-        var trace = {
-          x: plotData[i].x_data,
-          y: plotData[i].y_data,
-          {#mode: 'markers',#}
-          type: 'line',
-          name: 'Run ' + (i+1),
-          marker: {color: markerColors[i % markerColors.length]}
-      };
-      dataList.push(trace);
-    }
-
-
-    var layout = {
-      /*xaxis: {
-        range: [ 0, xLimit ]
-      },
-      yaxis: {
-        range: [0, 1]
-      },
-      */
-      xaxis: {
-          title: 'Time in years(<span class="pc-pg-time">t</span>)'
-      },
-      yaxis: {
-          title: "Population size"
-      },
-      annotations: [
-        {
-          x: plotData[0].x_data[0],
-          y: plotData[0].y_data[0],
-          xref: 'x',
-          yref: 'y',
-          text: '<b><span class="pc-pg-init-pop">N<sub>0</sub></span></b>',
-          showarrow: true,
-          arrowhead: 7,
-          ax: 20,
-          ay: -20
-        },
-        {
-          x: plotData[0].x_data[plotData[0].x_data.length - 1],
-          y: plotData[0].y_data[plotData[0].y_data.length - 1],
-          xref: 'x',
-          yref: 'y',
-          text: '<b><span class="pc-pg-final-pop">N<sub>t</sub></span></b>',
-          showarrow: true,
-          arrowhead: 7,
-          ax: 20,
-          ay: 20
-        },
-            {
-          x: plotData[0].x_data[plotData[0].x_data.length - 1],
-          y: plotData[0].y_data[plotData[0].y_data.length - 1],
-          xref: 'x',
-          yref: 'y',
-          text: '<b><span class="pc-pg-final-pop">N<sub>t</sub></span></b>',
-          showarrow: true,
-          arrowhead: 7,
-          ax: 20,
-          ay: 20
-        }
-     ],
-      title:"Population Growth"
-    };
-
-    Plotly.newPlot(pDiv, dataList, layout);
 
     }
 {%  endblock show_graph %}
@@ -1086,6 +894,26 @@ function setTitles() {
 
 }
 
+function clearGCMSolverForm(e) {
+
+    answerDivBelow = document.getElementById('answerDivBelow');
+
+    if (typeof (answerDivBelow) != 'undefined' && answerDivBelow != null) {
+        answerDivBelow.style.visibility = 'hidden';
+    }
+
+    if (defaultTab == 0) {
+        ansDivTicksEl = document.getElementById('answer_div_ticks');
+
+        if (typeof(ansDivTicksEl) != 'undefined' && ansDivTicksEl != null) {
+            ansDivTicksEl.style.visibility = 'hidden';
+        }
+    }
+
+    clearSolverForm(e, true);
+}
+
+
 
 function isGene(el) {
     if (el == null) {
@@ -1106,6 +934,7 @@ function isGene(el) {
     if (!isGene(e.target)) {
         return;
     }
+
 
     e.target.style.opacity = '0.4';  // this / e.target is the source node.
     //dragSrcEl = this;
@@ -1318,14 +1147,14 @@ function toggleLink(el) {
          phenotypeBut.classList.remove('btn-primary');
          phenotypeBut.classList.remove('active');
          phenotypeBut.classList.add('btn-outline-secondary');
-         document.getElementById(tagPrefix + 'ABCTag').innerHTML = '{{ form.ABC.label_tag }}';
-         document.getElementById(tagPrefix + 'ABcTag').innerHTML = '{{ form.ABc.label_tag }}';
-         document.getElementById(tagPrefix + 'AbCTag').innerHTML = '{{ form.AbC.label_tag }}';
-         document.getElementById(tagPrefix + 'AbcTag').innerHTML =  '{{ form.Abc.label_tag }}';
-         document.getElementById(tagPrefix + 'aBCTag').innerHTML =  '{{ form.aBC.label_tag }}';
-         document.getElementById(tagPrefix + 'aBcTag').innerHTML =  '{{ form.aBc.label_tag }}';
-         document.getElementById(tagPrefix + 'abCTag').innerHTML =  '{{ form.abC.label_tag }}';
-         document.getElementById(tagPrefix + 'abcTag').innerHTML = '{{ form.abc.label_tag }}';
+         document.getElementById(tagPrefix + 'ABCTag').innerHTML = '<b>{{ form.ABC.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'ABcTag').innerHTML = '<b>{{ form.ABc.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'AbCTag').innerHTML = '<b>{{ form.AbC.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'AbcTag').innerHTML =  '<b>{{ form.Abc.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'aBCTag').innerHTML =  '<b>{{ form.aBC.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'aBcTag').innerHTML =  '<b>{{ form.aBc.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'abCTag').innerHTML =  '<b>{{ form.abC.label_tag }}</b>';
+         document.getElementById(tagPrefix + 'abcTag').innerHTML = '<b>{{ form.abc.label_tag }}</b>';
          if (defaultTab == 0) {
              document.getElementById('solverHeader').innerHTML = '<b>Enter number of gametes observed from Heterozygote:</b>';
          }
@@ -1368,7 +1197,7 @@ function toggleLink(el) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-     document.getElementById("demo").innerHTML = this.responseText;
+     // done
     }
   };
   xhttp.open("GET", "{%  url 'gcm_update_type' %}?cross-type=" + crossType, true);
@@ -1376,25 +1205,29 @@ function toggleLink(el) {
  }
 
 
-  var linkimgs = document.getElementsByClassName("gcm-linkimg");
-  for (var i = 0; i < linkimgs.length; i++) {
-      linkimgs[i].addEventListener('dblclick',handleLinkDoubleClick,false);
-  }
+ typeClicked("{{ cross_type }}");
 
-  var genes = document.getElementsByClassName("gcm-gene");
-  for (var i = 0; i < genes.length; i++) {
-      genes[i].addEventListener('dragstart', handleDragStart, false);
-      genes[i].addEventListener('dragend', handleDragEnd, false);
-      genes[i].addEventListener('dragover', handleDragOver, false);
-      genes[i].addEventListener('dragenter', handleDragEnter, false);
-      genes[i].addEventListener('dragleave', handleDragLeave, false);
-      genes[i].addEventListener('drop', handleDrop, false);
-      genes[i].addEventListener('dblclick', handleDoubleClick, false);
-  }
+  if (defaultTab == 1) {
+      var linkimgs = document.getElementsByClassName("gcm-linkimg");
+      for (var i = 0; i < linkimgs.length; i++) {
+          linkimgs[i].addEventListener('dblclick', handleLinkDoubleClick, false);
+      }
 
-  var rdinputs = document.getElementsByClassName("gcm-rdinput");
-  for (var i = 0; i < rdinputs.length; i++)  {
-      rdinputs[i].addEventListener('change', handleRDChange, false);
+      var genes = document.getElementsByClassName("gcm-gene");
+      for (var i = 0; i < genes.length; i++) {
+          genes[i].addEventListener('dragstart', handleDragStart, false);
+          genes[i].addEventListener('dragend', handleDragEnd, false);
+          genes[i].addEventListener('dragover', handleDragOver, false);
+          genes[i].addEventListener('dragenter', handleDragEnter, false);
+          genes[i].addEventListener('dragleave', handleDragLeave, false);
+          genes[i].addEventListener('drop', handleDrop, false);
+          genes[i].addEventListener('dblclick', handleDoubleClick, false);
+      }
+
+      var rdinputs = document.getElementsByClassName("gcm-rdinput");
+      for (var i = 0; i < rdinputs.length; i++) {
+          rdinputs[i].addEventListener('change', handleRDChange, false);
+      }
   }
 
 
@@ -1413,8 +1246,13 @@ if (typeof(ansField) != 'undefined' && ansField != null)
     document.getElementById('pgAnswer').value = ansField.value;
 
 if (defaultTab == 0) {
-    document.getElementById('answer_div_ticks').style.visibility = 'visible';
+    ansDivTicksEl = document.getElementById('answer_div_ticks');
+
+    if (typeof(ansDivTicksEl) != 'undefined' && ansDivTicksEl != null) {
+        ansDivTicksEl.style.visibility = 'visible';
+    }
 }
+
 
 </script>
 
