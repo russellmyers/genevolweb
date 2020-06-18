@@ -4,6 +4,7 @@ import itertools
 
 debug = 0
 from getools.gen import SerialiserMixin
+from scipy.stats import chisquare
 
 class Allele(SerialiserMixin):
 
@@ -266,6 +267,8 @@ class GenomeTemplate(SerialiserMixin):
         for chromosome in self.chromosomes:
             chrom_pairs.append(chromosome.generate_het_pair(self.ploidy,rand_phase=rand_phase))
         return Genome(self,chrom_pairs)
+
+
 
 class Chromosome(SerialiserMixin):
     def __init__(self,chromosome_template,alleles):
@@ -887,6 +890,12 @@ class Genome(SerialiserMixin):
                 return Genome.MALE
         return Genome.FEMALE
 
+    @staticmethod
+    def test_cross_het_gametes_to_phenotypes(het_gametes=['ABC','ABc', 'AbC', 'Abc', 'aBC', 'aBc', 'abC', 'abc']):
+       phenotypes = {gamete: ''.join([ch + '+' if ch.isupper() else ch + '-' for ch in gamete]) for gamete in het_gametes}
+       return phenotypes
+
+
 class Organism(SerialiserMixin):
     def __init__(self,genome):
        self.genome = genome
@@ -910,6 +919,126 @@ class Organism(SerialiserMixin):
     def organism_with_het_genotype(genome_template,rand_phase=False):
         genome = genome_template.generate_het_genome(rand_phase=rand_phase)
         return Organism(genome)
+
+
+    @staticmethod
+    def calc_recombination_fractions(gametes):
+        sorted_gametes = sorted(gametes.items(), key=lambda x: x[1], reverse=True)
+        print(sorted_gametes)
+        parentals = [sorted_gametes[0][0],sorted_gametes[1][0] ]
+        double_recombinations = [sorted_gametes[-2][0],sorted_gametes[-1][0] ]
+        print('parentals', parentals)
+        print('double recombs',double_recombinations)
+
+        diffs = []
+        sames = []
+        for i, ch in enumerate(parentals[0]):
+            if ch == double_recombinations[0][i]:
+               sames.append(ch)
+            else:
+               diffs.append(ch)
+        middle_gene = sames[0] if len(sames) == 1 else diffs[0]
+        print('middle: ', middle_gene)
+
+        outer_genes = []
+        for i, ch in enumerate(parentals[0]):
+             if ch == middle_gene:
+                 pass
+             else:
+                 outer_genes.append(ch)
+        parental_ordered = outer_genes[0] + middle_gene + outer_genes[1]
+        print('parental ordered: ', parental_ordered)
+        parental_other_ordered = parental_ordered.swapcase()
+        print('parental other ordered: ', parental_other_ordered)
+
+        def get_pair(item, ind1, ind2):
+            return item[ind1] + item[ind2]
+
+
+
+        # for phen_combs in phen_combinations_per_pair:
+        #     observed = [count for key, count in phen_combs.items()]
+        #     chisq, p = chisquare(observed, ddof=1)
+        #     phen_combs['abbrev'] = list(phen_combs.keys())[0].replace('+', '')
+        #     phen_combs['abbrev'] = phen_combs['abbrev'].replace('-', '')
+        #     phen_combs['p'] = '{:.2e}'.format(p)
+
+        recombination_counts = [0,0,0]
+        tot_gametes = 0
+
+        for gamete, count in gametes.items():
+            tot_gametes+= count
+            all_pair_inds = [[0,1],[1,2],[0,2]]
+            for i, pair_inds in enumerate(all_pair_inds):
+                gamete_pair = get_pair(gamete, pair_inds[0],pair_inds[1])
+                parental_pair = get_pair(parentals[0], pair_inds[0],pair_inds[1])
+                if (gamete_pair == parental_pair) or (gamete_pair == parental_pair.swapcase()):
+                    pass
+                else:
+                    recombination_counts[i] += count
+
+        p_values = []
+        for count in recombination_counts:
+            chisq, p = chisquare([count, tot_gametes - count], ddof = 0)
+            p_values.append(p)
+
+        recombination_pairs = ['ab', 'bc', 'ac']
+
+        recombination_fractions = [[recombination_pairs[i],count / tot_gametes, "{0:.3e}".format(p_values[i])] for i, count in enumerate(recombination_counts)]
+
+
+        recombination_indexes = [recombination_pairs.index(''.join(sorted(parental_ordered[:2].lower()))), recombination_pairs.index(''.join(sorted(parental_ordered[1:3].lower()) ))]
+        linkages = ['L' if p_values[i] < 0.04 else 'U' for i in recombination_indexes]
+
+        if linkages[0] == 'U' and linkages[1] == 'U':
+            parental_ordered = 'ABC'
+            parental_ordered_formatted = ';'.join([ch.upper() + '//' + ch.lower() for ch in parental_ordered])
+        elif  linkages[0] == 'U' and linkages[1] == 'L':
+            linked_part = parental_ordered[1:3]
+            linked_part_list = list(linked_part)
+            linked_part_list.sort(key=lambda x: x.upper())
+            linked_part = ''.join(linked_part_list)
+            if linked_part[0].islower():
+                linked_part = linked_part.swapcase()
+            unlinked_part = parental_ordered[0]
+            if unlinked_part.islower():
+                unlinked_part = unlinked_part.swapcase()
+            parental_ordered = unlinked_part + linked_part
+            parental_ordered_formatted = ';'.join([unlinked_part + '//' + unlinked_part.swapcase(),linked_part + '//' + linked_part.swapcase()])
+        elif   linkages[0] == 'L' and linkages[1] == 'U':
+            linked_part = parental_ordered[0:2]
+            linked_part_list = list(linked_part)
+            linked_part_list.sort(key=lambda x: x.upper())
+            linked_part = ''.join(linked_part_list)
+            if linked_part[0].islower():
+                linked_part = linked_part.swapcase()
+            unlinked_part = parental_ordered[2]
+            if unlinked_part.islower():
+                unlinked_part = unlinked_part.swapcase()
+            parental_ordered = linked_part + unlinked_part
+            parental_ordered_formatted = ';'.join([ linked_part + '//' + linked_part.swapcase(),unlinked_part + '//' + unlinked_part.swapcase()])
+        else:
+            if (parental_ordered[0].upper() > parental_ordered[2].upper()):
+                parental_ordered = parental_ordered[2] + parental_ordered[1] + parental_ordered[0]
+            if parental_ordered[0].islower():
+               parental_ordered = parental_ordered.swapcase()
+            parental_ordered_formatted = parental_ordered + '//' + parental_ordered.swapcase()
+
+        for linkage in linkages:
+            if linkage == 'U':
+                pass
+
+
+        return {'parentals': parentals, 'double_recombinations': double_recombinations, 'parental_ordered':parental_ordered, 'parental_ordered_formatted': parental_ordered_formatted, 'middle_gene': middle_gene,
+                'recombination_fractions': recombination_fractions, 'p_values': p_values, 'linkages': ''.join(linkages), 'phenotypes': Genome.test_cross_het_gametes_to_phenotypes(gametes.keys())}
+
+    @staticmethod
+    def organism_from_gametes(gametes):
+        fractions = Organism.calc_recombination_fractions(gametes)
+
+        #genome = genome_template.generate_genome_from_gametes(gametes)
+        #return Organism(genome)
+        
 
     def mate(self,other_org):
         new_genome = self.genome.mate(other_org.genome)
@@ -955,6 +1084,10 @@ class Organism(SerialiserMixin):
 
 if __name__ == '__main__':
     debug = 0
+
+    phens = Genome.test_cross_het_gametes_to_phenotypes(['ABC', 'ABc'])
+
+    org = Organism.organism_from_gametes({'ABC':37,'ABc':378,'AbC':10, 'Abc':100,'aBC':88,'aBc':7, 'abC': 344,'abc':36})
     #a1 = Allele('A')
     #a2 = Allele('a')
     alleles_a = AlleleSet.default_alleleset_from_symbol('A')

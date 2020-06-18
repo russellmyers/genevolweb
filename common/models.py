@@ -1,8 +1,10 @@
 from django.db import models
+import json
 
-from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm
+from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm
 import random
 import math
+from getools.cross import Organism, Genome
 
 # Create your models here.
 
@@ -377,3 +379,113 @@ class BreedersEquationProblem(Problem):
                    form.fields[param].initial = request.GET.get(param,None)
         return form
 
+class TestCrossLinkageProblem(Problem):
+
+    ranges = {'ABC': [1, 1000], 'ABc': [1, 1000], 'AbC': [1, 1000], 'Abc': [1, 1000],
+              'aBC': [1, 1000], 'aBc': [1, 1000], 'abC': [1, 1000], 'abc': [1, 1000]}
+
+    def __init__(self, solver_form):
+
+        super().__init__('Test Cross Linkage', solver_form, ranges=TestCrossLinkageProblem.ranges)
+
+    def solve(self):
+        pass
+
+    def generate(self):
+        pass
+
+
+    def calc(self, values):
+
+        return -1
+
+    def calc_missing(self):
+        gametes = {}
+        for field in self.solver_form.cleaned_data:
+            if field in self.ranges:
+                gametes[field] = self.solver_form.cleaned_data[field]
+
+        answer = Organism.calc_recombination_fractions(gametes)
+        return answer
+
+    def pick_field(self):
+        num_fields = len(self.ranges)
+        r = random.randint(0, num_fields - 1)
+        picked_field = list(self.ranges.keys())[r]
+        values = {}
+
+        satisfactory = False
+        while not satisfactory:
+            for field in self.ranges:
+                if isinstance(self.ranges[field][0], int):
+                    r = random.randint(self.ranges[field][0], self.ranges[field][1])
+                else:
+                    r = random.uniform(self.ranges[field][0], self.ranges[field][1])
+                    r = round(r, 2)
+
+                values[field] = r
+                self.solver_form.fields[field].initial = r
+                # form.fields[field].disabled = True
+                self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+            answer = self.calc(values)
+            if (1 == 1):
+                satisfactory = True
+        return picked_field, values
+
+
+    def check_answer(self):
+        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form  = self.solver_form
+        values = {}
+        for field in self.ranges:
+            values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+        correct_answer_title = ''
+        for field in self.ranges:
+            if field == form.cleaned_data['answer_field']:
+                correct_answer_title = form.fields[field].label
+            else:
+                form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+
+        correct_answer = self.calc(values)
+        correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+
+        supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
+
+        correct_flag = False
+        if form.cleaned_data['answer_field'] == 'growth_rate':
+            if abs(correct_answer - supplied_answer) < 0.01:
+                correct_flag = True
+        else:
+            if abs(correct_answer - supplied_answer) < 1:
+                correct_flag = True
+
+        plot_data = self.generate_plot_data(correct_answer=correct_answer)
+
+        return correct_answer, correct_answer_rounded, correct_answer_title, correct_flag, plot_data
+
+    def generate_plot_data(self, correct_answer=None):
+
+        plot_data = []
+        return plot_data
+
+    def set_fields_from_gametes(self, gametes):
+        for gamete in gametes:
+            self.solver_form.fields[gamete].widget.attrs.update({'readonly': 'readonly'})
+
+        pass
+
+    @staticmethod
+    def create_solver_form_from_query_params(request, post=False):
+        if post:
+            form = GCMSolverForm(request.POST)
+        else:
+            form = GCMSolverForm()
+            for key in TestCrossLinkageProblem.ranges:
+                form.fields[key].initial = '0'
+
+            for param in request.GET:
+                if param in form.fields:
+                   form.fields[param].initial = request.GET.get(param,None)
+
+            form.fields['answer_field'].initial = json.dumps({'phenotypes': Genome.test_cross_het_gametes_to_phenotypes()})
+        return form

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from getools.popdist import PopDist
-from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet
+from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet, Genome
 import plotly.graph_objs as go
 import plotly
 from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm
@@ -8,7 +8,19 @@ from itertools import combinations
 from scipy.stats import chisquare
 import random
 import math
-from .models import PopGrowthProblem, BreedersEquationProblem
+from .models import PopGrowthProblem, BreedersEquationProblem, TestCrossLinkageProblem
+import json
+from django.http import JsonResponse
+
+import logging
+logger = logging.getLogger(__name__)
+logger.debug('Test debug') # <-- This should get logged to my RotatingFileHandler that I setup in `settings.py`!
+logger.info('Test info')
+logger.warning('Test warning')
+logger.error('Test error')
+logger.critical('Test critical')
+
+
 
 def index(request):
     print('home page')
@@ -294,11 +306,11 @@ def children_stats(children):
 
     phen_combinations_per_pair = [{} for i in range(len(comb_list))]
     for phenotype, count in phenotypes.items():
-        print(phenotype, count)
+        #print(phenotype, count)
         for i, comb in enumerate(comb_list):
-            print(comb)
+            #print(comb)
             phen_comb = phenotype[comb[0] * 2:comb[0] * 2 + 2] + phenotype[comb[1] * 2:comb[1] * 2 + 2]
-            print(phen_comb)
+            #print(phen_comb)
             if phen_comb in phen_combinations:
                 phen_combinations[phen_comb] += count
             else:
@@ -316,7 +328,7 @@ def children_stats(children):
         phen_combs['abbrev'] = phen_combs['abbrev'].replace('-','')
         phen_combs['p'] = '{:.2e}'.format(p)
 
-    print(phen_combinations)
+    #print(phen_combinations)
     phen_combinations_list = [(key, count) for key, count in phen_combinations.items()]
     phen_combinations_list.sort(key=lambda x: x[1])
 
@@ -337,7 +349,7 @@ def children_stats(children):
             else:
                 pairs_cis[alleles] = count
 
-    print(pairs_cis)
+    #print(pairs_cis)
 
     pairs_list = [(key, count) for key, count in pairs_cis.items()]
     pairs_list = [[pair[0], pair[1]] if pair[1] < num_samples / 2 else [pair[0], num_samples - pair[1]] for pair in
@@ -377,6 +389,7 @@ def children_stats(children):
         else:
             gamete_counts_het[gamete] = 1
 
+    logger.debug('gcm Gamete counts het' + str(gamete_counts_het))
     return phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, gamete_counts_het, recomb_fraction_list_with_p
 
 def create_children(org_het, org_hom_rec, num_samples=1000):
@@ -432,7 +445,7 @@ def generate_positions(positions_in):
 
     return positions
 
-def create_genome_template(request, positions_in = 'rand', chroms_in='rand', genome_names = ['dog','fish','pea']):
+def create_genome_template(request, positions_in = 'rand', chroms_in='rand', genome_names = ['dog','fish','pea'], use_specific_genome_name = None):
     positions = generate_positions(positions_in)
 
     lowest_pos_index = positions.index(min(positions))
@@ -487,11 +500,15 @@ def create_genome_template(request, positions_in = 'rand', chroms_in='rand', gen
         chrom_list.append(chr3)
 
     # chr2 = ChromosomeTemplate('XR',2000,[g3])
-    r = random.randint(0, len(genome_names) - 1)
-    genome_name = genome_names[r]
-    if genome_name == 'pea':  # make little less likely to generate pea
+    if use_specific_genome_name is None:
+        # get random genome name
         r = random.randint(0, len(genome_names) - 1)
         genome_name = genome_names[r]
+        if genome_name == 'pea':  # make little less likely to generate pea
+            r = random.randint(0, len(genome_names) - 1)
+            genome_name = genome_names[r]
+    else:
+        genome_name = use_specific_genome_name
 
     gt = GenomeTemplate(ploidy=2, chromosomes=chrom_list, name=genome_name)
 
@@ -517,7 +534,24 @@ def parse_het_phase(request, phase):
     return {'order': first, 'linkage': linkage }
 
 
+def gcm_update_type(request):
+    cross_type = request.GET.get('cross-type','g')
+    request.session['gcm_cross_type'] = cross_type
+    logger.debug('gcm cross type updated via ajax:' + cross_type)
+    return JsonResponse(status=200, data={'Updated ok':cross_type})
+
+
 def cross_map(request):
+
+    logger.debug('In cross_map')
+
+    tab_requested = request.GET.get('tab', 'solver-tab')
+
+    default_tab = 0 if tab_requested == 'solver-tab' else 1
+
+    genome_name_requested = request.GET.get('genome-name', None)
+
+    context = {}
 
     genome_names = ['dog','fish','pea']
 
@@ -542,12 +576,21 @@ def cross_map(request):
         except Exception as e:
                 print('No organisms in session',e)
 
-        if ('phenotype_type' in request.POST) or ('gamete_type' in request.POST):
-            if 'phenotype_type' in request.POST:
+        if ('phenotype_type' in request.POST) or ('gamete_type' in request.POST) or ('phenotype_type_generator' in request.POST) or ('gamete_type_generator' in request.POST):
+            x = 1
+            if ('phenotype_type' in request.POST) or ('phenotype_type_generator') in request.POST:
                 cross_type = 'p'
-            elif 'gamete_type' in request.POST:
+            elif ('gamete_type' in request.POST) or ('gamete_type_generator' in request.POST):
                 cross_type = 'g'
             request.session['gcm_cross_type'] = cross_type
+            if ('phenotype_type_generator' in request.POST) or ('gamete_type_generator' in request.POST):
+                default_tab = 1
+                show_answer_div_below = True
+            else:
+                default_tab = 0
+                show_answer_div_below = False
+
+            ans = request.POST.get("pgAnswer", None)
 
             try:
                 children_list = request.session['gcm_children']
@@ -562,7 +605,12 @@ def cross_map(request):
                 genome_name = org_het.genome.genome_template.name
                 phen_descriptions = get_phen_descriptions(genome_name)
 
-                form = GCMSolverForm(initial=parental_gametes_het)
+
+                #form = GCMSolverForm(initial=parental_gametes_het)
+                tcl = TestCrossLinkageProblem(TestCrossLinkageProblem.create_solver_form_from_query_params(request, post=True))
+                form = tcl.solver_form
+                proposed = json.loads(ans)
+
 
                 return render(request, "common/cross_map.html",
                               context={'genome_name':genome_name,'phen_descriptions': phen_descriptions, 'org_het_phase': org_het_phase,
@@ -578,7 +626,10 @@ def cross_map(request):
                                        'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
                                        'proposed': proposed,
                                        'form': form,
-                                       'parsed_order': parsed_order})
+                                       'show_answer_div_below': show_answer_div_below,
+                                       'parsed_order': parsed_order,
+                                       'default_tab': default_tab
+                                       })
 
 
             except:
@@ -589,43 +640,93 @@ def cross_map(request):
 
 
         else:  ## cross post
-            cross_type = request.session.get('gcm_cross_type', 'g')
-            children = create_children(org_het, org_hom_rec, num_samples=num_samples)
+            if   'solverSubmit' in request.POST:
+                default_tab = 0
+                tcl = TestCrossLinkageProblem(TestCrossLinkageProblem.create_solver_form_from_query_params(request, post=True))
+                form = tcl.solver_form
+                if form.is_valid():
+                    context['default_tab'] = default_tab
+                    context['form'] = form
+                    ans = tcl.calc_missing()
+                    context['answer'] = ans
+                    proposed = {}
+                    proposed['order'] = ans['parental_ordered']
+                    proposed['rd1'] = ans['recombination_fractions'][0][1]
+                    proposed['rd2'] = ans['recombination_fractions'][1][1]
+                    proposed['rd3'] = ans['recombination_fractions'][2][1]
+                    proposed['linkage'] = ans['linkages']
+                    proposed['phenotypes'] = ans['phenotypes']
+                    context['proposed'] = proposed
+                    tcl.solver_form.data = tcl.solver_form.data.copy()
+                    tcl.solver_form.data['answer_field'] = json.dumps(proposed)
 
-            phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(children)
-            show_cross = True
-            org_het_phase = org_het.genome.get_phase(alpha_sort=True)
-            parsed_order  = parse_het_phase(request, org_het_phase)
+                    context['recomb_fraction_list_with_p'] = ans['recombination_fractions']
+                    context['org_het_phase'] = ans['parental_ordered_formatted']
 
-            positions = org_het.genome.genome_template.positions()
+                    context['show_answer_div_below'] = True
 
-            child_list = [child._to_attr_dict() for child in children]
-            request.session['gcm_children'] = child_list
+                    genome_name = org_het.genome.genome_template.name
+                    phen_descriptions = get_phen_descriptions(genome_name)
+                    context['org1'] =org_het
+                    context['org1_phen'] = org_het.genome.phenotype()
+                    context['org2'] = org_hom_rec
+                    context['org2_phen'] = org_hom_rec.genome.phenotype()
+                    context['genome_name'] = genome_name
+                    context['phen_descriptions'] = phen_descriptions
+
+                    cross_type = request.session.get('gcm_cross_type', 'g')
+                    context['cross_type'] = cross_type
+
+                    #context['answer_title'], missing_field = tcl.missing_field()
+                    #tcl.set_missing_field_in_form(missing_field, ans)
+                    #context['plot_data'] = tcl.generate_plot_data(correct_answer=ans)
+                    return render(request, "common/cross_map.html", context=context)
+                else:
+                    print('solver form not valid')
+
+            else:
+                default_tab = 1
+                context['default_tab'] = default_tab
+                cross_type = request.session.get('gcm_cross_type', 'g')
+                children = create_children(org_het, org_hom_rec, num_samples=num_samples)
+
+                phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(children)
+                show_cross = True
+                org_het_phase = org_het.genome.get_phase(alpha_sort=True)
+                parsed_order  = parse_het_phase(request, org_het_phase)
+
+                positions = org_het.genome.genome_template.positions()
+
+                child_list = [child._to_attr_dict() for child in children]
+                request.session['gcm_children'] = child_list
+
+                genome_name = org_het.genome.genome_template.name
+                phen_descriptions = get_phen_descriptions(genome_name)
+
+                return render(request, "common/cross_map.html",
+                              context={'genome_name': genome_name,'phen_descriptions': phen_descriptions, 'org_het_phase': org_het_phase,
+                                       'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,
+                                       'positions': positions, 'chroms_in': chroms_in, 'org1': org_het,
+                                       'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
+                                       'org2_phen': org_hom_rec.genome.phenotype(), 'children_phenotypes': phenotypes,
+                                       'pairs_cis': pairs_cis, 'dists': dists, 'parentals': parentals,
+                                       'double_crossovers': double_crossovers, 'recomb_fraction_list': recomb_fraction_list,
+                                       'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair, 'parental_gametes_het': parental_gametes_het,
+                                       'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
+                                       'proposed': proposed,
+                                       'parsed_order': parsed_order,
+                                       'default_tab': default_tab})
 
             genome_name = org_het.genome.genome_template.name
             phen_descriptions = get_phen_descriptions(genome_name)
-
-            return render(request, "common/cross_map.html",
-                          context={'genome_name': genome_name,'phen_descriptions': phen_descriptions, 'org_het_phase': org_het_phase,
-                                   'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,
-                                   'positions': positions, 'chroms_in': chroms_in, 'org1': org_het,
-                                   'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-                                   'org2_phen': org_hom_rec.genome.phenotype(), 'children_phenotypes': phenotypes,
-                                   'pairs_cis': pairs_cis, 'dists': dists, 'parentals': parentals,
-                                   'double_crossovers': double_crossovers, 'recomb_fraction_list': recomb_fraction_list,
-                                   'pairs_list': pairs_list, 'phen_combs_per_pair': phen_combinations_per_pair, 'parental_gametes_het': parental_gametes_het,
-                                   'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
-                                   'proposed': proposed,
-                                   'parsed_order': parsed_order})
-
-        genome_name = org_het.genome.genome_template.name
-        phen_descriptions = get_phen_descriptions(genome_name)
-        return render(request, "common/cross_map.html",
+            return render(request, "common/cross_map..html",
                           context={'genome_name': genome_name,'phen_descriptions': phen_descriptions,
-                                   'show_cross': False, 'cross_type': cross_type,  'org1': org_het,
-                                   'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-                                   'org2_phen': org_hom_rec.genome.phenotype(),
-                                   'proposed': proposed})
+                                       'show_cross': False, 'cross_type': cross_type,  'org1': org_het,
+                                       'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
+                                       'org2_phen': org_hom_rec.genome.phenotype(),
+                                       'proposed': proposed,
+                                       'default_tab': default_tab
+                                   })
 
 
 
@@ -637,95 +738,29 @@ def cross_map(request):
             request.session['gcm_cross_type'] = cross_type
 
     show_cross = True
+    show_answer_div_below = True
 
     num_samples = 1000
 
-    # positions = generate_positions(positions_in)
-    #
-    # if positions_in == 'rand':
-    #    lowest_pos_index = positions.index(min(positions))
-    #    highest_pos_index =  positions.index(max(positions))
-    #    all_position_indexes = [0, 1, 2]
-    #    for ind in range(3):
-    #        if ind == lowest_pos_index:
-    #            pass
-    #        elif ind == highest_pos_index:
-    #            pass
-    #        else:
-    #            middle_pos_index = ind
-    #            break
-    #
-    # if chroms_in == 'rand':
-    #    chroms = [1,1,1]
-    #    if positions[middle_pos_index] - positions[lowest_pos_index] >= 42000000:
-    #        chroms[middle_pos_index] = chroms[lowest_pos_index] + 1
-    #    if positions[highest_pos_index] - positions[middle_pos_index] >= 42000000:
-    #        chroms[highest_pos_index] = chroms[middle_pos_index] + 1
-    #    else:
-    #        chroms[highest_pos_index] = chroms[middle_pos_index]
-    #
-    # else:
-    #     chroms = [int(chrom)for chrom in chroms_in.split(',')]
-    #
-    #
-    # g1 = Gene(AlleleSet.default_alleleset_from_symbol('A'),positions[0])
-    # g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'),positions[1])
-    # g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'),positions[2])
-    # genes = [g1,g2,g3]
-    # chr1_genes = []
-    # chr2_genes = []
-    # chr3_genes = []
-    # for i,chrom in enumerate(chroms):
-    #     if chrom == 1:
-    #         chr1_genes.append(genes[i])
-    #     elif chrom == 2:
-    #         chr2_genes.append(genes[i])
-    #     else:
-    #         chr3_genes.append(genes[i])
-    #
-    # chrom_list = []
-    # chr1 = ChromosomeTemplate('XL', 350, chr1_genes)
-    # chrom_list.append(chr1)
-    # chr2 = None
-    # if len(chr2_genes) > 0:
-    #     chr2 = ChromosomeTemplate('XR', 400, chr2_genes)
-    #     chrom_list.append(chr2)
-    # chr3 = None
-    # if len(chr3_genes) > 0:
-    #     chr3 = ChromosomeTemplate('4', 500, chr3_genes)
-    #     chrom_list.append(chr3)
-    #
-    # #chr2 = ChromosomeTemplate('XR',2000,[g3])
-    # r = random.randint(0, len(genome_names)-1)
-    # genome_name = genome_names[r]
-    # if genome_name == 'pea':  # make little less likely to generate pea
-    #    r = random.randint(0, len(genome_names) - 1)
-    #    genome_name = genome_names[r]
-    #
-    # gt = GenomeTemplate(ploidy=2,chromosomes = chrom_list,name=genome_name)
-
-    gt = create_genome_template(request, chroms_in=chroms_in, positions_in=positions_in)
+    gt = create_genome_template(request, chroms_in=chroms_in, positions_in=positions_in, use_specific_genome_name=genome_name_requested)
 
     org_het = Organism.organism_with_het_genotype(gt, rand_phase=True)
-    print(org_het)
-    print(org_het.genotype())
+   # print(org_het)
+   # print(org_het.genotype())
     request.session['gcm_org_het'] = org_het._to_attr_dict()
 
     org_hom_rec = Organism.organism_with_hom_recessive_genotype(gt)
-    print(org_hom_rec)
-    print (org_hom_rec.genotype())
+    #print(org_hom_rec)
+    #print (org_hom_rec.genotype())
     request.session['gcm_org_hom_rec'] = org_hom_rec._to_attr_dict()
 
     if 'gcm_children' in request.session:
         del request.session['gcm_children']
 
-
-
-#    org_het_phase = org_het.genome.get_phase(alpha_sort=True)
-#    parsed_order = parse_het_phase(request, org_het_phase)
-
+    logger.debug('gcm Creating children')
     children = create_children(org_het, org_hom_rec, num_samples=num_samples)
 
+    logger.debug('gcm Getting children stats')
     phenotypes, pairs_cis, dists, parentals, double_crossovers, recomb_fraction_list, pairs_list, phen_combinations_per_pair, parental_gametes_het, recomb_fraction_list_with_p = children_stats(
         children)
     show_cross = True
@@ -740,112 +775,19 @@ def cross_map(request):
     genome_name = org_het.genome.genome_template.name
     phen_descriptions = get_phen_descriptions(genome_name)
 
-
-    # children = []
-    # for i in range(num_samples):
-    #     children.append(org_het.mate(org_hom_rec))
-    #
-    # phenotypes = {}
-    # for child in children:
-    #     phenotype = child.genome.phenotype()
-    #     if phenotype in phenotypes:
-    #         phenotypes[phenotype] += 1
-    #     else:
-    #         phenotypes[phenotype] = 1
-    #     # print(child)
-    #
-    #
-    #
-    # # Get all combinations of [2, 1, 3]
-    # # and length 2
-    # combos = combinations([i for i in range(3)],2)
-    # #TODO remove hard coded 3 above
-    #
-    # phen_combinations = {}
-    #
-    # comb_list = list(combos)
-    #
-    # phen_combinations_per_pair = [{} for i in range(len(comb_list))]
-    # for phenotype, count in phenotypes.items():
-    #     print(phenotype,count)
-    #     for i,comb in enumerate(comb_list):
-    #         print(comb)
-    #         phen_comb = phenotype[comb[0]*2:comb[0]*2+2] + phenotype[comb[1]*2:comb[1]*2+2]
-    #         print(phen_comb)
-    #         if phen_comb in phen_combinations:
-    #             phen_combinations[phen_comb] += count
-    #         else:
-    #             phen_combinations[phen_comb] = count
-    #
-    #         if phen_comb in phen_combinations_per_pair[i]:
-    #             phen_combinations_per_pair[i][phen_comb] += count
-    #         else:
-    #             phen_combinations_per_pair[i][phen_comb] = count
-    #
-    # for phen_combs in phen_combinations_per_pair:
-    #     observed = [count for key,count in phen_combs.items()]
-    #     chisq, p = chisquare(observed,ddof=1)
-    #     phen_combs['p'] = p
-    #
-    # print(phen_combinations)
-    # phen_combinations_list = [(key, count) for key, count in phen_combinations.items()]
-    # phen_combinations_list.sort(key=lambda x: x[1])
-    #
-    #
-    # phenotypes_list = [(key,count) for key,count in phenotypes.items()]
-    # phenotypes_list.sort(key=lambda x: x[1],reverse=True)
-    # parentals = [phenotypes_list[0],phenotypes_list[1]]
-    # double_crossovers = [phenotypes_list[-2],phenotypes_list[-1]]
-    # double_crossovers_count = 0
-    # for dc in double_crossovers:
-    #     double_crossovers_count += dc[1]
-    #
-    #
-    # pairs_cis = {}
-    # for phen_combination, count in phen_combinations.items():
-    #     if phen_combination[1] == phen_combination[3]:
-    #        alleles = phen_combination[0] + phen_combination[2]
-    #        if alleles in pairs_cis:
-    #            pairs_cis[alleles] += count
-    #        else:
-    #            pairs_cis[alleles] = count
-    #
-    # print(pairs_cis)
-    #
-    # pairs_list = [(key, count)for key,count in pairs_cis.items()]
-    # pairs_list = [[pair[0],pair[1]] if pair[1] < num_samples /2 else [pair[0],num_samples - pair[1]] for pair in pairs_list]
-    # pairs_list.sort(key=lambda x: x[1])
-    # pairs_list[-1][1] += 2* double_crossovers_count
-    #
-    # org_het_phase = org_het.genome.get_phase()
-    #
-    # dists = [(key,round(count / num_samples * 100,2)) for key,count in pairs_list ]
-    #
-    # recomb_fraction_list = [(key, count)for key,count in pairs_cis.items()]
-    # recomb_fraction_list = [[pair[0], pair[1] / num_samples] if pair[1] < num_samples / 2 else [pair[0], (num_samples - pair[1]) / num_samples] for pair in
-    #               recomb_fraction_list]
-    # recomb_fraction_list.sort(key=lambda x: x[1])
-
-    # return render(request, "common/cross_map.html",
-    #               context={'phen_descriptions': phen_descriptions, 'org_het_phase': org_het_phase,
-    #                        'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,
-    #                        'positions': positions, 'chroms_in': chroms_in, 'org1': org_het,
-    #                        'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-    #                        'org2_phen': org_hom_rec.genome.phenotype()})
-
-
     phen_descriptions = get_phen_descriptions(gt.name)
 
-    # return render(request, "common/cross_map.html",
-    #                       context={'genome_name':gt.name,'phen_descriptions': phen_descriptions,
-    #                                'show_cross': show_cross, 'cross_type': cross_type,  'org1': org_het,
-    #                                'org1_phen': org_het.genome.phenotype(), 'org2': org_hom_rec,
-    #                                'org2_phen': org_hom_rec.genome.phenotype(),
-    #                                'proposed' : proposed,
-    #                                'parsed_order': parsed_order})
+    if  default_tab ==0:
+        tcl = TestCrossLinkageProblem(TestCrossLinkageProblem.create_solver_form_from_query_params(request, post=False))
+        show_answer_div_below = False
+    else:
+        tcl = TestCrossLinkageProblem(GCMSolverForm(initial=parental_gametes_het))
+        tcl.set_fields_from_gametes(parental_gametes_het)
+        show_answer_div_below = True
 
-    form = GCMSolverForm(initial=parental_gametes_het)
+    form = tcl.solver_form
 
+    proposed['phenotypes'] = Genome.test_cross_het_gametes_to_phenotypes()
     return render(request, "common/cross_map.html",
                   context={'genome_name': genome_name, 'phen_descriptions': phen_descriptions,
                            'org_het_phase': org_het_phase,
@@ -860,9 +802,12 @@ def cross_map(request):
                            'recomb_fraction_list_with_p': recomb_fraction_list_with_p,
                            'proposed': proposed,
                            'form': form,
-                           'parsed_order': parsed_order})
+                           'show_answer_div_below': show_answer_div_below,
+                           'parsed_order': parsed_order,
+                           'default_tab': default_tab
+                           })
 
-    #return render(request, "common/cross_map.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
+    #return render(request, "common/cross_map_old.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
 
 def cross_type_for_orgs(orgs):
     if orgs[0] == 0 and orgs[1] == 2:

@@ -1,4 +1,4 @@
-{%  extends 'common/base.html' %}
+{%  extends 'common/problem.html' %}
 {%  load static %}
  {% block title %}
 Test Cross Linkage
@@ -9,41 +9,17 @@ Test Cross Linkage
 Test Cross Linkage
 {% endblock  %}
 
-{%  block content %}
+{%  block problem_solver_leader %}
+{#    <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">#}
+{#        {% csrf_token %}#}
 
-<!--div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-  <h1 class="display-4">Allele Freak</h1>
-
-</div-->
-<ul class="nav nav-tabs" id="myTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link" id="solver-tab" data-toggle="tab" href="#solver" role="tab" aria-controls="solver" aria-selected="false">Problem Solver</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active" id="generator-tab" data-toggle="tab" href="#generator" role="tab" aria-controls="generator" aria-selected="true">Test  yourself</a>
-  </li>
-
-</ul>
-<div class="tab-content" id="myTabContent">
-  <div class="tab-pane fade" id="solver" role="tabpanel" aria-labelledby="solver-tab">
-      <p class="h4 mt-4 ml-4">Problem Solver for Test Cross Linkage: under construction</p>
-  </div>
-    <div class="tab-pane fade show active" id="generator" role="tabpanel" aria-labelledby="generator-tab">
-
-
-        <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">
-        {% csrf_token %}
-            <div class="container">
+       <div class="container mt-2">
                     <div class="row">
                                   <div class="col-sm-3">
-                                    {%  if show_cross %}
-                                            <a class="btn btn-info btn-sm mt-1 " href="{%  url 'cross_map' %}" role="button">New problem</a><br>  <!--small>(3 different genes)</small-->
-                                            <small><i>(3 different genes)</i></small>
-                                    {% endif %}
                                   </div>
                                   <div class="col-sm-3">
-                                    <button name="gamete_type" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
-                                    <button name="phenotype_type" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
+                                    <button name="gamete_type" id="solverGameteBut" onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+                                    <button name="phenotype_type" id="solverPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
                                  </div>
 
 
@@ -52,12 +28,13 @@ Test Cross Linkage
 
 
                     </div>
-             </div>
-        </form>
+        </div>
+        <input type="hidden" name="pgAnswer" id="pgAnswer">
+{#    </form>#}
 
 
 
-            <div class="container mt-1">
+    <div class="container mt-4">
 
                 <div class="row center-block">
 
@@ -86,24 +63,331 @@ Test Cross Linkage
                                         <br>
                                       {%  endfor %}
                                </small>
-                         </div>
+                    </div>
                     <div class="col-sm-1">
                         <form class="form" method="POST" id="cross_form" action="">
                             {% csrf_token %}
-                            {%  if show_cross %}
-                            {%  else %}
-                                <button name="cross" class="btn btn-primary mt-3" type="submit">Cross</button>
-                            {%  endif %}
                          </form>
                     </div>
 
                 </div>
 
-            {%  if show_cross %}
+      </div>
 
-            <div class="mt-4">
+{%  endblock problem_solver_leader %}
 
-            <p class="h5">
+{%  block problem_solver_header %}
+        <p class="lead mt-4" id="solverHeader">
+           {% if cross_type == 'p' %}
+               <b>Enter number of offspring observed from cross:</b>
+           {%  else %}
+               <b>Enter number of gametes observed from Heterozygote:</b>
+           {%  endif %}
+
+
+        </p>
+{%  endblock problem_solver_header %}
+
+{%  block problem_solver_column_size %}
+        <div class = "col-11 mt-1">
+{%  endblock problem_solver_column_size %}
+{%  block problem_solver_answer_column_size %}
+        <div class = "col-1 mt-1" style="display:none;">
+{%  endblock problem_solver_answer_column_size %}
+
+
+{%  block problem_solver_form %}
+        <form id="crossmapsolverform" action="" method="post">
+                 {% csrf_token %}
+                   <div class="form-group">
+                         <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+
+{#           {%  if cross_type == 'g' %}#}
+               <div id="solverGameteDiv" >
+                     <div class="row form-group mt-4">
+                          <!--div class = "col-md-1">
+                          </div-->
+
+                         <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverABCTag">
+                                     <b>{{ form.ABC.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.ABC }}
+                                 </div>
+                             </div>
+                          </div>
+                          <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverABcTag">
+                                     <b>{{ form.ABc.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.ABc }}
+                                 </div>
+                             </div>
+                          </div>
+                        <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverAbCTag">
+                                     <b>{{ form.AbC.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.AbC }}
+                                 </div>
+                             </div>
+                          </div>
+                          <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverAbcTag">
+                                     <b>{{ form.Abc.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.Abc }}
+                                 </div>
+                             </div>
+                          </div>
+
+
+                      </div>
+                     <div class="row form-group">
+                          <!--div class = "col-md-1">
+                          </div-->
+                          <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solveraBCTag">
+                                     <b>{{ form.aBC.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.aBC }}
+                                 </div>
+                             </div>
+                          </div>
+                          <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solveraBcTag">
+                                     <b>{{ form.aBc.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.aBc }}
+                                 </div>
+                             </div>
+                          </div>
+                         <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverabCTag">
+                                     <b>{{ form.abC.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.abC }}
+                                 </div>
+                             </div>
+                          </div>
+                          <div class="col-md-3">
+                             <div class="row">
+                                 <div class="col-md-6" id="solverabcTag">
+                                     <b>{{ form.abc.label_tag }}</b>
+                                 </div>
+                                 <div class = "col-md-6">
+                                  {{ form.abc }}
+                                 </div>
+                             </div>
+                          </div>
+
+
+                     </div>
+               </div>
+{#            {% endif %}#}
+
+
+{#            {%  if cross_type == 'p' %}#}
+{#                <div id="solverPhenotypeDiv">#}
+{##}
+{#                    <div class="row form-group mt-4">#}
+{#                          <!--div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something"  class="ml-4"> &nbsp;{{ form.ABC }}#}
+{#                             <!--/div>#}
+{#                          </div-->#}
+{#                          <!--div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.ABc }}#}
+{#                             <!--/div>#}
+{#                          </div-->#}
+{#                        <!--div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.AbC }}#}
+{#                             <!--/div>#}
+{#                          </div-->#}
+{#                          <!--div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.Abc }}#}
+{#                             <!--/div>#}
+{#                          </div-->#}
+{##}
+{##}
+{#                    </div>#}
+{#                    <div class="row form-group mt-4">#}
+{#                          <!--div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4" > &nbsp;{{ form.aBC }}#}
+{#                             <!--/div>#}
+{#                          </div>#}
+{#                          <div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.aBc }}#}
+{#                             <!--/div>#}
+{#                          </div>#}
+{#                        <div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c+.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.abC }}#}
+{#                             <!--/div>#}
+{#                          </div>#}
+{#                          <div class="col-md-3">#}
+{#                             <div class="row"-->#}
+{#                                <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c-.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" class="ml-4"> &nbsp;{{ form.abc }}#}
+{#                             <!--/div>#}
+{#                          </div-->#}
+{##}
+{##}
+{#                    </div>#}
+
+    {#                {% for key, value in proposed.phenotypes.items %}#}
+    {#                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
+    {#                      <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ value }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > a3  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;#}
+    {#                      {%  if row == '4th' %}#}
+    {#                          <br>#}
+    {#                      {%  endif %}#}
+    {##}
+    {#                {%  endfor %}#}
+    {#            {%  else %}#}
+            {#        {% for key,item in parental_gametes_het.items %}#}
+            {#            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
+            {#            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;#}
+            {#             {%  if row == '4th' %}#}
+            {#                  <br>#}
+            {#            {%  endif %}#}
+            {#        {% endfor %}#}
+            {#        <br>#}
+                </div>
+
+
+{#            {%  endif %}#}
+
+
+
+
+                           <input class="btn btn-primary" name="solverSubmit" type="submit" value="Calculate">
+                           <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+
+                {{ form.answer_field }}
+        </form>
+{% endblock problem_solver_form %}
+
+{%  block problem_solver_answer %}
+        <p class="lead">
+            <b>{{ answer_title|safe }} {{  answer }}</b>
+        </p>
+
+             <div id="plotDiv" style="width:100%;height:400px;">
+
+             </div>
+{%  endblock problem_solver_answer %}
+
+{%  block problem_generator_column_size %}
+        <div class = "col-11 mt-1">
+{%  endblock problem_generator_column_size %}
+{%  block problem_generator_answer_column_size %}
+        <div class = "col-1 mt-1" style="display:none;">
+{%  endblock problem_generator_answer_column_size %}
+
+{%  block problem_generator_leader %}
+{#    <form method="POST" class="mt-4" id="type_form" action="{%  url 'cross_map' %}">#}
+{#        {% csrf_token %}#}
+
+       <div class="container mt-2">
+                    <div class="row">
+                                  <div class="col-sm-3">
+                                    {%  if show_cross %}
+                                            <a class="btn btn-info btn-sm mt-1 " href="{%  url 'cross_map' %}?tab=generator-tab" role="button">New problem</a><br>  <!--small>(3 different genes)</small-->
+                                            <small><i>(3 different genes)</i></small>
+                                    {% endif %}
+                                  </div>
+                                  <div class="col-sm-3">
+                                    <button name="gamete_type_generator" id="generatorGameteBut"  onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+                                    <button name="phenotype_type_generator" id="generatorPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
+                                 </div>
+
+
+
+
+
+
+                    </div>
+        </div>
+         <input type="hidden" id="pgAnswer" name="pgAnswer" value="3487">
+{#    </form>#}
+
+
+
+    <div class="container mt-1">
+
+                <div class="row center-block">
+
+                    <div class="col-sm-2"></div>
+                    <div class="col-sm-7">
+
+                            <div class="row">
+                            <div class="col-3">
+                            <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ org1_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+                                <br>&nbsp; &nbsp;{{  org1 }}
+                            </div>
+                            <div class="col-1">
+                             <span class="display-4"><b>X</b></span>
+                            </div>
+
+                            <div class="col-3 ml-4">
+                             <img src="{% get_static_prefix %}img/{{  genome_name }}/{{  genome_name }}_{{ org2_phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %} alt="something" >
+                             <br>&nbsp; &nbsp;{{  org2 }}
+                            </div>
+                            </div>
+                    </div>
+                    <div class="col-sm-3">
+                               <small>
+                                      {% for descr in phen_descriptions %}
+                                        {{  descr }}
+                                        <br>
+                                      {%  endfor %}
+                               </small>
+                    </div>
+                    <div class="col-sm-1">
+                        <form class="form" method="POST" id="cross_form" action="">
+                            {% csrf_token %}
+                         </form>
+                    </div>
+
+                </div>
+
+      </div>
+
+{%  endblock problem_generator_leader %}
+
+{% block problem_generator_form %}
+
+      <form id="crossmapgeneratorform" action="" method="post" >
+                 {% csrf_token %}
+                   <div class="form-group">
+                         <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+                   </div>
+
+        <div class="mt-4">
+
+            <p class="h5" id="generatorHeader">
                 {% if cross_type == 'p' %}
                      Offspring phenotypes observed (Total: 1000)
                 {%  else %}
@@ -111,14 +395,14 @@ Test Cross Linkage
                 {%  endif %}
             </p>
 
-             {%  if cross_type == 'g' %}
+{#             {%  if cross_type == 'g' %}#}
                  <div class="row form-group mt-4">
                       <div class = "col-md-1">
                       </div>
 
                      <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorABCTag">
                                  <b>{{ form.ABC.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -128,7 +412,7 @@ Test Cross Linkage
                       </div>
                       <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorABcTag">
                                  <b>{{ form.ABc.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -138,7 +422,7 @@ Test Cross Linkage
                       </div>
                     <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorAbCTag">
                                  <b>{{ form.AbC.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -148,7 +432,7 @@ Test Cross Linkage
                       </div>
                       <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorAbcTag">
                                  <b>{{ form.Abc.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -164,7 +448,7 @@ Test Cross Linkage
                       </div>
                       <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatoraBCTag">
                                  <b>{{ form.aBC.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -174,7 +458,7 @@ Test Cross Linkage
                       </div>
                       <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatoraBcTag">
                                  <b>{{ form.aBc.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -184,7 +468,7 @@ Test Cross Linkage
                       </div>
                      <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorabCTag">
                                  <b>{{ form.abC.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -194,7 +478,7 @@ Test Cross Linkage
                       </div>
                       <div class="col-md-2">
                          <div class="row">
-                             <div class="col-md-4">
+                             <div class="col-md-4" id="generatorabcTag">
                                  <b>{{ form.abc.label_tag }}</b>
                              </div>
                              <div class = "col-md-7">
@@ -205,20 +489,20 @@ Test Cross Linkage
 
 
                  </div>
-            {% endif %}
+{#            {% endif %}#}
 
 
-            {%  if cross_type == 'p' %}
-
-                {% for key, values in children_phenotypes.items %}
-                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}
-                      <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                      {%  if row == '4th' %}
-                          <br>
-                      {%  endif %}
-
-                {%  endfor %}
-            {%  else %}
+{#            {%  if cross_type == 'p' %}#}
+{##}
+{#                {% for key, values in children_phenotypes.items %}#}
+{#                      {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
+{#                      <img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ key }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" > {{  values }} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;#}
+{#                      {%  if row == '4th' %}#}
+{#                          <br>#}
+{#                      {%  endif %}#}
+{##}
+{#                {%  endfor %}#}
+{#            {%  else %}#}
         {#        {% for key,item in parental_gametes_het.items %}#}
         {#            {% cycle '1st' '2nd' '3rd' '4th' as row silent %}#}
         {#            {{  key }} {{  item }} &nbsp; &nbsp; &nbsp;#}
@@ -227,36 +511,75 @@ Test Cross Linkage
         {#            {%  endif %}#}
         {#        {% endfor %}#}
         {#        <br>#}
+{##}
+{##}
+{#            {%  endif %}#}
 
-
-            {%  endif %}
 
         <br>
-         <p class="h5">
-             <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
-            Use results above to predict Phase (heterozygote), gene order, linkage and recombination fractions:
-         </p>
-                <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
-            <br>
-            <br>
+        </div>
+
+    </form>
+{% endblock problem_generator_form %}
+
+{%  block problem_generator_answer %}
+        <p class="lead">
+        {%  if correct_flag %}
+            {{ correct_answer }}
+
+            <b>{{ answer_title|safe }}: {{  answer }}</b>
+        {%  endif %}
+        </p>
+
+         <div id="plotDivGenerator" style="width:600px;height:400px;">
+
+         </div>
+
+{%  endblock problem_generator_answer %}
+
+
+{%  block answer_below %}
+
+    {%  if show_answer_div_below %}
+        <div class = "container">
+               {%  if default_tab == 1 %}
+                        <p class="h5" ondragstart="return false;">
+                             <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
+                                  Use results above to predict Phase (heterozygote), gene order, linkage and recombination fractions:
+                         </p>
+
+                        <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
+                         <br>
+                            <br>
+               {%  else %}
+                   <p class="h4 mt-3">Result:</p>
+               {%  endif %}
             <div class="row">
-                <div class="col-4">
-                    Gene order, *parental phase, linkage:
-                    <br><small class=""><i>(*Choose either parental phase)</i></small>
+                <div class="col-4" ondragstart="return false;">
+                    {%  if default_tab == 1 %}
+                        Gene order, *parental phase, linkage:
+                        <br><small class=""><i>(*Choose either parental phase)</i></small>
+                    {%  else %}
+                        Gene order, parental phase, linkage:
+                    {%  endif %}
                 </div>
+                {%  if default_tab == 1 %}
                 <div class="col-8">
+                {%  else %}
+                 <div class="col-8" draggable="false" ondragstart="return false;">
+                {%  endif %}
                     <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
                         A
                     </div>
-                    <div class = "gcm-linkdiv" id="gcm-link1">
-                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" id="gcm-linkimg1" title="linked" width="50px" height="20px">
+                    <div class = "gcm-linkdiv" id="gcm-link1" ondragstart="return false;" draggable="false">
+                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg" ondragstart="return false;" draggable="false" id="gcm-linkimg1" title="linked" width="50px" height="20px">
 
                     </div>
                     <div class="gcm-gene" id="gcm-gene2" draggable="true">
                     B
                     </div>
-                    <div class="gcm-linkdiv" id="gcm-link2">
-                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" id="gcm-linkimg2" title="linked" width="50px" height="20px">
+                    <div class="gcm-linkdiv" id="gcm-link2" ondragstart="return false;" draggable="false">
+                        <img src="{%  static 'img/gcm/link.PNG' %}" class="gcm-linkimg noSelect" ondragstart="return false;"  draggable="false" id="gcm-linkimg2" title="linked" width="50px" height="20px">
                     </div>
                     <div class="gcm-gene" id="gcm-gene3" draggable="true">
                     C
@@ -270,7 +593,7 @@ Test Cross Linkage
             </div>
             <br>
 
-            <div class="row">
+            <div class="row" ondragstart="return false;">
                 <div class="col-4">
                     Recombination fractions:
                 </div>
@@ -281,12 +604,17 @@ Test Cross Linkage
                 </div>
             </div>
 
-        <div class="row">
-            <div class="col-sm-2">
-                <button name="show_answer" class="btn btn-primary" onclick="showAnswer();">Check Answer</button>
-            </div>
+        <div class="row" ondragstart="return false;">
+            {%  if default_tab == 1 %}
+                <div class="col-sm-2">
+                    <button name="show_answer" class="btn btn-primary" onclick="showAnswer();">Check Answer</button>
+                </div>
+            {%  endif %}
 
-            <div class="col-sm" id="answer_div" style="visibility:hidden">
+
+
+            <div class="col-sm" id="answer_div_generator_tick_images" style="visibility:hidden">
+
                   Linkage: <img id="tick_img_linkage" class ="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">  Gene order: <img id="tick_img_order" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Phase:  <img id="tick_img_phase" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px"> Recombination fractions: <img id="tick_img_fractions" class="tick_img" src = "{%  static 'img/tick.jpg' %} " width="20px">
 
             </div>
@@ -296,25 +624,124 @@ Test Cross Linkage
            <div class="col-sm-2">
                 <button name="cheat_answer"  style="visibility:hidden" id="cheatButton" class="btn btn-info mt-2" onclick="cheatAnswer();">Show Answer</button>
             </div>
-            <div id="answer_div_ticks" style="visibility:hidden">
-                Answer:
+            <div id="answer_div_ticks"  style="visibility:hidden">
+                <i>Full parental phase:
                     {{  org_het_phase }}
                 <br>Recombination fractions:
                 {%for phen_combs in recomb_fraction_list_with_p %}
-                     {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2 }})
-                {%  endfor %}
+                     {{ phen_combs.0 }} {{  phen_combs.1 }} (p: {{ phen_combs.2  }} )
+                {%  endfor %}</i>
             </div>
         </div>
         </div>
 
-            {%  endif %}
-            </div>
-    </div>
-</div>
-{%  endblock %}
+        </div>
+    {%  endif %}
+{%  endblock answer_below %}
 
-{%  block script %}
 
+ {%  block show_graph %}
+    function showGraph(pDiv) {
+
+    var lineType;
+
+    lineType = 'solid';
+
+    dataList = [];
+    markerColors = ['green','blue','orange','yellow','red','black','purple'];
+
+    for (i = 0;i < plotData.length; ++i) {
+        var trace = {
+          x: plotData[i].x_data,
+          y: plotData[i].y_data,
+          {#mode: 'markers',#}
+          type: 'line',
+          name: 'Run ' + (i+1),
+          marker: {color: markerColors[i % markerColors.length]}
+      };
+      dataList.push(trace);
+    }
+
+
+    var layout = {
+      /*xaxis: {
+        range: [ 0, xLimit ]
+      },
+      yaxis: {
+        range: [0, 1]
+      },
+      */
+      xaxis: {
+          title: 'Time in years(<span class="pc-pg-time">t</span>)'
+      },
+      yaxis: {
+          title: "Population size"
+      },
+      annotations: [
+        {
+          x: plotData[0].x_data[0],
+          y: plotData[0].y_data[0],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-init-pop">N<sub>0</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: -20
+        },
+        {
+          x: plotData[0].x_data[plotData[0].x_data.length - 1],
+          y: plotData[0].y_data[plotData[0].y_data.length - 1],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-final-pop">N<sub>t</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: 20
+        },
+            {
+          x: plotData[0].x_data[plotData[0].x_data.length - 1],
+          y: plotData[0].y_data[plotData[0].y_data.length - 1],
+          xref: 'x',
+          yref: 'y',
+          text: '<b><span class="pc-pg-final-pop">N<sub>t</sub></span></b>',
+          showarrow: true,
+          arrowhead: 7,
+          ax: 20,
+          ay: 20
+        }
+     ],
+      title:"Population Growth"
+    };
+
+    Plotly.newPlot(pDiv, dataList, layout);
+
+    }
+{%  endblock show_graph %}
+
+{%  block assemble_url %}
+    function assembleUrl() {
+        var url = "{% url 'cross_map' %}";
+        return url;
+
+    }
+{%  endblock assemble_url %}
+
+{%  block handle_tab_click_url %}
+        url +='&ABC=' + document.getElementById('id_ABC').value;
+        url +='&ABc=' + document.getElementById('id_ABc').value;
+        url +='&AbC=' + document.getElementById('id_AbC').value;
+        url +='&Abc=' + document.getElementById('id_Abc').value;
+        url +='&aBC=' + document.getElementById('id_aBC').value;
+        url +='&aBc=' + document.getElementById('id_aBc').value;
+        url +='&abC=' + document.getElementById('id_abC').value;
+        url +='&abc=' + document.getElementById('id_abc').value;
+        url +='&genome-name=' + '{{ genome_name }}';
+
+{%  endblock handle_tab_click_url %}
+
+{%  block problem_script_specific %}
 {{ proposed | json_script:"jProposed" }}
 {{ parsed_order | json_script:"jParsedOrder" }}
 {{ recomb_fraction_list | json_script:"jRecombFractionList" }}
@@ -324,7 +751,65 @@ Test Cross Linkage
 var proposed = JSON.parse(document.getElementById('jProposed').textContent);
 var parsedOrder = JSON.parse(document.getElementById('jParsedOrder').textContent);
 var recombFractionList = JSON.parse(document.getElementById('jRecombFractionList').textContent);
-var x = 1;
+
+
+x = 1;
+
+function cheatAnswer() {
+
+      el = document.getElementById('answer_div_ticks');
+      if (el.style.visibility === "visible") {
+          el.style.visibility = "hidden";
+          but = document.getElementById('cheatButton');
+          but.innerHTML = 'Show Answer';
+
+      }
+      else {
+          el.style.visibility = "visible";
+          but = document.getElementById('cheatButton');
+          but.innerHTML = 'Hide Answer';
+      }
+
+
+}
+
+
+function setTickImgs(order, linkage, phase, fractions) {
+   el = document.getElementById('tick_img_order');
+   if (order) {
+       el.src = "{%  static 'img/tick.jpg' %}";
+   }
+   else {
+       el.src = "{%  static 'img/cross.PNG' %}";
+   }
+
+   el = document.getElementById('tick_img_phase');
+   if (phase) {
+       el.src = "{%  static 'img/tick.jpg' %}";
+   }
+   else {
+       el.src = "{%  static 'img/cross.PNG' %}";
+   }
+
+     el = document.getElementById('tick_img_linkage');
+   if (linkage) {
+       el.src = "{%  static 'img/tick.jpg' %}";
+   }
+   else {
+       el.src = "{%  static 'img/cross.PNG' %}";
+   }
+
+     el = document.getElementById('tick_img_fractions');
+   if (fractions) {
+       el.src = "{%  static 'img/tick.jpg' %}";
+   }
+   else {
+      el.src = "{%  static 'img/cross.PNG' %}";
+   }
+
+
+}
+
 
 function alphaComplement(s) {
     newString = '';
@@ -341,12 +826,6 @@ function alphaComplement(s) {
 
 }
 
-function sortString(str){
-  var arr = str.split('');
-  var sorted = arr.sort();
-  return sorted.join('');
-}
-
 
 function sortStringCaseInsensitive(str) {
 
@@ -357,21 +836,11 @@ function sortStringCaseInsensitive(str) {
     return sorted.join('');
 }
 
-function reverseString(str) {
-    // Step 1. Use the split() method to return a new array
-    var splitString = str.split(""); // var splitString = "hello".split("");
-    // ["h", "e", "l", "l", "o"]
 
-    // Step 2. Use the reverse() method to reverse the new created array
-    var reverseArray = splitString.reverse(); // var reverseArray = ["h", "e", "l", "l", "o"].reverse();
-    // ["o", "l", "l", "e", "h"]
-
-    // Step 3. Use the join() method to join all elements of the array into a string
-    var joinArray = reverseArray.join(""); // var joinArray = ["o", "l", "l", "e", "h"].join("");
-    // "olleh"
-
-    //Step 4. Return the reversed string
-    return joinArray; // "olleh"
+function sortString(str){
+  var arr = str.split('');
+  var sorted = arr.sort();
+  return sorted.join('');
 }
 
 function checkChars(stAct,endAct,stProp,endProp) {
@@ -423,162 +892,75 @@ function checkRecombinationFractions() {
 
 }
 
-function setTickImgs(order, linkage, phase, fractions) {
-   el = document.getElementById('tick_img_order');
-   if (order) {
-       el.src = "{%  static 'img/tick.jpg' %}";
-   }
-   else {
-       el.src = "{%  static 'img/cross.PNG' %}";
-   }
-
-   el = document.getElementById('tick_img_phase');
-   if (phase) {
-       el.src = "{%  static 'img/tick.jpg' %}";
-   }
-   else {
-       el.src = "{%  static 'img/cross.PNG' %}";
-   }
-
-     el = document.getElementById('tick_img_linkage');
-   if (linkage) {
-       el.src = "{%  static 'img/tick.jpg' %}";
-   }
-   else {
-       el.src = "{%  static 'img/cross.PNG' %}";
-   }
-
-     el = document.getElementById('tick_img_fractions');
-   if (fractions) {
-       el.src = "{%  static 'img/tick.jpg' %}";
-   }
-   else {
-      el.src = "{%  static 'img/cross.PNG' %}";
-   }
-
-
-}
 
 function checkAnswer() {
-          if (parsedOrder.linkage == 'LL') {
+    if (parsedOrder.linkage == 'LL') {
 
-          linkage = false;
-          if (parsedOrder.linkage == proposed.linkage) {
-               linkage = true;
-          }
+        linkage = false;
+        if (parsedOrder.linkage == proposed.linkage) {
+            linkage = true;
+        }
 
-          checked = checkChars(0, 3, 0, 3);
-          fractionsOk = checkRecombinationFractions();
-          //alert('Linkage match Y' + ' Order match: '+ checked.orderMatch + ' Phase match: ' + checked.phaseMatch);
-          setTickImgs(checked.orderMatch,linkage, checked.phaseMatch, fractionsOk);
-          x = 1;
-
-
-      }
-      else if (parsedOrder.linkage== 'UU') {
-
-          linkage = false;
-          if (parsedOrder.linkage == proposed.linkage) {
-               linkage = true;
-          }
-         //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + 'N/A');
-          fractionsOk = checkRecombinationFractions();
-          setTickImgs(true,linkage, true, fractionsOk);
-      }
-
-      else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'LU')) {
-          checked =  checkChars(0, 2, 0, 2);
-          fractionsOk = checkRecombinationFractions();
-          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
-          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
-      }
-      else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'UL')) {
-          checked =  checkChars(1, 3, 1, 3);
-          fractionsOk = checkRecombinationFractions();
-          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
-          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
-      }
-      else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'UL')) {
-          checked =  checkChars(0, 2, 1, 3);
-          fractionsOk = checkRecombinationFractions();
-          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
-          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
-      }
-      else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'LU')) {
-          checked =  checkChars(1, 3, 0, 2);
-          fractionsOk = checkRecombinationFractions();
-          setTickImgs(checked.charsMatch,true, checked.phaseMatch, fractionsOk);
-          //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
-      }
-      else {
-               checked =  checkChars(0, 3, 0, 3);
-               fractionsOk = checkRecombinationFractions();
-               setTickImgs(checked.charsMatch, false, checked.phaseMatch, fractionsOk);
-
-      }
+        checked = checkChars(0, 3, 0, 3);
+        fractionsOk = checkRecombinationFractions();
+        //alert('Linkage match Y' + ' Order match: '+ checked.orderMatch + ' Phase match: ' + checked.phaseMatch);
+        setTickImgs(checked.orderMatch, linkage, checked.phaseMatch, fractionsOk);
+        x = 1;
 
 
+    } else if (parsedOrder.linkage == 'UU') {
 
+        linkage = false;
+        if (parsedOrder.linkage == proposed.linkage) {
+            linkage = true;
+        }
+        //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + 'N/A');
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(true, linkage, true, fractionsOk);
+    } else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'LU')) {
+        checked = checkChars(0, 2, 0, 2);
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(checked.charsMatch, true, checked.phaseMatch, fractionsOk);
+        //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+    } else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'UL')) {
+        checked = checkChars(1, 3, 1, 3);
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(checked.charsMatch, true, checked.phaseMatch, fractionsOk);
+        //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+    } else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'UL')) {
+        checked = checkChars(0, 2, 1, 3);
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(checked.charsMatch, true, checked.phaseMatch, fractionsOk);
+        //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+    } else if ((parsedOrder.linkage == 'UL') && (proposed.linkage == 'LU')) {
+        checked = checkChars(1, 3, 0, 2);
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(checked.charsMatch, true, checked.phaseMatch, fractionsOk);
+        //alert('Linkage match Y' + ' Order match: '+ 'N/A' + ' Phase match: ' + checked.phaseMatch);
+    } else {
+        checked = checkChars(0, 3, 0, 3);
+        fractionsOk = checkRecombinationFractions();
+        setTickImgs(checked.charsMatch, false, checked.phaseMatch, fractionsOk);
 
+    }
 
 
 }
+
 
 function showAnswer() {
 
-
-   checkAnswer();
-
-  {#    else if (parsedOrder.linkage == 'UU') {#}
-  {#        alert('Linkage correct. (Order and phase n/a)');#}
-  {##}
-  {#    }#}
-  {#    else if ((parsedOrder.linkage == 'LU') && (proposed.linkage == 'LU')) {#}
-  {#        if  ( (    (parsedOrder.order.substring(0, 2) == proposed.order.substring(0, 2))#}
-  {#                || (parsedOrder.order.substring(0, 2) == alphaComplement(proposed.order.substring(0, 2)))) )#}
-  {#        {#}
-  {#            alert('Phase correct, linkage correct (Order n/a)');#}
-  {#        }#}
-  {##}
-  {#    else if ((parsedOrder.linkage == 'LU') || (parsedOrder.linkage == 'UL')) {#}
-  {#        if  ( (    (parsedOrder.order.substring(0, 2) == proposed.order.substring(0, 2))#}
-  {#                || (parsedOrder.order.substring(0, 2) == alphaComplement(proposed.order.substring(0, 2)))) ||#}
-  {#           (   (parsedOrder.order.substring(1, 3) == proposed.order.substring(1, 3))#}
-  {#                || (parsedOrder.order.substring(1, 3) == alphaComplement(proposed.order.substring(1, 3)))) )#}
-  {#        {#}
-  {#            alert('Phase correct, linkage correct (Order n/a)');#}
-  {#        }#}
-  {#       else if  ( (    (parsedOrder.order.substring(0, 2) == proposed.order.substring(0, 2))#}
-  {#                || (parsedOrder.order.substring(0, 2) == alphaComplement(proposed.order.substring(0, 2)))) ||#}
-  {#           (   (parsedOrder.order.substring(1, 3) == proposed.order.substring(1, 3))#}
-  {#                || (parsedOrder.order.substring(1, 3) == alphaComplement(proposed.order.substring(1, 3)))) )#}
-  {#        else {#}
-  {#            alert('Phase incorrect (Order n/a)');#}
-  {#        }#}
-  {##}
-  {#    } else if (parsedOrder.linkage == 'UL') {#}
-  {#        if ((parsedOrder.order.substring(1, 3) == proposed.order.substring(1, 3)) || (parsedOrder.order.substring(1, 3) == alphaComplement(proposed.order.substring(1, 3)))) {#}
-  {#            alert('Phase correct (Order n/a)');#}
-  {#        } else {#}
-  {#            alert('Phase incorrect (Order n/a)');#}
-  {#        }#}
-  {##}
-  {#    } else {#}
-  {#        alert('Correct. (Order n/a, Phase n/a)');#}
-  {##}
-  {#    }#}
-  {#}#}
-
+  checkAnswer();
 
   //alert('parsed: ' + parsedOrder.order + ' ' + parsedOrder.linkage + 'recomb: ' + recombFractionList);
-  var el = document.getElementById('answer_div');
+  var el = document.getElementById('answer_div_generator_tick_images');
   var other_el = document.getElementById('answer_div_ticks');
   if (el.style.visibility === "visible") {
       //el.style.visibility = "hidden";
       //other_el.style.visibility = "hidden";
   }
   else {
-      document.getElementById('answer_div').style.visibility = "visible";
+      el.style.visibility = "visible";
       //other_el.style.visibility = "visible";
   }
 
@@ -586,52 +968,187 @@ function showAnswer() {
   cheatBut.style.visibility="visible";
 }
 
-var dragSrcEl = null;
+
+function setGenes() {
+  var genes = document.getElementsByClassName("gcm-gene");
+
+  for (var i = 0; i < proposed.order.length; ++i) {
+
+      var ch = proposed.order.charAt(i);
+      if  (ch == ch.toUpperCase()) {
+          genes[i].innerHTML =  ch; //'<b>' + ch +'</b>';
+      }
+      else {
+          genes[i].innerHTML = ch;
+      }
+  }
+
+
+  if (defaultTab == 1) {
+      checkAnswer();
+  }
+}
+
+function linkSpan(linkNum) {
+      if (linkNum  == 0) {
+        leftGene = document.getElementById("gcm-gene1");
+        rightGene = document.getElementById("gcm-gene2");
+      }
+      else {
+        leftGene = document.getElementById("gcm-gene2");
+        rightGene = document.getElementById("gcm-gene3");
+      }
+      combination = leftGene.innerText + rightGene.innerText;
+      combination = combination.toLowerCase();
+      combination = combination.split('').sort().join('');
+      return combination;
+
+}
+
+function setMargins(lk,m) {
+      lk.style.marginLeft = m + "px";
+      lk.style.marginRight = m + "px";
+}
+
+function linkSpans() {
+      var spans = [];
+      for (i=0;i < 2;++i) {
+          var sp = linkSpan(i);
+          spans.push(sp);
+      }
+
+      return spans;
+}
+
+
+function setRDLinkSpan(el) {
+      spans = linkSpans();
+      elText = el.labels[0].innerText;
+      spanInd = spans.indexOf(elText);
+      if (spanInd == -1) {
+
+      }
+      else {
+          if (spanInd == 0) {
+              linkId = "gcm-link1";
+          }
+          else {
+              linkId = "gcm-link2";
+          }
+          lk = document.getElementById(linkId);
+          var m = el.value * 50;
+          setMargins(lk,m);
+      }
+
+}
+
+
+
+function setRDs() {
+   var rdinputs = document.getElementsByClassName("gcm-rdinput");
+   rdinputs[0].value = proposed.rd1;
+   rdinputs[1].value = proposed.rd2;
+   rdinputs[2].value = proposed.rd3;
+
+   for (var i=0;i < rdinputs.length; ++i) {
+       if (defaultTab == 0) {
+            rdinputs[i].setAttribute('readonly','readonly');
+       }
+
+       setRDLinkSpan(rdinputs[i]);
+
+   }
+
+}
+
+function setLinks() {
+
+    var linkimgs = document.getElementsByClassName("gcm-linkimg");
+    for (var i = 0; i < proposed.linkage.length; ++i) {
+      if (proposed.linkage[i] == 'L') {
+          linkimgs[i].title = "linked";
+          linkimgs[i].src = "{%  static 'img/gcm/link.PNG' %}";
+      }
+      else {
+           linkimgs[i].title = "unlinked";
+           linkimgs[i].src = "{%  static 'img/gcm/unlink.PNG' %}";
+      }
+    }
+
+    if (defaultTab == 1) {
+        checkAnswer();
+    }
+
+}
+
+
+function setTitles() {
+
+}
+
+
+function isGene(el) {
+    if (el == null) {
+        return false;
+    }
+
+    if ('classList' in el) {
+        return el.classList.contains('gcm-gene');
+    }
+    else {
+        console.log('Element has no classlist ' + el.id);
+        return false;
+   }
+}
 
   function handleDragStart(e) {
-    this.style.opacity = '0.4';  // this / e.target is the source node.
-    dragSrcEl = this;
+
+    if (!isGene(e.target)) {
+        return;
+    }
+
+    e.target.style.opacity = '0.4';  // this / e.target is the source node.
+    //dragSrcEl = this;
 
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', this.innerHTML);
+    e.dataTransfer.setData('text/plain', e.target.id);
   }
   function handleDragEnd(e) {
-      this.style.opacity = '1.0';  // this / e.target is the source node.
+     console.log('In drag end ' + e.target.id);
+
+     if (isGene(e.target)) {
+         e.target.style.opacity = '1.0';
+     }
+
 
       var genes = document.getElementsByClassName("gcm-gene");
       for ( i =0; i < genes.length; ++i) {
           genes[i].classList.remove('over');
       }
 
-      dragSrcEl = null;
+       e
+      .dataTransfer
+      .clearData();
 
   }
 
-function cheatAnswer() {
-
-      el = document.getElementById('answer_div_ticks');
-      if (el.style.visibility === "visible") {
-          el.style.visibility = "hidden";
-          but = document.getElementById('cheatButton');
-          but.innerHTML = 'Show Answer';
-
-      }
-      else {
-          el.style.visibility = "visible";
-          but = document.getElementById('cheatButton');
-          but.innerHTML = 'Hide Answer';
-      }
-
-
-}
 
 function handleDragEnter(e) {
   // this / e.target is the current hover target.
-  this.classList.add('over');
+  if (!isGene(e.target)) {
+        return;
+  }
+
+  e.target.classList.add('over');
 }
 
 function handleDragLeave(e) {
-  this.classList.remove('over');  // this / e.target is previous target element.
+
+   if (!isGene(e.target)) {
+        return;
+    }
+
+  e.target.classList.remove('over');  // this / e.target is previous target element.
 }
 
 function handleDragOver(e) {
@@ -646,6 +1163,16 @@ function handleDragOver(e) {
 
 function handleDrop(e) {
   // this/e.target is current target element.
+   console.log('In drop ' + e.target.id);
+
+   const id = e
+    .dataTransfer
+    .getData('text');
+   const draggableElement = document.getElementById(id);
+   const dropzone = e.target;
+
+   e.dataTransfer.clearData();
+
 
   if (e.stopPropagation) {
     e.stopPropagation(); // Stops some browsers from redirecting.
@@ -653,32 +1180,31 @@ function handleDrop(e) {
 
   // Don't do anything if dropping the same column we're dragging.
 
-  if (dragSrcEl == null) {
-       return false;
-  }
 
-
-  if ((dragSrcEl.classList.contains('gcm-gene')) && (this.classList.contains('gcm-gene'))) {
-      if (dragSrcEl.id  == this.id) {
-
-      dragSrcEl= null;
-      return false; //drop dest is same
+  if ((isGene(draggableElement)) && (isGene(dropzone))) {
+      if (draggableElement.id == dropzone.id) {
+          console.log('dropped on itself') ;
+          return false; //drop dest is same
       }
   }
   else {
-      x = 1;
-      dragSrcEl = null;
+      console.log('!!! Non gene drag or drop element');
+      if (draggableElement == null) {console.log('Draggable element null');} else {console.log('Draggable id: ' + draggableElement.id);}
+      if (dropzone == null) {console.log('Dropzone element null');} else {console.log('Dropzone id: ' + dropzone.id);}
+
+      var genes = document.getElementsByClassName("gcm-gene");
+      for ( i =0; i < genes.length; ++i) {
+          genes[i].classList.remove('over');
+      }
+
       return false; // not dragging gene or dropping on an gene
+ }
 
-  }
 
-
- // if (dragSrcEl != this) {
-    // Set the source column's HTML to the HTML of the column we dropped on.
-    srcInd = getGeneIndex(dragSrcEl);
-    newSrcText = this.innerHTML;
-    dropInd = getGeneIndex(this);
-    newDropText = e.dataTransfer.getData('text/html');
+    srcInd = getGeneIndex(draggableElement);
+    newSrcText = dropzone.innerHTML;
+    dropInd = getGeneIndex(dropzone);
+    newDropText = draggableElement.innerHTML;
     proposed.order = proposed.order.substring(0,srcInd) + newSrcText + proposed.order.substring(srcInd+1,proposed.order.length);
     proposed.order = proposed.order.substring(0,dropInd) + newDropText + proposed.order.substring(dropInd+1,proposed.order.length);
 
@@ -688,9 +1214,6 @@ function handleDrop(e) {
     {#this.innerHTML = e.dataTransfer.getData('text/html');#}
 //  }
 
-
-
-  dragSrcEl = null;
   return false;
 }
 
@@ -700,6 +1223,22 @@ function getGeneIndex(el) {
    return ind;
 }
 
+function handleRDChange(e) {
+       setRDLinkSpan(e.target);
+
+      checkAnswer();
+
+      return false;
+}
+
+function handleLinkDoubleClick(e) {
+   //this.innerHTML="Clicked";
+
+    toggleLink(this);
+
+
+   return false;
+}
 
 
 function handleDoubleClick(e) {
@@ -754,151 +1293,88 @@ function toggleLink(el) {
 
     setLinks();
 
-   {#if (el.title == "linked") {#}
-   {#    el.title = "unlinked";#}
-   {#    el.src = "{%  static 'img/gcm/unlink.PNG' %}";#}
-   {#}#}
-   {#else {#}
-   {#    el.title="linked";#}
-   {#    el.src= "{%  static 'img/gcm/link.PNG' %}";#}
-   {#}#}
+ }
 
-}
+ function typeClicked(clickType) {
+     if (defaultTab == 0) {
+     gameteBut = document.getElementById('solverGameteBut');
+     phenotypeBut = document.getElementById('solverPhenotypeBut');
+     tagPrefix = 'solver';
+     }
+     else {
+     gameteBut = document.getElementById('generatorGameteBut');
+     phenotypeBut = document.getElementById('generatorPhenotypeBut');
+     tagPrefix = 'generator';
+     }
 
-function setLinks() {
 
-    var linkimgs = document.getElementsByClassName("gcm-linkimg");
-    for (var i = 0; i < proposed.linkage.length; ++i) {
-      if (proposed.linkage[i] == 'L') {
-          linkimgs[i].title = "linked";
-          linkimgs[i].src = "{%  static 'img/gcm/link.PNG' %}";
-      }
-      else {
-           linkimgs[i].title = "unlinked";
-           linkimgs[i].src = "{%  static 'img/gcm/unlink.PNG' %}";
-      }
+
+     if (clickType == 'g') {
+         //document.getElementById('solverGameteDiv').style.display = "block";
+         //document.getElementById('solverPhenotypeDiv').style.display = "none";
+         gameteBut.classList.remove('btn-outline-secondary');
+         gameteBut.classList.add('btn-primary');
+         gameteBut.classList.add('active');
+         phenotypeBut.classList.remove('btn-primary');
+         phenotypeBut.classList.remove('active');
+         phenotypeBut.classList.add('btn-outline-secondary');
+         document.getElementById(tagPrefix + 'ABCTag').innerHTML = '{{ form.ABC.label_tag }}';
+         document.getElementById(tagPrefix + 'ABcTag').innerHTML = '{{ form.ABc.label_tag }}';
+         document.getElementById(tagPrefix + 'AbCTag').innerHTML = '{{ form.AbC.label_tag }}';
+         document.getElementById(tagPrefix + 'AbcTag').innerHTML =  '{{ form.Abc.label_tag }}';
+         document.getElementById(tagPrefix + 'aBCTag').innerHTML =  '{{ form.aBC.label_tag }}';
+         document.getElementById(tagPrefix + 'aBcTag').innerHTML =  '{{ form.aBc.label_tag }}';
+         document.getElementById(tagPrefix + 'abCTag').innerHTML =  '{{ form.abC.label_tag }}';
+         document.getElementById(tagPrefix + 'abcTag').innerHTML = '{{ form.abc.label_tag }}';
+         if (defaultTab == 0) {
+             document.getElementById('solverHeader').innerHTML = '<b>Enter number of gametes observed from Heterozygote:</b>';
+         }
+         else {
+             document.getElementById('generatorHeader').innerHTML = 'Gametes observed from Heterozygote (Total: 1000)';
+         }
+
+
+     }
+     else {
+        // document.getElementById('solverGameteDiv').style.display = "none";
+         //document.getElementById('solverPhenotypeDiv').style.display = "block";
+         gameteBut.classList.add('btn-outline-secondary');
+         gameteBut.classList.remove('btn-primary');
+         gameteBut.classList.remove('active');
+         phenotypeBut.classList.add('btn-primary');
+         phenotypeBut.classList.add('active');
+         phenotypeBut.classList.remove('btn-outline-secondary');
+         document.getElementById(tagPrefix + 'ABCTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c+.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'ABcTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c-.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'AbCTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c+.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'AbcTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c-.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'aBCTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c+.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'aBcTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c-.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'abCTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c+.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         document.getElementById(tagPrefix + 'abcTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c-.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
+         if (defaultTab == 0) {
+             document.getElementById('solverHeader').innerHTML = '<b>Enter number of offspring observed from cross:</b>';
+         }
+         else {
+             document.getElementById('generatorHeader').innerHTML = 'Offspring phenotypes observed (Total: 1000';
+         }
+     }
+
+     ajaxUpdateType(clickType);
+
+ }
+
+ function ajaxUpdateType(crossType) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+     document.getElementById("demo").innerHTML = this.responseText;
     }
+  };
+  xhttp.open("GET", "{%  url 'gcm_update_type' %}?cross-type=" + crossType, true);
+  xhttp.send();
+ }
 
-    checkAnswer();
-
-
-}
-
-function setGenes() {
-  var genes = document.getElementsByClassName("gcm-gene");
-
-  for (var i = 0; i < proposed.order.length; ++i) {
-      genes[i].innerHTML = proposed.order[i];
-  }
-
-  checkAnswer();
-}
-
-function setRDs() {
-   var rdinputs = document.getElementsByClassName("gcm-rdinput");
-   rdinputs[0].value = proposed.rd1;
-   rdinputs[1].value = proposed.rd2;
-   rdinputs[2].value = proposed.rd3;
-
-   for (var i=0;i < rdinputs.length; ++i) {
-       setRDLinkSpan(rdinputs[i]);
-
-   }
-
-}
-
-
-
-function handleLinkDoubleClick(e) {
-   //this.innerHTML="Clicked";
-
-    toggleLink(this);
-
-   {#if (this.title == "linked") {#}
-   {#    this.title = "unlinked";#}
-   {#    this.src = "{%  static 'img/gcm/unlink.PNG' %}";#}
-   {#}#}
-   {#else {#}
-   {#    this.title="linked";#}
-   {#    this.src= "{%  static 'img/gcm/link.PNG' %}";#}
-   {#}#}
-   return false;
-}
-
-
-function setRDLinkSpan(el) {
-      spans = linkSpans();
-      elText = el.labels[0].innerText;
-      spanInd = spans.indexOf(elText);
-      if (spanInd == -1) {
-
-      }
-      else {
-          if (spanInd == 0) {
-              linkId = "gcm-link1";
-          }
-          else {
-              linkId = "gcm-link2";
-          }
-          lk = document.getElementById(linkId);
-          var m = el.value * 50;
-          setMargins(lk,m);
-      }
-
-}
-
-
-
-function handleRDChange(e) {
-       setRDLinkSpan(e.target);
-
-      {#spans = linkSpans();#}
-      {#elText = e.target.labels[0].innerText;#}
-      {#spanInd = spans.indexOf(elText);#}
-      {#if (spanInd == -1) {#}
-      {##}
-      {#}#}
-      {#else {#}
-      {#    if (spanInd == 0) {#}
-      {#        linkId = "gcm-link1";#}
-      {#    }#}
-      {#    else {#}
-      {#        linkId = "gcm-link2";#}
-      {#    }#}
-      {#    lk = document.getElementById(linkId);#}
-      {#    var m = e.target.value * 200;#}
-      {#    setMargins(lk,m);#}
-      {#}#}
-
-      checkAnswer();
-
-      return false;
-}
-function linkSpan(linkNum) {
-      if (linkNum  == 0) {
-        leftGene = document.getElementById("gcm-gene1");
-        rightGene = document.getElementById("gcm-gene2");
-      }
-      else {
-        leftGene = document.getElementById("gcm-gene2");
-        rightGene = document.getElementById("gcm-gene3");
-      }
-      combination = leftGene.innerText + rightGene.innerText;
-      combination = combination.toLowerCase();
-      combination = combination.split('').sort().join('');
-      return combination;
-
-}
-
-function linkSpans() {
-      var spans = [];
-      for (i=0;i < 2;++i) {
-          var sp = linkSpan(i);
-          spans.push(sp);
-      }
-
-      return spans;
-}
 
   var linkimgs = document.getElementsByClassName("gcm-linkimg");
   for (var i = 0; i < linkimgs.length; i++) {
@@ -922,13 +1398,24 @@ function linkSpans() {
   }
 
 
+//document.getElementById('solverPhenotypeDiv').style.display = "none";
 
+var genes = document.getElementsByClassName("gcm-gene");
+if (genes.length > 0) {
+    setGenes();
+    setLinks();
+    setRDs();
+    setTitles();
+}
 
-  setGenes();
-  setLinks();
-  setRDs();
+var ansField =  document.getElementById('id_answer_field');
+if (typeof(ansField) != 'undefined' && ansField != null)
+    document.getElementById('pgAnswer').value = ansField.value;
 
+if (defaultTab == 0) {
+    document.getElementById('answer_div_ticks').style.visibility = 'visible';
+}
 
 </script>
 
-{%  endblock %}
+{% endblock problem_script_specific %}

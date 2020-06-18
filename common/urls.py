@@ -11,7 +11,7 @@ urlpatterns = [
     path('test_plot',test_views.plot_test,name='test_plot'),
     path('cross_sim_test',views.cross_sim_test,name='cross_sim_test'),
     path('support',views.support,name='support'),
-    path('about',views.about,name='about')
-
+    path('about',views.about,name='about'),
+    path('gcm_update_type', views.gcm_update_type, name='gcm_update_type'),
 
 ]

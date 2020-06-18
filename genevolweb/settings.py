@@ -50,6 +50,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+
+
 ROOT_URLCONF = 'genevolweb.urls'
 
 TEMPLATES = [
@@ -101,6 +104,95 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'filters': {
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'INFO',
+#             'filters': [],
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple'
+#         },
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'formatter': 'simple',
+#             'filename': os.path.join(BASE_DIR, "debug.log")
+#         },
+#         # 'mail_admins': {
+#         #     'level': 'ERROR',
+#         #     'class': 'django.utils.log.AdminEmailHandler',
+#         #     'filters': ['special']
+#         # }
+#     },
+#
+#     'loggers': {
+#         '': {
+#             'handlers': ['console', 'file'],
+#             'propagate': True,
+#         },
+#         'django': {
+#             'handlers': ['console','file'],
+#             'propagate': True,
+#         },
+#         # 'django.request': {
+#         #     'handlers': ['mail_admins'],
+#         #     'level': 'ERROR',
+#         #     'propagate': False,
+#         # },
+#         #  'myproject.custom': {
+#         #     'handlers': ['console', 'mail_admins'],
+#         #     'level': 'INFO',
+#         #     'filters': ['special']
+#         # }
+#     }
+# }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} - {asctime} - {module} - {process:d} - {thread:d} - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} - {asctime} - {module} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'simple',
+            'filename': os.path.join(BASE_DIR, "debug.log"),
+            'maxBytes': 2 * 1024 * 1024,  # 2M Size
+            'backupCount': 3
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'DEBUG',
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

@@ -26,14 +26,18 @@ Problem Central
 
       <div class = "container">
             <div class="row">
+                {%  block problem_solver_column_size %}
                 <div class = "col-5 mt-1">
+                {%  endblock problem_solver_column_size %}
                      {% block problem_solver_header %}
                     {%  endblock problem_solver_header %}
 
                     {%  block problem_solver_form %}
                     {%  endblock problem_solver_form %}
                 </div>
+                {%  block problem_solver_answer_column_size %}
                 <div class = "col-7">
+                {%  endblock problem_solver_answer_column_size %}
                      <div id="answer_div" class="answer_div">
                         {%  block problem_solver_answer %}
                         {%  endblock problem_solver_answer %}
@@ -48,7 +52,9 @@ Problem Central
 
            <div class = "container">
             <div class="row">
+               {%  block problem_generator_column_size %}
                 <div class = "col-5">
+                {%  endblock problem_generator_column_size %}
 
                      {% block problem_generator_header %}
                     {%  endblock problem_generator_header %}
@@ -58,7 +64,9 @@ Problem Central
 
                 </div>
 
+                {%  block problem_generator_answer_column_size %}
                 <div class = "col-7">
+                {%  endblock problem_generator_answer_column_size %}
                     <div id="answer_div_generator" class="answer_div">
 
                         {%  block problem_generator_answer %}
@@ -71,8 +79,9 @@ Problem Central
   </div>
 </div>
 
+{% block answer_below %}
 
-
+{%  endblock answer_below %}
 
 {%  endblock %}
 
