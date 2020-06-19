@@ -180,7 +180,7 @@ LOGGING = {
             'formatter': 'simple'
         },
         'file': {
-            'level': 'WARNING',
+            'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'simple',
             'filename': os.path.join(BASE_DIR, "debug.log"),

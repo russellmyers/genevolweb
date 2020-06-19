@@ -14,16 +14,10 @@ from django.http import JsonResponse
 
 import logging
 logger = logging.getLogger(__name__)
-logger.debug('Test debug') # <-- This should get logged to my RotatingFileHandler that I setup in `settings.py`!
-logger.info('Test info')
-logger.warning('Test warning')
-logger.error('Test error')
-logger.critical('Test critical')
-
 
 
 def index(request):
-    print('home page')
+    logger.info('home page')
     context = {}
     return render(request, 'common/index.html', context)
 
@@ -121,7 +115,7 @@ def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_cl
 
 
 def allele_freak(request):
-    print('in allele')
+    logger.info('Allele Freak')
 
     default_allele_choice = 1 # little a
     show_allele_choice = default_allele_choice
@@ -162,7 +156,7 @@ def allele_freak(request):
 
 
 def population_growth(request):
-    print('in pop growth')
+    logger.info('Populaton Growth')
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
@@ -221,6 +215,7 @@ def population_growth(request):
     return render(request, "common/pop_growth.html", context=context)
 
 def breeders_equation(request):
+    logger.info('Breeders Equation')
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
@@ -543,7 +538,7 @@ def gcm_update_type(request):
 
 def cross_map(request):
 
-    logger.debug('In cross_map')
+    logger.info('Cross Map')
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
@@ -761,7 +756,7 @@ def cross_type_for_orgs(orgs):
 
 
 def cross_sim_test(request):
-
+    logger.info('Cross Sim Test')
 
     if request.method == 'POST':
         try:
