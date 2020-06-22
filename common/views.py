@@ -11,6 +11,7 @@ import math
 from .models import PopGrowthProblem, BreedersEquationProblem, TestCrossLinkageProblem
 import json
 from django.http import JsonResponse
+from django.conf import settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -824,6 +825,25 @@ def cross_sim_test(request):
         possibles = [p1.genome.chromosome_pairs[0]]
         return render(request, "common/cross_sim_test.html",
                               context={'form':form,'p1':organisms[sel_p1],'p2': organisms[sel_p2], 'sel_p1':1, 'sel_p2':'2', 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name':'dog','org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes})
+
+
+def load_quiz(quiz_code):
+    file_name = settings.BASE_DIR + '/static/quiz/' + quiz_code + '.json'
+    with open(file_name) as json_file:
+        j  = json.load(json_file)
+
+    return j
+
+
+def quiz(request):
+    quiz_code_requested = request.GET.get('quiz-code', 'GENEV')
+
+    max_questions = request.GET.get('questions', -1)
+
+    terms = load_quiz(quiz_code_requested)
+    context= {"terms": terms, 'max_questions': max_questions}
+
+    return render(request, "common/quiz.html", context=context)
 
 def support(request):
 

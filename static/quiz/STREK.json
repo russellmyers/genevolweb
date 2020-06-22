@@ -1,0 +1,69 @@
+{
+   "Version":4,
+   "PrevVersion":3,
+   "DateUpdated":"20160228200839",
+   "PrevDateUpdated":"20160228200755",
+   "UpdateReason":"Enter update reason here",
+   "PrevUpdateReason":"Test update",
+   "TermArray":[
+      {
+         "name":"Delta Quadrant",
+         "definition":"The Borgs' native territory?",
+         "similarTerms":[
+            "Alpha Quadrant",
+            "Beta Quadrant",
+            "Gamma Quadrant"
+         ]
+      },
+      {
+         "name":"Nog",
+         "definition":"Jake's best friend",
+         "similarTerms":[
+            "Rod",
+            "Odo",
+            "Quark"
+         ]
+      },
+      {
+         "name":"Generations",
+         "definition":"The film which Kirk and Picard meet in",
+         "similarTerms":[
+            "Insurrection",
+            "First Contact",
+            "The Undiscovered Country"
+         ]
+      },
+      {
+         "name":"Alexander",
+         "definition":"Name of Worf's son",
+         "similarTerms":[
+            "Nog",
+            "Jake",
+            "Julien"
+         ]
+      },
+      {
+         "name":"Voyager",
+         "definition":"Naomi Wildman appears aboard this starship",
+         "similarTerms":[
+            "Delta Flyer",
+            "Enterprise-E",
+            "The Defiant"
+         ]
+      },
+      {
+         "name":"B'Elanna Torres",
+         "definition":"Tom Paris is married to this person",
+         "similarTerms":[
+            "Kes",
+            "Seven of Nine",
+            "Deanna Troi"
+         ]
+      }
+   ],
+   "TimeUpdated":"20:08:39",
+   "QuizCode":"STREK",
+   "PrevTimeUpdated":"20:07:55",
+   "QuizDescription":"Star Trek Quiz",
+   "QuizUserName":"trek"
+}

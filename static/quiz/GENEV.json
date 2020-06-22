@@ -1,0 +1,296 @@
+{
+   "Version":"5",
+   "DateUpdated":"20160304112825",
+   "UpdateReason":"Moved server",
+   "TermArray":[
+      {
+         "name":"DNA",
+         "definition":"Molecule/ material that carries genetic instructions in nearly all living things, comprised of nucleotides (designated A,C,G,T) and passed to offspring",
+         "similarTerms":[
+            "Genes",
+            "Chromosomes",
+            "Genome"
+         ]
+      },
+      {
+         "name":"Genes",
+         "definition":"Fundamental physical and functional units of heredity which carry information from one generation to the next",
+         "similarTerms":[
+            "DNA",
+            "Chromosomes",
+            "Genome"
+         ]
+      },
+      {
+         "name":"Chromosomes",
+         "definition":"Organized package of DNA bearing genes along its length.",
+         "similarTerms":[
+            "DNA",
+            "Genes",
+            "Genome"
+         ]
+      },
+      {
+         "name":"Genome",
+         "definition":"Entire set of DNA instructions in a cell",
+         "similarTerms":[
+            "DNA",
+            "Genes",
+            "Chromosomes"
+         ]
+      },
+      {
+         "name":"Allele",
+         "definition":"A particular variant of a locus differing in DNA nucleotide sequence from other variants of the same locus",
+         "similarTerms":[
+            "Genotype",
+            "Phenotype",
+            "Locus"
+         ]
+      },
+      {
+         "name":"Phenotype",
+         "definition":"An individual's observable traits",
+         "similarTerms":[
+            "Allele",
+            "Genotype",
+            "Locus"
+         ]
+      },
+      {
+         "name":"Genotype",
+         "definition":"The combination of alleles found in an individual",
+         "similarTerms":[
+            "Allele",
+            "Phenotype",
+            "Locus"
+         ]
+      },
+      {
+         "name":"Locus",
+         "definition":"The specific physical or recombinational location of a gene or other particular DNA sequence on a chromosome",
+         "similarTerms":[
+            "Allele",
+            "Genotype",
+            "Phenotype"
+         ]
+      },
+      {
+         "name":"Incomplete dominance",
+         "definition":"The situation wherein the phenotype of the heterozygous genotype (e.g., Bb) is distinct from and often intermediate to the phenotypes of the homozygous genotypes (BB and bb)",
+         "similarTerms":[
+            "Linkage",
+            "Epistasis",
+            "Incomplete penetrance"
+         ]
+      },
+      {
+         "name":"Mitosis",
+         "definition":"The process where a cell divides and produces two daughter cells that are exact copies of the original",
+         "similarTerms":[
+            "Meiosis"
+         ]
+      },
+      {
+         "name":"Meiosis",
+         "definition":"The process for forming gametes (sperm or egg) wherein the daughter cells only receive half the genetic information of the parent cell",
+         "similarTerms":[
+            "Mitosis"
+         ]
+      },
+      {
+         "name":"Phase",
+         "definition":"Term identifying the combination of alleles across multiple genes that an individual received from one parent as separate from the combination of alleles an individual got from the other parent",
+         "similarTerms":[
+            "Disequilibrium",
+            "Chromosome",
+            "Linkage"
+         ]
+      },
+      {
+         "name":"Linkage disequilibrium",
+         "definition":"Occurrence of an association of alleles more frequently than expected from random chance or independent assortment",
+         "similarTerms":[
+            "Phase",
+            "Epistasis",
+            "Incomplete penetrance"
+         ]
+      },
+      {
+         "name":"SNP",
+         "definition":"A position in a genome's DNA sequence wherein a single nucleotide -- A, C, G, or T -- differs among some members of a species",
+         "similarTerms":[
+            "Marker",
+            "Quantitative trait",
+            "Quantitative trait locus (QTL)",
+            "LOD score"
+         ]
+      },
+      {
+         "name":"Crossing Over",
+         "definition":"The swapping of genetic material between homologs of a single chromosome that occurs during meiosis",
+         "similarTerms":[
+            "Independent assortment",
+            "Mitosis",
+            "Genetic drift"
+         ]
+      },
+      {
+         "name":"Independent assortment",
+         "definition":"The process of random segregation of alleles at two loci into gametes, as what typically happens with alleles of genes on different chromosomes",
+         "similarTerms":[
+            "Crossing Over",
+            "Linkage disequilibrium",
+            "Gametic phase"
+         ]
+      },
+      {
+         "name":"Quantitative trait",
+         "definition":"A trait whose natural variation is often continuous and is caused by allelic variation at many genes (as well as the environment)",
+         "similarTerms":[
+            "SNP",
+            "Marker",
+            "Quantitative trait locus (QTL)",
+            "LOD score"
+         ]
+      },
+      {
+         "name":"Quantitative trait locus (QTL)",
+         "definition":"Inferred location of one or more genes with genotypic variation affecting trait variation. It is a strong hypothesis of the location of a gene, based on results of genetic mapping",
+         "similarTerms":[
+            "SNP",
+            "Marker",
+            "Quantitative trait",
+            "LOD score"
+         ]
+      },
+      {
+         "name":"LOD score",
+         "definition":"A measure of the statistical significance of association, e.g., between markers at/ near a location in the genome and the trait being studied",
+         "similarTerms":[
+            "SNP",
+            "Allele",
+            "Quantitative trait",
+            "Quantitative trait locus (QTL)"
+         ]
+      },
+      {
+         "name":"Marker",
+         "definition":"Site of known/ relative location in the genome that is used for genetic mapping, e.g., to infer the location of a trait (or QTL)",
+         "similarTerms":[
+            "SNP",
+            "Quantitative trait",
+            "LOD score",
+            "Intron"
+         ]
+      },
+      {
+         "name":"Power",
+         "definition":"The likelihood with which you'll detect an effect associated with alleles at a gene affecting a trait as a statistically significant QTL",
+         "similarTerms":[
+            "LOD score",
+            "Dominance",
+            "Penetrance",
+            "Expressivity"
+         ]
+      },
+      {
+         "name":"Linkage",
+         "definition":"A nonrandom association in the inheritance of alleles from two loci, typically ones near each other. The alleles do not assort independently.",
+         "similarTerms":[
+            "Incomplete dominance",
+            "Epistasis",
+            "Incomplete penetrance"
+         ]
+      },
+      {
+         "name":"Epistasis",
+         "definition":"An interaction between genes such that the phenotypic effect of substituting genotypes at one gene is different depending on the genotype at another gene",
+         "similarTerms":[
+            "Incomplete dominance",
+            "Linkage",
+            "Incomplete penetrance"
+         ]
+      },
+      {
+         "name":"Incomplete penetrance",
+         "definition":"Some individuals bearing a particular genotype fail to express the phenotype normally associated with that genotype",
+         "similarTerms":[
+            "Incomplete dominance",
+            "Linkage",
+            "Epistasis"
+         ]
+      },
+      {
+         "name":"Codon",
+         "definition":"Trinucleotide sequence of DNA or RNA that specifies an amino acid",
+         "similarTerms":[
+            "Code",
+            "Template",
+            "Intron"
+         ]
+      },
+      {
+         "name":"Intron",
+         "definition":"Sequence interrupting a gene that does not code for an amino acid and is removed before the RNA sequence is used as a template for a protein",
+         "similarTerms":[
+            "Codon",
+            "Transcription",
+            "Exon"
+         ]
+      },
+      {
+         "name":"Autosome",
+         "definition":"A chromosome that is inherited in the same manner in/ by the two sexes",
+         "similarTerms":[
+            "X-chromosome",
+            "Y-chromosome",
+            "Sex-chromosome"
+         ]
+      },
+      {
+         "name":"Sex chromosome",
+         "definition":"A chromosome that is inherited differently in/ by the two sexes",
+         "similarTerms":[
+            "Autosome",
+            "Y-chromosome",
+            "Trisomy"
+         ]
+      },
+      {
+         "name":"Transcription",
+         "definition":"The process of making an RNA copy of a DNA template",
+         "similarTerms":[
+            "Translation",
+            "Replication",
+            "Fertilization"
+         ]
+      },
+      {
+         "name":"Translation",
+         "definition":"Using an RNA sequence as a template to produce a specific sequence of amino acids in a protein",
+         "similarTerms":[
+            "Transcription",
+            "Replication",
+            "Fertilization"
+         ]
+      },
+      {
+         "name":"Fertilization",
+         "definition":"Union of male and female gametes to form a zygote",
+         "similarTerms":[
+            "Mitosis",
+            "Meiosis",
+            "Translation"
+         ]
+      }
+   ],
+   "PrevVersion":"5",
+   "PrevDateUpdated":"20160304111411",
+   "PrevUpdateReason":"Moved server",
+   "TimeUpdated":"11:28:25",
+   "QuizCode":"GENEV",
+   "PrevTimeUpdated":"11:14:11",
+   "QuizDescription":"App Quiz",
+   "QuizUserName":"admin"
+}

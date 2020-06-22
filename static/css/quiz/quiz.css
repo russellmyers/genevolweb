@@ -1,0 +1,69 @@
+
+#controlDiv {
+    background-color: #CFEDED;/* #dddddd;*/
+}
+
+#chooserDiv {
+
+}
+
+#progressDiv{
+    background-color: #F7F3E2;  /* blanchedalmond;*/
+}
+
+#scoreDiv {
+    border: groove;
+    background-color:  #F7F3E2; /* #F7F3E2; *//* blanchedalmond;*/
+}
+
+#quizInfoDiv {
+}
+
+
+#quizArea {
+}
+
+
+#quizChoices {
+}
+
+#navig {
+    display: none;
+}
+
+
+#score {
+}
+
+#best {
+    font-size: small;
+}
+
+#bestLab {
+    font-size: small;
+}
+
+
+.btn-slim {
+    height: 25px;
+    font-size: 15px;
+    padding: 5px 5px;
+}
+
+
+
+.correct {
+    /* correct/wrong image*/
+    height: 40px;
+    width: 40px;
+    /*margin-left: 200px;*/
+    visibility: hidden;
+}
+
+
+
+.alignLab {
+}
+
+.alignEl {
+}

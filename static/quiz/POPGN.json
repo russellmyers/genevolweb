@@ -1,0 +1,87 @@
+{
+   "Version":2,
+   "PrevVersion":"1",
+   "DateUpdated":"20160303201919",
+   "PrevDateUpdated":"20160303201726",
+   "TimeUpdated":"20:19:19",
+   "PrevTimeUpdated":"20:17:26",
+   "UpdateReason":"Fixed minor error",
+   "PrevUpdateReason":"First version",
+   "QuizCode":"POPGN",
+   "QuizDescription":"Population genetics terms",
+   "QuizUserName":"mafnoor",
+   "TermArray":[
+      {
+         "name":"stabilizing",
+         "definition":"Selection in which mean phenotype in population is more fit than extreme phenotypes",
+         "similarTerms":[
+            "overdominance",
+            "disruptive",
+            "underdominance"
+         ]
+      },
+      {
+         "name":"disruptive",
+         "definition":"Selection in which mean phenotype in population is less fit than extreme phenotypes",
+         "similarTerms":[
+            "stabilizing",
+            "overdominance",
+            "underdominance"
+         ]
+      },
+      {
+         "name":"overdominance",
+         "definition":"Selection in which heterozygotes at a locus are more fit than both homozygotes",
+         "similarTerms":[
+            "underdominance",
+            "stabilizing",
+            "disruptive"
+         ]
+      },
+      {
+         "name":"underdominance",
+         "definition":"Selection in which heterozygotes at a locus are less fit than both homozygotes",
+         "similarTerms":[
+            "overdominance",
+            "stabilizing",
+            "disruptive"
+         ]
+      },
+      {
+         "name":"gene flow",
+         "definition":"Exchange of alleles between populations",
+         "similarTerms":[
+            "genetic drift",
+            "inbreeding",
+            "Wahlund effect"
+         ]
+      },
+      {
+         "name":"genetic drift",
+         "definition":"Random fluctuations in allele frequency resulting from small population size",
+         "similarTerms":[
+            "gene flow",
+            "inbreeding",
+            "Wahlund effect"
+         ]
+      },
+      {
+         "name":"inbreeding",
+         "definition":"Producing offspring through matings with closely related individuals",
+         "similarTerms":[
+            "genetic drift",
+            "gene flow",
+            "Wahlund effect"
+         ]
+      },
+      {
+         "name":"Wahlund effect",
+         "definition":"Observing fewer heterozygotes than predicted by Hardy-Weinberg because one is sampling across multiple populations",
+         "similarTerms":[
+            "genetic drift",
+            "gene flow",
+            "inbreeding"
+         ]
+      }
+   ]
+}

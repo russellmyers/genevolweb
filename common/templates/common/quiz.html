@@ -1,0 +1,597 @@
+{%  extends 'common/base.html' %}
+{%  load static %}
+ {% block title %}
+Self Test Quiz
+{% endblock %}
+
+
+{%  block app_title %}
+Self Test Quiz
+{% endblock  %}
+
+{%  block custom_css %}
+    <link href="{%  static "css/quiz/quiz.css" %}" rel="stylesheet">
+{%  endblock custom_css %}
+
+{%  block content %}
+   <div class="container">
+    <div class="row border border-dark" id="controlDiv">
+          <div id="chooserDiv" class="col-md-3">
+              <div class="form-group">
+                  <div class="form-group">
+                      <label for="sel1">Select quiz:</label>
+                      <select class="form-control" id="sel1" onchange="quizSelected()">
+                        <option value="GENEV">Genetics & Evolution Quiz</option>
+                        <option value="POPGN">Population Genetics Quiz</option>
+                      </select>
+                  </div>
+                  <!--label for chooseQuizCode>Choose Quiz Code:</label>
+                  <div class="row">
+                      <input type = "text" class="form-control input-sm very-narrow-select ml-2" name="chooseQuizCode" onchange="quizCodeEntered(event,true)" id = "chooseQuizCode">
+                      <button type="button" class="btn btn-outline-secondary btn-sm ml-1" id = "loadQuizBut" onclick="loadQuizButPressed(event)">Load</button>
+                   </div>
+                   <div class="row mt-1">
+                    <span> OR</span>
+                    <button type = "button" class = "btn btn-outline-secondary btn-sm ml-2" onclick="defaultQuizCodePressed(event)">Default Quiz</button>
+                   </div-->
+              </div>
+          </div>
+            <div id = "progressDiv" class="col-md-3">
+               <div class="row mt-2">
+                   <div class = "progress">
+                            <progress id = "scoreProg" class="progress-bar bg-info" role="progressbar" max = "40" min = "0" value = "20"></progress>
+                   </div>
+
+                    <label id = "progressLab" class="ml-2">Progress:</label>
+                    <span id = "progressEl" class="ml-2"> 7 / 30</span>
+               </div>
+
+                <!--label id = "skippedLab">Skipped: </label>
+                <span id = "skipped" class="ml-2">3</span--->
+                <!--label id = "incorrectLab">Incorrect: </label><span id = "incorrect" class="ml-2">2</span-->
+
+                <!--button class = "navBut btn btn-outline-secondary btn-sm ml-1" onclick="nextPressed(event, true)" type = "button">Next Question</button-->
+                <div class="text-center">
+                <button class = "navBut btn btn-outline-secondary btn-sm ml-1 mb-1" onclick="restartPressed(event)" type = "button">Restart Quiz</button>
+                </div>
+           </div>
+            <div id = "scoreDiv" class="col-2 m-2">
+                <div class="row">
+                    <div class="col-9 h4">
+                        <label id = "scoreLab" class = "alignLab">Score:</label>
+                    </div>
+                    <div class="col-3 h4">
+                        <span id = "score" class = "alignEl">10</span>
+                    </div>
+                </div>
+            <div class="row">
+                    <div class="col-9">
+                        <label id = "bestLab" class = "alignLab">Best:</label>
+                    </div>
+                    <div class="col-3">
+                        <span id = "best" class = "alignEl">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quizInfoDiv" class="col-3">
+                <small><span id = "quizMessage" class="float-right text-muted">Quiz code: ABCDE<br>Description: Default quiz<br>Created by: admin</span></small>
+
+            </div>
+        </div>
+    <!--hr-->
+
+
+
+        <div id = "quizArea" class="mt-4">
+
+            <div class="row" id="quizContents">
+            <div class = "col-1"></div>
+            <div class="col-10 border border-dark">
+             <div class="text-center" id="quizName">
+                 <h4>Hello there</h4>
+            </div>
+            <div id = "quizQuestion" class="mt-2 ml-1 lead">
+                This is a question
+            </div>
+            <div id = "quizChoices" class="mt-4">
+                <div class="row">
+                    <div class="col-2"></div>
+                <div class="col-8" >
+                    <span class="pointsAdded" id="pointsAdded1">+1</span>
+                    <img id = "correctImg1" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
+                    <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value = "1" id = "optionBut1" type = "button">A</button>
+                    <label id = "option1" class="ml-2">Option 1</label>
+                    <br>
+                    <span class="pointsAdded" id="pointsAdded2">+1</span>
+                    <img id = "correctImg2" class="correct mt-4" src="{% get_static_prefix %}img/cross.PNG">
+                    <button class ="choice-button btn btn-primary btn-lg ml-4"  onclick="quizChoicePressed(event)" value = "2" id = "optionBut2"type = "button">B</button>
+                    <label id = "option2" class="ml-2">Option 2</label>
+                    <br>
+                    <span class="pointsAdded" id="pointsAdded3">+1</span>
+                    <img id = "correctImg3" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
+                    <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value="3" id = "optionBut3" type = "button">C</button>
+                    <label id = "option3" class="ml-2">Option 3</label>
+                    <br>
+                    <span class="pointsAdded" id="pointsAdded4">+1</span>
+                    <img id = "correctImg4" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
+                    <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value="4" id = "optionBut4" type = "button">D</button>
+                    <label id = "option4" class="ml-2">Option 4</label>
+                    <br>
+
+                </div>
+                <!--div class="col-4">
+                    <button class ="btn btn-info btn-lg ml-4 mt-4" onclick="prevPressed(event)" value="-1" id = "prevButton" type = "button">< Previous </button>
+                    <button class ="btn btn-info btn-lg ml-4 mt-4" onclick="nextPressed(event)" value="1" id = "nextButton" type = "button"> Next ></button>
+
+
+                </div-->
+                <div class="col-2">
+                </div>
+                </div>
+
+            </div>
+            </div>
+            <div class="col-1">
+                                             <div class="row align-items-center justify-content-center mb-2 mt-2">
+            <div id = "navig" class="col-4 text-center">
+                <label>Congratulations - Quiz Complete!</label>
+                <br>
+                <label>Score: </label> <span id = "finalScore"></span>
+                <br>
+                <button class = "navBut btn btn-outline-primary btn-sm ml-1 mb-1 mt-1" onclick="restartPressed(event)" type = "button">Restart Quiz</button>
+
+                <!--button class = "navBut" onclick="nextPressed(event)" type = "button">Next Question</button>
+                <br>
+                <button class = "navBut" onclick="qModelChanged('R')" type = "button">Restart</button-->
+
+            </div>
+            </div>
+
+            </div>
+            </div>
+
+
+
+
+        </div>
+{#           {{  terms }}#}
+
+<!-- Button trigger modal>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+  Launch demo modal
+</button-->
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+       <div class="text-right">
+        <a href="{%  url 'quiz' %}?quiz-code=STREK"><img src="{% get_static_prefix %}img/quiz/strek.PNG" height="20px"></a>
+      </div>
+    </div>
+
+{{ terms | json_script:"jTerms" }}
+{{  max_questions | json_script:"jMaxQuestions" }}
+
+
+{%  endblock %}
+
+    <!--div class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+</div-->
+
+{%  block script %}
+<script>
+
+/* Randomize array in-place using Durstenfeld shuffle algorithm */
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+function hideFeedback() {
+    correctImgs = document.getElementsByClassName('correct');
+    for (i = 0; i < correctImgs.length;++i) {
+        correctImgs[i].style.visibility = 'hidden';
+    }
+   pointsAdded = document.getElementsByClassName('pointsAdded');
+    for (i = 0; i < pointsAdded.length;++i) {
+        pointsAdded[i].style.visibility = 'hidden';
+
+    }
+}
+
+function setTerm(termNum) {
+
+    if (termNum  < 0) {
+      return;
+    }
+    currentTerm = termNum;
+
+    //trigger:
+
+    {#if (currentTerm == 0) {#}
+    {#    document.getElementById('prevButton').style.visibility = 'hidden';#}
+    {#    document.getElementById('nextButton').style.visibility = 'visible';#}
+    {#}#}
+    {#else if (currentTerm >= termsArray.length) {#}
+    {#    document.getElementById('prevButton').style.visibility = 'visible';#}
+    {#    document.getElementById('nextButton').style.visibility = 'hidden';#}
+    {##}
+    {#}#}
+    {#else {#}
+    {#    document.getElementById('prevButton').style.visibility = 'visible';#}
+    {#    document.getElementById('nextButton').style.visibility = 'visible';#}
+    {##}
+    {##}
+    {#}#}
+
+
+
+
+
+
+
+    if (currentTerm >= termsArray.length) {
+        /*$('#exampleModal').modal('show');
+        document.getElementById('exampleModal').modal();*/
+        updateProgressBar();
+        document.getElementById('finalScore').innerHTML = '<b>' + numCorrect + '</b>';
+        document.getElementById('navig').style.display = 'block';  //visibility = 'visible';
+
+    }
+    else {
+        updateProgressBar();
+        hideFeedback();
+        showScore();
+        showTerm(currentTerm);
+        choice = termsArray[currentTerm]['choice'];
+        correctChoice = termsArray[currentTerm]['answers']['answerIndex'];
+        showFeedback(choice, correctChoice);
+    }
+
+
+
+
+
+
+}
+
+function prevPressed(e) {
+    setTerm(currentTerm-1);
+
+
+}
+function nextPressed(e) {
+
+    if (termsArray[currentTerm]['choice'] == -1) {
+        numSkipped +=1;
+    }
+    setTerm(currentTerm+1);
+    {#updateProgressBar();#}
+    {#hideFeedback();#}
+    {##}
+    {#if (currentTerm >= termsArray.length) {#}
+    {#    alert('Quiz finished!');#}
+    {#}#}
+    {##}
+    {#showScore();#}
+    {#showTerm(currentTerm);#}
+}
+
+function showScore() {
+    //document.getElementById('incorrect').innerHTML = numIncorrect;
+    document.getElementById('score').innerHTML = numCorrect;
+    //document.getElementById('skipped').innerHTML = numSkipped;
+    document.getElementById('best').innerHTML = best;
+}
+
+function showFeedback(choice, correctChoice) {
+
+    if (choice == -1) {
+        return;
+    }
+
+
+    hideFeedback();
+
+    choiceNum = parseInt(choice) + 1;
+    imgEl = document.getElementById('correctImg' + choiceNum);
+    if (choice == correctChoice) {
+        imgEl.src = "{% get_static_prefix %}img/tick.jpg";
+    }
+    else {
+        imgEl.src = "{% get_static_prefix %}img/cross.PNG";
+    }
+    imgEl.style.visibility = 'visible';
+
+    if (choice == correctChoice) {
+        pointsAddedEl = document.getElementById('pointsAdded' + choiceNum);
+        pointsAddedEl.innerHTML = '+' + termsArray[currentTerm]['points'];
+        pointsAddedEl.style.visibility = 'visible';
+    }
+
+
+}
+
+function updateScore(choice, correctChoice) {
+
+    var points = 4 - termsArray[currentTerm]['attempts'];
+    termsArray[currentTerm]['points']  = points;
+
+    if (choice == correctChoice) {
+        numCorrect +=points;
+    }
+    else {
+        numIncorrect +=1;
+    }
+    if (numCorrect > best) {
+        best = numCorrect;
+    }
+
+}
+
+function toggleButtons(disable) {
+    choiceButtons = document.getElementsByClassName('choice-button');
+    for (var i = 0;i < choiceButtons.length;++i) {
+        choiceButtons[i].disabled = disable;
+    }
+
+}
+
+function quizChoicePressed(e) {
+    var choice = parseInt(e.target.value) - 1;
+    termsArray[currentTerm]['choice'] = choice;
+    termsArray[currentTerm]['attempts'] +=1;
+    correctChoice = termsArray[currentTerm]['answers']['answerIndex'];
+    updateScore(choice, correctChoice);
+    showFeedback(choice, correctChoice);
+    showScore();
+    if (choice == correctChoice) {
+        toggleButtons(true);
+        if (currentTerm >= termsArray.length -1) {
+            nextPressed();
+        }
+        else {
+            setTimeout(function () {nextPressed();}, 2000);
+        }
+        //alert(choice + ' ' + correctChoice);
+    }
+}
+
+function randomInteger(min, max) {
+    // between min and max, inclusive
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomTerm(termsArray) {
+    r= randomInteger(0, termsArray.length- 1);
+    randomTerm = termsArray[r]['name'];
+    return randomTerm;
+
+}
+
+function shuffleAnswers(extraTerms, answer) {
+        shuffleArray(extraTerms);
+        answerInd = extraTerms.indexOf(answer);
+        return {'possibleAnswers': extraTerms, 'answerIndex': answerInd};
+}
+
+function removeConfusingChoices(term, extraTerms) {
+      if (term['name'] == 'Sex chromosome') { //Manually remove confusing choices
+        var index = extraTerms.indexOf('X-chromosome');
+        if (index > -1) {
+            extraTerms.splice(index, 1);
+        }
+        index = extraTerms.indexOf('Y-chromosome');
+        if (index > -1) {
+            extraTerms.splice(index, 1);
+        }
+        index = extraTerms.indexOf('Sex-chromosome');
+        if (index > -1) {
+            extraTerms.splice(index, 1);
+        }
+      }
+
+}
+
+function extrapolateSimilarTerms(termNum, termsArray) {
+    term = termsArray[termNum];
+    extraTerms = term['similarTerms'].slice();
+    removeConfusingChoices(term, extraTerms);
+
+    if (extraTerms.length >= 4) {
+        shuffleArray(extraTerms);
+        extraTerms = extraTerms.slice(0,3); // Only need 3 extra terms (+ real answer makes 4)
+    }
+
+    extraTerms.push(term['name']);
+    if (extraTerms.length >= 4) {
+        return shuffleAnswers(extraTerms, term['name']);
+    }
+
+    for (var i = 0; i < term['similarTerms'].length; ++i) {
+        similarTerm = term['similarTerms'][i]
+        for (var j = 0; j < termsArray.length; ++j) {
+
+            if (termsArray[j]['name'] == similarTerm) {
+                for ( var k = 0; k < termsArray[j]['similarTerms'].length; ++k) {
+                    if (extraTerms.includes(termsArray[j]['similarTerms'][k])) {
+
+                    } else {
+                        extraTerms.push(termsArray[j]['similarTerms'][k])
+                        removeConfusingChoices(term, extraTerms);
+                        if (extraTerms.length >= 4) {
+                            return shuffleAnswers(extraTerms, term['name']);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    removeConfusingChoices(term, extraTerms);
+
+    while (extraTerms.length < 4) {
+        randomTerm = getRandomTerm(termsArray);
+        if (extraTerms.includes(randomTerm)) {
+
+        }
+        else {
+            extraTerms.push(randomTerm);
+        }
+        removeConfusingChoices(term, extraTerms);
+    }
+
+    return shuffleAnswers(extraTerms, term['name']);
+}
+
+
+function loadTermsArray(terms) {
+
+    document.getElementById('quizMessage').innerHTML = 'Quiz code: ' + terms['QuizCode'] + '<br>Description: ' + terms['QuizDescription'] + '<br>Created by: ' + terms['QuizUserName']
+
+    if (terms['QuizCode'] == 'STREK') {
+        var x = document.getElementById("sel1");
+        var option = document.createElement("option");
+        option.text = "Star Trek Quiz";
+        option.value='STREK';
+        x.add(option);
+
+    }
+
+
+
+    var e = document.getElementById("sel1");
+    for (var i =0; i < e.options.length;++i) {
+        if (e.options[i].value == terms['QuizCode']) {
+            e.selectedIndex = i;
+            document.getElementById('quizName').innerHTML='<h4>' +e.options[i].innerHTML+ '</h4>'
+        }
+    }
+
+
+    termsArray = terms.TermArray.slice();
+    for (var i=0;i < termsArray.length; ++i) {
+        var extraTerms = extrapolateSimilarTerms(i, termsArray);
+        termsArray[i]['answers'] = extraTerms;
+        termsArray[i]['choice'] = -1;
+        termsArray[i]['attempts'] = 0;
+    }
+
+
+    shuffleArray(termsArray);
+    return termsArray;
+
+}
+
+
+function showTerm(currentTerm) {
+    term = termsArray[currentTerm];
+    document.getElementById('quizQuestion').innerHTML = 'Definition:<br> <b>' + term['definition'] + '</b>';
+    for (i=1;i< 5;++i) {
+        document.getElementById('option' + i).innerHTML = term['answers']['possibleAnswers'][i-1];
+    }
+    if (termsArray[currentTerm]['choice'] == -1) {
+        toggleButtons(false);
+    }
+    else {
+        toggleButtons(true); //already answered
+    }
+
+
+}
+
+
+function initialiseProgressBar() {
+
+    progBar = document.getElementById("scoreProg");
+    progBar.max = "" + termsArray.length;
+    progBar.min = "" + 0;
+    progBar.value = "" + 0;
+    document.getElementById('progressEl').innerHTML = currentTerm + ' / ' + termsArray.length;
+}
+
+function updateProgressBar() {
+    progBar = document.getElementById("scoreProg");
+    progBar.value = currentTerm;
+    document.getElementById('progressEl').innerHTML = currentTerm + ' / ' + termsArray.length;
+
+
+}
+
+function restartPressed(e) {
+    initialiseQuiz();
+
+}
+
+function quizSelected() {
+        var e = document.getElementById("sel1");
+        var quizCode = e.options[e.selectedIndex].value;
+        window.location.href = "{%  url 'quiz' %}" + "?quiz-code=" + quizCode;
+
+
+
+}
+
+function initialiseQuiz() {
+    termsArray = loadTermsArray(terms);
+    if (maxQuestions == -1) {
+        termsArray = termsArray.slice(); //(0,2);
+    }
+    else {
+        termsArray = termsArray.slice(0, maxQuestions);
+}
+
+    correctChoice = -2;
+    numCorrect = 0;
+    numIncorrect = 0;
+    numSkipped = 0;
+
+    setTerm(0);
+
+    //choice = -1;
+    initialiseProgressBar();
+    hideFeedback();
+    showScore();
+    showTerm(currentTerm);
+
+    document.getElementById('navig').style.display = 'none';
+
+}
+
+
+var terms = JSON.parse(document.getElementById('jTerms').textContent);
+var maxQuestions =  JSON.parse(document.getElementById('jMaxQuestions').textContent);
+var best = 0;
+
+initialiseQuiz();
+
+x = 1;
+
+
+</script>
+{%  endblock script %}
