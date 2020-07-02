@@ -1,0 +1,37 @@
+
+.punnett-square {
+    height: 350px;
+    width: 700px;
+    /*background-color: beige;*/
+}
+
+.gender-image {
+    height: 30px;
+}
+
+#cross-settings {
+
+
+}
+
+.slim-button {
+    height: 30px;
+}
+
+.switch-toggle {
+   float: left;
+   background: #242729;
+}
+.switch-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+.switch-toggle input + label {
+  padding: 7px;
+  float:left;
+  color: #fff;
+  cursor: pointer;
+}
+.switch-toggle input:checked + label {
+  background: lightblue;
+}

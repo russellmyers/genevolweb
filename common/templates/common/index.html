@@ -14,7 +14,53 @@ GenEvol Home
 
     <div class="container">
 
+
+
         <div class="row justify-content-center">
+              <div class="col-auto mb-4">
+                <div class="card h-100 card-ge">
+                 <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Cross Simulator</h4>
+                  </div>
+                   <div class="embed-responsive embed-responsive-16by9">
+                       <a href="{%url 'cross_sim' %}"><img class="card-img-top embed-responsive-item" src="{%  static  'img/gen_crosssim_new.PNG' %}" alt="Card image cap"></a>
+                   </div>
+                  <div class="card-body">
+
+                      <p>
+                          Simulate Mendelian crosses
+                                              <br>
+                                              <br>
+                      </p>
+                     <div class="text-center">
+                        <a href="{%url 'cross_sim' %}" class="btn btn-primary">Run</a>
+                     </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-auto mb-4">
+                <div class="card h-100 card-ge">
+                  <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Allele<br> Freak</h4>
+                  </div>
+                  <div class="embed-responsive embed-responsive-16by9">
+
+                      <a href="{%url 'allele_freak' %}"><img class="card-img-top embed-responsive-item" src="{%  static 'img/gen_allelefreak.PNG' %}" alt="Card image cap"></a>
+                  </div>
+                  <div class="card-body">
+                      <p>Allele frequencies over generations
+                        <br>
+                        <br>
+
+                      </p>
+                     <div class="text-center">
+                         <a href="{%url 'allele_freak' %}" class="btn btn-primary">Run</a>
+                     </div>
+                  </div>
+                </div>
+              </div>
+
+
               <div class="col-auto mb-4">
                 <div class="card h-100 card-ge">
                   <div class="card-header">
@@ -82,27 +128,6 @@ GenEvol Home
 
 
 
-              <div class="col-auto mb-4">
-                <div class="card h-100 card-ge">
-                  <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Allele<br> Freak</h4>
-                  </div>
-                  <div class="embed-responsive embed-responsive-16by9">
-
-                      <a href="{%url 'allele_freak' %}"><img class="card-img-top embed-responsive-item" src="{%  static 'img/gen_allelefreak.PNG' %}" alt="Card image cap"></a>
-                  </div>
-                  <div class="card-body">
-                      <p>Allele frequencies over generations
-                        <br>
-                        <br>
-
-                      </p>
-                     <div class="text-center">
-                         <a href="{%url 'allele_freak' %}" class="btn btn-primary">Run</a>
-                     </div>
-                  </div>
-                </div>
-              </div>
 
               <div class="col-auto mb-4">
                 <div class="card h-100 card-ge">
@@ -125,27 +150,6 @@ GenEvol Home
                 </div>
               </div>
 
-              <div class="col-auto mb-4">
-                <div class="card h-100 card-ge">
-                 <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Cross Simulator</h4>
-                  </div>
-                   <div class="embed-responsive embed-responsive-16by9">
-                  <img class="card-img-top embed-responsive-item" src="{%  static  'img/gen_crosssim_with_coming_soon.png' %}" alt="Card image cap">
-                   </div>
-                  <div class="card-body">
-
-                      <p>
-                          Simulate Mendelian crosses
-                                              <br>
-                                              <br>
-                      </p>
-                     <div class="text-center">
-                        <button type="button" class="btn btn-primary disabled">Run</button>
-                     </div>
-                  </div>
-                </div>
-               </div>
 
               <div class="col-auto mb-4">
                 <div class="card h-100 card-ge">

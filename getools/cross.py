@@ -410,6 +410,13 @@ class ChromosomePair(SerialiserMixin):
 
             phen += lower_allele
             phen += '+' if num_lower < 2 else '-'
+        if len(phen) == 6:
+            pass
+        elif (len(phen) == 4) :
+            phen += 'c+'
+        elif (len(phen) == 2):
+            phen += 'b+c+'
+
         return phen
 
 
@@ -443,7 +450,7 @@ class ChromosomePair(SerialiserMixin):
 
         return pairs
 
-    def possible_gametes(self):
+    def possible_gametes(self, suppress_combine_same=False):
         probs = self.crossover_probabilities()
 
 
@@ -465,15 +472,19 @@ class ChromosomePair(SerialiserMixin):
                 #print(allele,phase)
 
             alleles_only = [p[0] for p in possible]
-            found = False
-            for p_with_prob in possibles_with_prob:
-                if alleles_only == p_with_prob[0]:
-                    p_with_prob[1] += prob
-                    p_with_prob[2] += 1
-                    found = True
-                    break
-            if not found:
-                possibles_with_prob.append([alleles_only, prob, 1, len(possibles)])
+            if suppress_combine_same:
+                prob = 1 / len(possibles)
+                possibles_with_prob.append([alleles_only, prob, 1, len(possibles) ])
+            else:
+                found = False
+                for p_with_prob in possibles_with_prob:
+                    if alleles_only == p_with_prob[0]:
+                        p_with_prob[1] += prob
+                        p_with_prob[2] += 1
+                        found = True
+                        break
+                if not found:
+                    possibles_with_prob.append([alleles_only, prob, 1, len(possibles)])
 
         return possibles_with_prob
 
@@ -842,10 +853,10 @@ class Genome(SerialiserMixin):
         return {'gen':str(self),'phen':self.phenotype(), 'gen_phase':self.genotype()}
 
 
-    def possible_gametes(self):
+    def possible_gametes(self, suppress_combine_same=False):
         all_possibles_with_prob = []
         for i, cp in enumerate(self.chromosome_pairs):
-            possibles_with_prob  = cp.possible_gametes()
+            possibles_with_prob  = cp.possible_gametes(suppress_combine_same=suppress_combine_same)
             all_possibles_with_prob.append(possibles_with_prob)
 
         possibles = list(itertools.product(*all_possibles_with_prob))
@@ -866,8 +877,10 @@ class Genome(SerialiserMixin):
 
         return combined_possibles
 
-    def possible_gametes_formatted(self, dec_places=3):
-        possibles = [[''.join([str(p) for p in possible[0]]),round(possible[1],dec_places),possible[2],possible[3]] for possible in self.possible_gametes()]
+    def possible_gametes_formatted(self, dec_places=3, suppress_combine_same = False):
+        possibles = [[''.join([str(p) for p in possible[0]]),round(possible[1],dec_places),possible[2],possible[3]] for possible in self.possible_gametes(suppress_combine_same=suppress_combine_same)]
+
+        possibles.sort(key=lambda x: x[0])
         return possibles
 
     def mate(self, other_genome):
