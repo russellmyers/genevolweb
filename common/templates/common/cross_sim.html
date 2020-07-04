@@ -16,233 +16,109 @@ Cross Simulator
 {%  block content %}
 
 <div class = "container-fluid">
-
-{#<div class="switch-toggle switch-3 switch-candy">#}
-{##}
-{#  <input id="on" name="state-d" type="radio" checked="" />#}
-{#  <label for="on" onclick="">Hom Dom</label>#}
-{##}
-{#  <input id="na" name="state-d" type="radio" checked="checked" />#}
-{#  <label for="na" class="disabled" onclick="">Het</label>#}
-{##}
-{#  <input id="off" name="state-d" type="radio" />#}
-{#  <label for="off" onclick="">Hom Rec</label>#}
-{##}
-{#</div>#}
-
-<div class = "row">
-<div class = "col-xs-12 col-sm-6 col-md-2 ml-4 border" id="cross-settings">
-    <form method="POST" id="type_form" action="{%  url 'cross_sim' %}">
-{% csrf_token %}
-    <p class="lead">
-        Settings
-    </p>
-
-               <p>
-                Cross Type: <br>{{ form.cross_type }}
-            </p>
-
-
-            <p>
-        <!--div class = "row mt-4"-->
-                  # Loci:
-            <!--div class = "col-sm-3"-->
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-
-
-                    {% for radio in form.alleles %}
-                        <div class="myradio3 btn btn-info btn-sm slim-button">
-                            {{ radio }}
+    <div class = "row">
+        <div class = "col-xs-12 col-sm-6 col-md-2 ml-4 border" id="cross-settings">
+                <form method="POST" id="type_form" action="{%  url 'cross_sim' %}">
+                    {% csrf_token %}
+                    <p class="lead">
+                        Settings
+                    </p>
+                    <p>
+                        Cross Type: <br>{{ form.cross_type }}
+                    </p>
+                    <p>
+                        # Loci:
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                {% for radio in form.alleles %}
+                                    <div class="myradio3 btn btn-info btn-sm slim-button">
+                                        {{ radio }}
+                                    </div>
+                                {% endfor %}
                         </div>
-                    {% endfor %}
-                 </div>
-                <br>
-             </p>
-        <!--/div-->
-        <!--div class = "row mt-4"-->
-            <!--/div-->
-            <!--div class =  "col-sm-4"-->
-            <!--/div-->
-           <!--div class = "col-sm-4"-->
-        <!--/div-->
-        <!--div class = "row mt-4"-->
-            Show: <br>
-               <div class="btn-group btn-group-toggle" data-toggle="buttons">
-
-                    {% for radio in form.gen_phen %}
-                        <div class="myradio4 btn btn-info btn-sm slim-button">
-                            {{ radio }}
+                        <br>
+                    </p>
+                        Show: <br>
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            {% for radio in form.gen_phen %}
+                                <div class="myradio4 btn btn-info btn-sm slim-button">
+                                    {{ radio }}
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
-                 </div>
-           <!--/div-->
-        <!--/div-->
-
-
- </form>
-
-
-</div>
-<div class = "col-xs-12 col-md-12 col-lg-9 ml-2">
-
-      <div class="row">
-
-            <!--div class="col-sm-4"-->
-               <!--div class="row"-->
-           <div class = "col-sm-4 mt-4 justify-content-center">
-             <div class="text-center">
-
-  
-
-                 <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
-                    {% for radio in form.p1 %}
-                        <div class="btn btn-info btn-sm slim-button">
-                            {{ radio }}
-                        </div>
-                    {% endfor %}
-                 </div>
-               </div>
-               <!--/div-->
-               <!--div class="row"-->
-                <div class="text-center">
-                    <span id="p1_gen">{{ p1 }}</span>
-                    <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->
-                    <img id="p1_img" data-toggle="tooltip" data-html="true" title= "Phase:&#10;{{ parents.0.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.0 }}" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.0.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
-                    <img src="{%  get_static_prefix %}img/cs/female_transp.png" id="gender-female-image" class="gender-image">
-                   <!--/div-->
+                </form>
+        </div>
+        <div class = "col-xs-12 col-md-12 col-lg-9 ml-2">
+            <div class="row">
+                <div class = "col-sm-4 mt-4 justify-content-center">
+                    <div class="text-center">
+                         <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
+                            {% for radio in form.p1 %}
+                                <div class="btn btn-info btn-sm slim-button">
+                                    {{ radio }}
+                                </div>
+                            {% endfor %}
+                         </div>
+                    </div>
+                    <div class="text-center">
+                        <span id="p1_gen">{{ p1 }}</span>
+                        <img id="p1_img" data-toggle="tooltip" data-html="true" title= "Phase:&#10;{{ parents.0.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.0 }}" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.0.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
+                        <img src="{%  get_static_prefix %}img/cs/female_transp.png" id="gender-female-image" class="gender-image">
+                    </div>
                 </div>
-            </div>
-            <div class="col-sm-1  mt-4 text-center">
-
+                <div class="col-sm-1  mt-4 text-center">
                      <button id="cross" name="cross" class="btn btn-primary btn-lg mt-3" onclick="crossButClicked(event);" type="submit">Meiosis</button>
+                </div>
+                <div class = "col-sm-4 mt-4 justify-content-center">
+                     <div class="text-center">
+                         <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
+                            {% for radio in form.p2 %}
+                                <div class="myradio2 btn btn-info btn-sm slim-button">
+                                    {{ radio }}
+                                </div>
+                            {% endfor %}
+                         </div>
+                     </div>
 
-             </div>
-
-            <div class = "col-sm-4 mt-4 justify-content-center">
-             <div class="text-center">
-                 <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
-                    {% for radio in form.p2 %}
-                        <div class="myradio2 btn btn-info btn-sm slim-button">
-                            {{ radio }}
-                        </div>
-                    {% endfor %}
+                 <div class="text-center">
+                     <span id="p2_gen">{{ p2 }}</span>
+                    <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->
+                    <img id="p2_img"  title="Phase:&#10;{{ parents.1.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.1 }}&#10;"src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.1.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
+                    <img src="{%  get_static_prefix %}img/cs/male_transp.png" id="gender-male-image" class="gender-image">
                  </div>
-             </div>
-
-             <div class="text-center">
-                 <span id="p2_gen">{{ p2 }}</span>
-                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->
-                <img id="p2_img"  title="Phase:&#10;{{ parents.1.gen_phase }}&#10;&#10;Expected gamete frequencies:&#10;{{parent_poss_gametes.1 }}&#10;"src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.1.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >
-                <img src="{%  get_static_prefix %}img/cs/male_transp.png" id="gender-male-image" class="gender-image">
-             </div>
+              </div>
+                <div class="col-sm-3">
+                   <small>
+                      {% for descr in phen_descriptions %}
+                        {{  descr }}
+                        <br>
+                      {%  endfor %}
+                   </small>
+              </div>
             </div>
 
+            <div class = "row">
+                <div class = "col-3">
 
-            <div class="col-sm-3">
-                               <small>
+                    <div id = 'cell-zoom' style="display:none;">
 
-                                      {% for descr in phen_descriptions %}
-                                        {{  descr }}
-                                        <br>
-                                      {%  endfor %}
-                               </small>
-             </div>
-        </div>
+                        <img id="zoom-image" src = "" width="200px" style="display:none;">
+                        <span id="zoom-genotype" class="display-4" style="display:none;"></span>
+                        <br>
+                        <span id="num-same"></span> / <span id="tot-num"></span>
 
+                    </div>
+                </div>
+                <div id="punnett-square" class="punnett-square col-6">
+                    <canvas id="canvas">
 
+                    </canvas>
 
-{#     <div class = "container">#}
-{#        <div class="row">#}
-{##}
-{#            <div class="col-sm-6">#}
-{#                Parent 1#}
-{#                <div class="btn-group btn-group-toggle" data-toggle="buttons">#}
-{#                  <label class="btn btn-secondary" id="lab_option1_1" >#}
-{#                    <input type="radio" name="options_1" id="option1_1"  value=1 onchange="handleClick(this);" > Hom Dominant#}
-{#                  </label>#}
-{#                  <label class="btn btn-secondary active" id="lab_option2_1">#}
-{#                    <input type="radio" name="options_1" onchange="handleClick(this);" id="option2_1" value=2 checked> Heterozygous#}
-{#                  </label>#}
-{#                  <label class="btn btn-secondary">#}
-{#                    <input type="radio" name="options_1" onchange="handleClick(this);" id="option3_1" value=3> Hom Recessive#}
-{#                  </label>#}
-{#                </div>#}
-{#                <br>#}
-{#                <span id="p1_gen">{{ p1 }}</span>#}
-{#                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->#}
-{#                <img id="p1_img" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.0.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >#}
-{#                <br>#}
-{#                <span id = "p1_gams">{{  parent_poss_gametes.0 }}</span>#}
-{#                <span id = "p1_gen_phase">{{  parents.0.gen_phase }}</span>#}
-{#            </div>#}
-{#            <div class="col-sm-6">#}
-{#                Parent 2#}
-{#                <div class="btn-group btn-group-toggle" data-toggle="buttons">#}
-{#                  <label class="btn btn-secondary">#}
-{#                    <input type="radio" name="options_2" id="option1_2"  onchange="handleClick(this);" value=1> Hom Dominant#}
-{#                  </label>#}
-{#                  <label class="btn btn-secondary">#}
-{#                    <input type="radio" name="options_2" id="option2_2"  onchange="handleClick(this);" value=2> Heterozygous#}
-{#                  </label>#}
-{#                  <label class="btn btn-secondary active">#}
-{#                    <input type="radio" name="options_2" id="option3_2"  checked onchange="handleClick(this);" value=3> Hom Recessive#}
-{#                  </label>#}
-{#                </div>#}
-{#                <br>#}
-{#                <span id="p2_gen">{{ p1 }}</span>#}
-{#                <!--img id="tst_id" src="" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}"-->#}
-{#                <img id="p2_img" src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_{{ parents.1.phen }}.png" width="{%  if genome_name == "pea" %}60px{%  else %}100px{%  endif %}" alt="something" >#}
-{#                <br>#}
-{#                <span id = "p2_gams">{{  parent_poss_gametes.1 }}</span>#}
-{#                <span id = "p2_gen_phase">{{  parents.1.gen_phase }}</span>#}
-{#            </div>#}
-{#        </div>#}
-{#        </div>#}
-        <div class = "row">
-            <div class = "col-3">
-
-                <div id = 'cell-zoom' style="display:none;">
-
-                    <img id="zoom-image" src = "" width="200px" style="display:none;">
-                    <span id="zoom-genotype" class="display-4" style="display:none;"></span>
-                    <br>
-                    <span id="num-same"></span> / <span id="tot-num"></span>
 
                 </div>
             </div>
-            <div id="punnett-square" class="punnett-square col-6">
-                <canvas id="canvas">
-
-                </canvas>
-
-
-            </div>
         </div>
-
-
-
-{#        <div class ="row">#}
-{#            <div class="col text-center">#}
-{#                {%  for child in children %}#}
-{#                    {{ child}}#}
-{#                {%  endfor %}#}
-{#            </div>#}
-{##}
-{#        </div>#}
-
-
-{#      <div class ="row">#}
-{#            <div class="col text-center" height="50px" style="overflow-y:auto">#}
-{##}
-{#                {%  for child_unique_phenotype, count in children_unique_phenotypes.items %}#}
-{#                    {{ child_unique_phenotype}}: {{  count }}#}
-{#                    <br>#}
-{#                {%  endfor %}#}
-{#            </div>#}
-{##}
-{#        </div>#}
-
-
+    </div>
+    <div class = "row">
         <div id="test_class" class="text-center mt-1" hidden>
 
                 <br>
@@ -253,12 +129,12 @@ Cross Simulator
         </div>
 
        {{ parents|json_script:"hello-data" }}
-
     </div>
 
-</div>
 
 </div>
+
+
 
 {%  endblock %}
 
@@ -272,834 +148,22 @@ Cross Simulator
 {{  p2_ind | json_script:"jP2Ind"}}
 {{  genome_name | json_script:"jGenomeName"}}
 
+
+<script src="{% get_static_prefix %}js/cs/viewclasses.js"></script>
+<script src="{% get_static_prefix %}js/cs/modelclasses.js"></script>
+<script src="{% get_static_prefix %}js/cs/propertylisteners.js"></script>
+<script src="{% get_static_prefix %}js/cs/eventlisteners.js"></script>
+
 <script>
 
 
-class Org {
-    constructor(numTraits, gametes) {
-        this.numTraits = numTraits;
-        this.gametes = gametes;
-    }
 
-    getNumTraits() {
-        return this.numTraits;
-    }
-
-    getGametes() {
-        return this.gametes;
-    }
-
-}
-
-class PunnettSquare {
-    static InheritanceAutosomal = 1;
-    static InheritanceXLinked = 2;
-
-    constructor(inheritanceType, femaleParent, maleParent, numTraits, genPhen, genomeName) {
-        this.inheritanceType = inheritanceType;
-        this.femaleParent = femaleParent;
-        this.maleParent = maleParent;
-        this.numTraits = numTraits;
-        this.genPhen = genPhen;
-        this.genomeName = genomeName;
-    }
-
-    getNumTraits() {
-        //return Math.log2(this.femaleParent.length); //this.femaleParent.numTraits();
-        return this.numTraits;
-    }
-
-    getGametes(parent) {
-        var gametes = [];
-        for (var i = 0; i < parent.length; ++i) {
-            gametes.push(parent[i][0]);
-        }
-        return gametes;
-
-    }
-
-
-    maleGametes() {
-        return this.getGametes(this.maleParent);
-
-    }
-
-    femaleGametes() {
-        return this.getGametes(this.femaleParent);
-        //return this.femaleParent.getGametes();
-    }
-
-    combine(gametes1, gametes2) {
-        var combined = [];
-
-        for (var i = 0; i < gametes1.length; ++i) {
-            if (gametes2.charAt(i) == gametes2.charAt(i).toUpperCase()) {
-                combined.push(gametes2.charAt(i));
-                combined.push(gametes1.charAt(i));
-            } else {
-                combined.push(gametes1.charAt(i));
-                combined.push(gametes2.charAt(i));
-            }
-
-        }
-
-        return combined.join('');
-
-
-    }
-
-    uniquePhenotypes() {
-        var unique= [];
-
-        var possPhenotypes = this.possiblePhenotypes();
-        for (var r = 0; r < possPhenotypes.length;++r) {
-            for (var c = 0; c < possPhenotypes[r].length; ++c) {
-                var phen = possPhenotypes[r][c];
-                if (unique.includes(phen)) {
-                } else {
-                    unique.push(phen);
-                }
-
-            }
-        }
-        return unique;
-    }
-
-
-    possiblePhenotypes() {
-        var offspringPhenotypes = [];
-        var possibleGenotypes = this.possibleOffspring();
-        for (var r = 0; r < possibleGenotypes.length;++r) {
-            var rowPhenotypes = [];
-
-            for (var c = 0; c < possibleGenotypes[r].length;++c) {
-                var gen = possibleGenotypes[r][c];
-                var phen = genToPhen(gen);
-                rowPhenotypes.push(phen);
-            }
-            offspringPhenotypes.push(rowPhenotypes);
-        }
-        return offspringPhenotypes;
-    }
-
-
-    possibleOffspring() {
-        var femaleGametes = this.femaleGametes();
-        var maleGametes = this.maleGametes();
-
-        var offspringGenotypes = [];
-
-        for (var r = 0; r < femaleGametes.length; ++r) {
-
-            var rowGenotypes = [];
-            for (var c = 0; c < maleGametes.length; ++c) {
-                rowGenotypes.push(this.combine(femaleGametes[r], maleGametes[c]));
-            }
-            offspringGenotypes.push(rowGenotypes);
-
-        }
-        return offspringGenotypes;
-    }
-}
-
-
-class Dimension {
-    constructor(w,h) {
-        this.w = w;
-        this.h = h;
-    }
-}
-
-class Point {
-    constructor(x,y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-
-class PunnettCell {
-    constructor(parent, r, c) {
-        this.parent = parent;
-        this.r = r;
-        this.c = c;
-        this.img = null;
-        if (this.parent.punnettSquare.genPhen == 'p') {
-           this.loadPhenImage();
-        }
-
-
-    }
-
-    loadPhenImage() {
-       var cellPhenotypes = this.parent.punnettSquare.possiblePhenotypes();
-       var phen = cellPhenotypes[this.r][this.c];
-       this.img = this.parent.phenImageDict[phen];
-       x = 1;
-    }
-
-
-    {#loadPhenImage() {#}
-    {#   var cellGenotypes = this.parent.punnettSquare.possibleOffspring();#}
-    {#   var phenImgName = "{% get_static_prefix %}img/" + this.parent.punnettSquare.genomeName + '/' +  this.parent.punnettSquare.genomeName + '_' + genToPhen(cellGenotypes[this.r][this.c]) + ".png";#}
-    {#   this.img = new Image;#}
-    {#   var svdThis = this;#}
-    {#   this.img.onload = function(){#}
-    {#        //svdThis.parent.ctx.drawImage(svdThis.img,cPos.x, cPos.y, cSize.h, cSize.h); // Or at whatever offset you like#}
-    {#   };#}
-    {#   this.img.src = phenImgName;#}
-    {##}
-    {##}
-    {##}
-    //{#}#}
-
-
-    get cellSize() {
-        return new Dimension(this.parent.colWidth, this.parent.rowHeight);
-    }
-
-    get cellPosition() {
-        return new Point(this.parent.padding.l + this.cellSize.w * (this.c + 1), this.parent.padding.t + this.cellSize.h * (this.r + 1));
-    }
-
-    isPointInCell(p) {
-        if ((p.x >= this.cellPosition.x) && (p.x <= this.cellPosition.x + this.cellSize.w) && (p.y >= this.cellPosition.y) &&  (p.y <= this.cellPosition.y + this.cellSize.h)) {
-            return true;
-        }
-        return false;
-    }
-
-    draw(alpha) {
-
-        alpha = alpha || 1.0;
-
-        this.parent.ctx.save();
-
-        if (this.parent.state == PunnettSquareDiv.StateFertilised) {
-            var svdFillStyle = this.parent.ctx.fillStyle;
-            var cellGenotypes = this.parent.punnettSquare.possibleOffspring();
-            var cPos = this.cellPosition;
-            var cSize = this.cellSize;
-            var svdFont = this.parent.ctx.font;
-            if (this.parent.punnettSquare.genPhen == 'g') {
-                this.parent.setGameteFontSize(cellGenotypes[0][0], cSize.w, [25, 22, 19, 16, 13, 10, 7]);
-                this.parent.ctx.fillStyle = "rgba(0, 0, 0, " + alpha + ")";
-                this.parent.ctx.fillText(cellGenotypes[this.r][this.c], cPos.x, cPos.y + cSize.h - this.parent.textLift);
-                this.parent.font = svdFont;
-            }
-            else {
-
-              {#var phenImgName = "{% get_static_prefix %}img/" + this.parent.punnettSquare.genomeName + '/' +  this.parent.punnettSquare.genomeName + '_' + genToPhen(cellGenotypes[this.r][this.c]) + ".png";#}
-              {#var img = new Image;#}
-              {#var svdThis = this;#}
-              {#img.onload = function(){#}
-                  var size = cSize.h;
-                  var offset = 0;
-                  if (this.parent.punnettSquare.genomeName == 'pea') {
-                      size*=0.8;
-                      offset = 2;
-                  }
-                  this.parent.ctx.globalAlpha = alpha;
-                  this.parent.ctx.drawImage(this.img,cPos.x + offset, cPos.y + offset, size, size); // Or at whatever offset you like#}
-              //{#};#}
-              {#img.src = phenImgName;#}
-
-              //this.parent.ctx.fillText(phenImgName, cPos.x, cPos.y + cSize.h - this.parent.textLift);
-
-            }
-
-            if (this.parent.highlightedCell == null) {
-            }
-            else {
-                    if ((this.r == this.parent.highlightedCell.r) && (this.c == this.parent.highlightedCell.c)) {
-                        this.parent.ctx.strokeStyle = "blue";
-                        this.parent.ctx.strokeRect(cPos.x + 1, cPos.y + 1, cSize.w - 2, cSize.h - 2);
-                    }
-            }
-
-
-            this.parent.ctx.fillStyle = svdFillStyle;
-
-
-        }
-        this.parent.ctx.restore();
-    }
-
-
-}
-
-class PunnettSquareDiv {
-   static StateHidden = 1;
-   static StateMeiosis = 2;
-   static StateFertilised = 3;
-
-  constructor(punnettSquare, canvasEl,state, cellZoom, padding) {
-    this.punnettSquare = punnettSquare;
-    this.canvasEl = canvasEl;
-    this.ctx = this.canvasEl.getContext('2d');
-    this.padding = padding ||  {'t':10, 'b': 10, 'l': 10, 'r': 10}
-    this.textLift = 3;
-    this.highlightedCell = null;
-    this.state = state || PunnettSquareDiv.StateHidden;
-    this.cellZoom = cellZoom;
-
-    this.phenImageDict = this.loadPhenImages();
-
-
-    var self = this;
-
-    this.canvasEl.onmousemove =  function(e) {
-
-        if (self.state == PunnettSquareDiv.StateFertilised) {
-
-        }
-        else {
-            return;
-        }
-         // Get the current mouse position
-         var r = self.canvasEl.getBoundingClientRect();
-         var x = e.clientX - r.left, y = e.clientY - r.top;
-
-        var svdFillStyle = self.ctx.fillStyle;
-
-        var newHighlightedCell = null;
-
-         for (var i = 0;i < self.punnettCells.length; ++i) {
-             var cell = self.punnettCells[i];
-
-
-             if (cell.isPointInCell(new Point(x,y))) {
-                    newHighlightedCell = cell;
-                    if ( (self.highlightedCell == null) || (self.highlightedCell != cell)) {
-                        self.highlightedCell = cell;
-                        self.drawStuff();
-                        {#self.ctx.beginPath();#}
-                        {#self.ctx.rect(cell.cellPosition.x, cell.cellPosition.y, cell.cellSize.w, cell.cellSize.h);#}
-                        {#self.ctx.fillStyle = "blue";#}
-                        {#self.ctx.fill();#}
-
-
-
-
-                        break;
-                    }
-                 //alert('Yep in cell: ' + cell.r + ' ' + cell.c);
-             }
-
-
-
-         }
-
-         if ((self.highlightedCell != null) && (newHighlightedCell == null))  {
-             self.highlightedCell = null;
-             self.drawStuff(); // moved out of punnet square - nothing
-         }
-
-         self.ctx.fillStyle = svdFillStyle;
-
-    };
-
-    this.punnettCells = this.createPunnettCells();
-
-  }
-
-  loadPhenImages() {
-
-      var imgDict = {}
-      var unique = this.punnettSquare.uniquePhenotypes();
-      for (i=0;i < unique.length; ++i) {
-           var phen = unique[i];
-           var phenImgName = "{% get_static_prefix %}img/" + this.punnettSquare.genomeName + '/' +  this.punnettSquare.genomeName + '_' + phen + ".png";
-           var img = new Image;
-           var svdThis = this;
-           img.onload = function(){
-            //svdThis.parent.ctx.drawImage(svdThis.img,cPos.x, cPos.y, cSize.h, cSize.h); // Or at whatever offset you like
-           };
-           img.src = phenImgName;
-           imgDict[phen] =  img;
-      }
-
-      return imgDict;
-   }
-
-  showCellZoom(numSame, totNum) {
-        if (this.highlightedCell == null) {
-            this.cellZoom.style.display = "none";
-        }
-        else {
-            this.cellZoom.style.display = "block";
-            var children = this.cellZoom.children;
-            for (var i = 0;i < children.length;++i) {
-                if (children[i].id == 'zoom-image') {
-                    var zoomImageEl = children[i];
-
-                    if (this.punnettSquare.genPhen == 'p') {
-
-                        var possibleGenotypes = this.punnettSquare.possibleOffspring();
-                        var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
-
-                        zoomImageEl.src =  "{% get_static_prefix %}img/" + this.punnettSquare.genomeName + '/' +  this.punnettSquare.genomeName + '_' + genToPhen(possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c]) + ".png";
-                        if (this.punnettSquare.genomeName == 'pea') {
-                            zoomImageEl.style.width = '100px';
-                        }
-                        else {
-                            zoomImageEl.style.width = '150px';
-                        }
-                        zoomImageEl.style.display = "block";
-                    }
-                    else {
-                        zoomImageEl.style.display = "none";
-                    }
-                }
-                if (children[i].id == 'zoom-genotype') {
-                    var zoomGenotypeEl = children[i];
-                    if (this.punnettSquare.genPhen == 'g') {
-
-                        var possibleGenotypes = this.punnettSquare.possibleOffspring();
-                        var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
-                        zoomGenotypeEl.innerHTML = highlightedCellGenotype;
-                        zoomGenotypeEl.style.display = "block";
-                    } else {
-                        zoomGenotypeEl.style.display = "none";
-                    }
-                }
-
-
-                if (children[i].id == 'num-same') {
-                    children[i].innerHTML = numSame;
-                }
-                 if (children[i].id == 'tot-num') {
-                    children[i].innerHTML = totNum;
-                }
-
-
-            x = 1;
-           }
-        }
-
-
-  }
-
-  createPunnettCells() {
-
-      var punnettCells = [];
-
-      for (var r = 0; r < this.numRows -1; ++r) {
-          for (var c =0; c < this.numCols -1; ++c) {
-              punnettCells.push(new PunnettCell(this, r, c));
-          }
-      }
-
-      return punnettCells;
-  }
-
-
-
-  get canvasSize() {
-      const { width, height } = this.canvasEl.getBoundingClientRect();
-      return {'w': width, 'h': height}
-  }
-
-  get numRows() {
-      return Math.pow(2, this.punnettSquare.getNumTraits()) + 1;
-  }
-
-  get numCols() {
-      return Math.pow(2, this.punnettSquare.getNumTraits()) + 1;
-  }
-
-  get rowHeight() {
-      var size = this.canvasSize;
-      var height =  (size.h - this.padding.t - this.padding.b) / this.numRows;
-      return height;
-
-  }
-
-  get colWidth() {
-      var size = this.canvasSize;
-      var width =  (size.w - this.padding.l - this.padding.r) / this.numCols;
-      return width;
-  }
-
-
-  drawLine(st, end, lineWidth) {
-
-    var svdLineWidth = this.ctx.lineWidth;
-    this.ctx.lineWidth =  lineWidth || 1;
-
-    this.ctx.moveTo(st.x, st.y);
-    this.ctx.lineTo(end.x, end.y);
-    this.ctx.stroke();
-    this.ctx.lineWidth = svdLineWidth;
-
-  }
-
-  drawRowLines()  {
-
-      var y = this.padding.t+ this.rowHeight;
-      {#var numRowLines = this.numRows;#}
-      {#if (this.state == PunnettSquareDiv.StateMeiosis) {#}
-      {#    numRowLines = 1;#}
-      //{#}#}
-
-      for (var i = 0; i < this.numRows;++i) {
-          var lineWidth = 1;
-          if (i == 0) {
-              lineWidth = 2;
-          }
-          if ((i> 0) && (this.state == PunnettSquareDiv.StateMeiosis)) {
-            this.drawLine(new Point(this.padding.l,y), new Point(this.padding.l + this.colWidth, y)); //, lineWidth);
-          }
-          else {
-            this.drawLine(new Point(this.padding.l,y), new Point(this.canvasSize.w - this.padding.r, y)); //, lineWidth);
-          }
-          y = y + this.rowHeight;
-      }
-
-  }
-
-  drawColLines() {
-      var x = this.padding.l + this.colWidth;
-
-      for (var i = 0; i < this.numCols;++i) {
-          var lineWidth = 1;
-          if (i == 0) {
-              lineWidth = 2;
-          }
-          if ((i > 0) && (this.state == PunnettSquareDiv.StateMeiosis)) {
-              this.drawLine(new Point(x, this.padding.t), new Point(x, this.padding.t + this.rowHeight)); //, lineWidth);
-          }
-          else {
-              this.drawLine(new Point(x, this.padding.t), new Point(x, this.canvasSize.h - this.padding.b)); //, lineWidth);
-          }
-          x = x + this.colWidth;
-      }
-  }
-
-  drawTopCorner() {
-      var imgWidth = 20;
-      var imgHeight = 20;
-       var femaleImg = document.getElementById("gender-female-image");
-       this.ctx.drawImage(femaleImg, this.padding.l, this.padding.t + this.rowHeight - imgHeight, imgWidth, imgHeight);
-       var maleImg = document.getElementById("gender-male-image");
-       this.ctx.drawImage(maleImg, this.padding.l + this.colWidth - imgWidth, this.padding.t, imgWidth, imgHeight);
-
-  }
-
-  drawCellsGenotype() {
-      var higlightedCellGenotype = null;
-
-      var numSame = 0;
-      var totNum = this.punnettCells.length;
-
-
-      if (this.highlightedCell == null) {
-      }
-      else {
-        var possibleGenotypes = this.punnettSquare.possibleOffspring();
-        var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
-      }
-
-      for (var i = 0;i < this.punnettCells.length; ++i) {
-          var cell = this.punnettCells[i];
-          if (highlightedCellGenotype == null) {
-              cell.draw();
-          }
-          else {
-             if (highlightedCellGenotype == possibleGenotypes[cell.r][cell.c]) {
-                cell.draw();
-                numSame+=1;
-             }
-             else {
-                 cell.draw(0.4);
-             }
-          }
-      }
-
-      this.showCellZoom(numSame, totNum);
-
-
-
-  }
-
-  drawCellsPhenotype() {
-      var highlightedCellPhenotype = null;
-
-      if (this.highlightedCell == null) {
-      }
-      else {
-        var possibleGenotypes = this.punnettSquare.possibleOffspring();
-        var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
-        highlightedCellPhenotype = genToPhen(highlightedCellGenotype);
-      }
-
-      var numSame = 0;
-      var totNum = this.punnettCells.length;
-
-      for (var i = 0;i < this.punnettCells.length; ++i) {
-          var cell = this.punnettCells[i];
-          if (highlightedCellGenotype == null) {
-              cell.draw();
-          }
-          else {
-             if (highlightedCellPhenotype == genToPhen(possibleGenotypes[cell.r][cell.c])) {
-                cell.draw();
-                numSame+=1;
-             }
-             else {
-                 cell.draw(0.4);
-             }
-          }
-      }
-
-      this.showCellZoom(numSame, totNum);
-
-
-
-  }
-
-  drawCells() {
-
-       if (this.punnettSquare.genPhen == 'g') {
-           this.drawCellsGenotype();
-       }
-       else {
-            this.drawCellsPhenotype();
-       }
-
-
-
-  }
-
-  setFontSize(size, bold) {
-      bold = bold || false;
-
-      if (bold) {
-          this.ctx.font = "bold " + size + "px Helvetica Neue";
-      }
-      else {
-          this.ctx.font =  size + "px Helvetica Neue";
-      }
-  }
-
-  setGameteFontSize(gamete, maxWidth, trySizes) {
-
-      trySizes = trySizes || [16, 12, 9]
-
-      for (var i = 0; i < trySizes.length; ++i) {
-          var fontSize = trySizes[i];
-          this.setFontSize(fontSize); //this.ctx.font = "16px Helvetica Neue";
-          var textWidth = this.ctx.measureText(gamete).width;
-          if (textWidth < maxWidth) {
-              break;
-          }
-      }
-
-
-      return fontSize;
-
-  }
-
-  possibleGameteSizes() {
-        var numTraits = this.punnettSquare.getNumTraits();
-        var possSizes = [];
-        switch (numTraits) {
-            case 1:
-                possSizes = [25,20,15];
-                break;
-            case 2:
-                possSizes = [20, 15, 10];
-                break;
-            case 3:
-                possSizes = [16, 12, 9];
-                break;
-            default:
-                possSizes = [16, 12, 9];
-        }
-
-        return possSizes;
-
-  }
-
-  gameteFractionFontOffset() {
-        var numTraits = this.punnettSquare.getNumTraits();
-        var offset = 0;
-        switch (numTraits) {
-            case 1:
-                offset = 10;
-                break;
-            case 2:
-                offset = 5;
-                break;
-            case 3:
-                offset = 2;
-                break;
-            default:
-                offset = 2;
-        }
-
-        return offset;
-
-  }
-
-    drawMaleGametes() {
-        var svdFont = this.ctx.font;
-
-        var fontHeight = parseInt(this.ctx.font.match(/\d+/), 10);
-
-        var gametes = this.punnettSquare.maleGametes();
-
-        var fontSize = this.setGameteFontSize(gametes[0], this.colWidth, this.possibleGameteSizes());
-
-        var x = this.padding.l + this.colWidth;
-        for (var i = 0; i < gametes.length;++i) {
-            this.setFontSize(fontSize, true);
-            this.ctx.fillText(gametes[i], x, this.padding.t + this.rowHeight - this.textLift);
-            this.setFontSize(fontSize - this.gameteFractionFontOffset(), false);
-            this.ctx.fillText("1/" + gametes.length, x, this.padding.t + this.rowHeight - fontHeight - (this.textLift*(8 - this.punnettSquare.getNumTraits() * 2)));
-
-            x = x + this.colWidth;
-        }
-
-        this.ctx.font = svdFont;
-
-
-  }
-
-  drawFemaleGametes() {
-      var svdFont = this.ctx.font;
-
-      var fontHeight = parseInt(this.ctx.font.match(/\d+/), 10);
-
-      var gametes = this.punnettSquare.femaleGametes();
-
-      var fontSize = this.setGameteFontSize(gametes[0], this.colWidth, this.possibleGameteSizes());
-
-      var y = this.padding.t+ this.rowHeight * 2;
-      for (var i = 0; i < gametes.length;++i) {
-          this.setFontSize(fontSize, true);
-          this.ctx.fillText(gametes[i], this.padding.l, y - this.textLift);
-          this.setFontSize(fontSize - this.gameteFractionFontOffset(), false);
-          this.ctx.fillText("1/" + gametes.length, this.padding.l, y - fontHeight - (this.textLift*(8 - this.punnettSquare.getNumTraits() * 2)));
-          y = y + this.rowHeight;
-      }
-
-      this.ctx.font = svdFont;
-  }
-
-  drawGametes() {
-      this.drawMaleGametes();
-      this.drawFemaleGametes();
-  }
-
-
-
-  drawStuff() {
-      //this.drawLine(new Point(20,20), new Point(50,50));
-      this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
-      this.canvasEl.width+=0; //trick to refresh if above doesn't work
-      if (this.state == PunnettSquareDiv.StateHidden) {}
-      else {
-          this.drawRowLines();
-          this.drawColLines();
-          this.drawGametes();
-          this.drawTopCorner();
-          this.drawCells();
-
-      }
-
-  }
-
-
-}
-
-function crossButClicked(e) {
-    var crossBut = e.target;
-
-    switch (state) {
-        case 1:
-            state = 2;
-            break;
-
-        case 2:
-            state = 3;
-            break;
-
-        case 3:
-            state = 1;
-            break;
-
-        default:
-            state = 3;
-            break;
-    }
-
-    stateChanged();
-
-}
-
-function stateChanged() {
-    var crossBut = document.getElementById("cross");
-
-    switch (state) {
-        case 1:
-            crossBut.innerHTML = 'Meiosis';
-            break;
-
-        case 2:
-            crossBut.innerHTML = 'Cross';
-            break;
-
-        case 3:
-            crossBut.innerHTML  = 'Clear';
-            break;
-
-        default:
-            crossBut.innerHTML = 'Cross';
-            break;
-    }
-
-    psd.state = state;
-
-    psd.drawStuff();
-
-}
-
-{#f = new Org(3,['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);#}
-{#m = new Org(3, ['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);#}
-{#f = new Org(2,['AB', 'Ab', 'aB', 'ab']);#}
-{#m = new Org(2,['AB', 'Ab', 'aB', 'ab']);#}
-//f = new Org(1, ['A', 'a']);
-//m = new Org(1, ['A', 'a']);
 
 function setPunnettSquare() {
-    var f = null;
-    var m = null;
-
-    {#f = new Org(3,['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);#}
-    {#m = new Org(3, ['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);#}
-    {#f = new Org(2,['AB', 'Ab', 'aB', 'ab']);#}
-    {#m = new Org(2,['AB', 'Ab', 'aB', 'ab']);#}
-//f = new Org(1, ['A', 'a']);
-//m = new Org(1, ['A', 'a']);
-   switch (numTraits) {
-       case 1:
-           f = new Org(1, ['A', 'a']);
-           m = new Org(1, ['A', 'a']);
-           break;
-       case 2:
-           f  = new Org(2,['AB', 'Ab', 'aB', 'ab']);
-           m = new Org(2,['AB', 'Ab', 'aB', 'ab']);
-           break;
-       case 3:
-            f = new Org(3,['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);
-            m = new Org(3, ['ABC','ABc', 'AbC', 'Abc', 'aBC','aBc', 'abC', 'abc']);
-            break;
-   }
 
    var cellZoom = document.getElementById('cell-zoom') ;
    ps = new PunnettSquare(PunnettSquare.InheritanceAutosomal, possGametes[numTraits-1][p1Ind],possGametes[numTraits-1][p2Ind], numTraits, genPhen, genomeName);
-   psd = new PunnettSquareDiv(ps, canvasEl, state, cellZoom);
+   psd = new PunnettSquareDiv(ps, canvasEl, state, cellZoom, staticPrefix);
    psd.drawStuff();
    var x = ps.possibleOffspring();
    var y = 1;
@@ -1125,85 +189,33 @@ window.onresize = function () {
 
 
 
-function showAnswer() {
-  var el = document.getElementById('answer_div');
-  if (el.style.visibility === "visible") {
-      el.style.visibility = "hidden";
-  }
-  else {
-      document.getElementById('answer_div').style.visibility = "visible";
-  }
-}
-
-/*
-$("#option1_2").click(function () {
-    alert('ahhha');
-    return false;
-});
-*/
-
-
-{#function handleClick(radio) {#}
-{##}
-{#    var parents = JSON.parse(document.getElementById('hello-data').textContent);#}
-{#    var orgs = JSON.parse(document.getElementById('j_orgs').textContent);#}
-{#    var poss_gametes = JSON.parse(document.getElementById('jPossGametes').textContent);#}
-{#    //alert('radio val: ' + (parseInt(radio.value)-1))#}
-{#    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(radio.value)-1].phen + ".png"#}
-{#    //alert('src: ' + src_txt)#}
-{#    if (radio.name == "options_1") {#}
-{#        p_num = 'p1';#}
-{#    }#}
-{#    else {#}
-{#        p_num = 'p2';#}
-{#    }#}
-{#    document.getElementById(p_num + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[parseInt(radio.value)-1].phen + ".png"#}
-{#    document.getElementById(p_num + "_gen").innerText = orgs[parseInt(radio.value)-1].gen;#}
-{#    document.getElementById(p_num + "_gen_phase").innerText = orgs[parseInt(radio.value)-1].gen_phase#}
-{#    document.getElementById(p_num + "_gams").innerText = poss_gametes[parseInt(radio.value) -1];#}
-{##}
+{#function showAnswer() {#}
+{#  var el = document.getElementById('answer_div');#}
+{#  if (el.style.visibility === "visible") {#}
+{#      el.style.visibility = "hidden";#}
+{#  }#}
+{#  else {#}
+{#      document.getElementById('answer_div').style.visibility = "visible";#}
+{#  }#}
 {#}#}
 
-function getSource() {
-    src =  "{% get_static_prefix %}img/pea/pea_" + orgs[0].phen + ".png";
-    return src;
-}
+{#function getSource() {#}
+{#    src =  "{% get_static_prefix %}img/pea/pea_" + orgs[0].phen + ".png";#}
+{#    return src;#}
+{#}#}
 
-function selectedOption(name) {
-    var options = document.getElementsByName(name);
-    var selected;
+{#function selectedOption(name) {#}
+{#    var options = document.getElementsByName(name);#}
+{#    var selected;#}
+{##}
+{#    for(var i = 0; i < options.length; i++) {#}
+{#       if(options[i].checked)#}
+{#           selected = options[i].value;#}
+{#     }#}
+{#    return selected;#}
+{#}#}
 
-    for(var i = 0; i < options.length; i++) {
-       if(options[i].checked)
-           selected = options[i].value;
-     }
-    return selected;
-}
-function selectCrossType() {
-
-    {#var p1_sel = selectedOption('p1');#}
-    {#var p2_sel = selectedOption('p2');#}
-    {##}
-    {#p1_sel = parseInt(p1_sel) - 1;#}
-    {#p2_sel = parseInt(p2_sel) - 1;#}
-    {##}
-    {#var crossType;#}
-    {#if ((p1_sel == 0) && (p2_sel == 2)#}
-    {#    || (p1_sel == 2) && p2_sel == 0)#}
-    {##}
-    {#{#}
-    {#   crossType = '1';#}
-    {#}#}
-    {#else if ((p1_sel == 1) && (p2_sel == 2)#}
-    {#          || (p1_sel == 2) && (p2_sel == 1)){#}
-    {#    crossType = '2';#}
-    {#}#}
-    {#else if ((p1_sel == 1) && (p2_sel == 1)) {#}
-    {#    crossType = '3';#}
-    {#}#}
-    {#else {#}
-    {#    crossType = '4';#}
-    {#}#}
+function changeCrossType() {
 
     var crossType;
     if ((p1Ind == 0) && (p2Ind == 2)
@@ -1234,226 +246,24 @@ function selectCrossType() {
     }
 }
 
-function numTraitsSelected(e) {
-    el = e.target;
-    val = el.value;
-    switch (val) {
-        case '1':
-            numTraits = 1;
-            break;
-        case '2':
-            numTraits = 2;
-            break;
-        case '3':
-            numTraits= 3;
-            break;
-        default:
-            numTraits = 1;
-            break;
-
-    }
-    numTraitsChanged();
-
-}
-
-function crossTypeChanged() {
-
-
-    for (i = 0; i < 3; ++i) {
-        el1 = document.getElementById("id_p1_" + i);
-        if (i == p1Ind) {
-            el1.parentElement.parentElement.classList.add('active');
-        } else {
-            el1.parentElement.parentElement.classList.remove('active');
-        }
-
-        el2 = document.getElementById("id_p2_" + i);
-        if (i == p2Ind) {
-            el2.parentElement.parentElement.classList.add('active');
-        } else {
-            el2.parentElement.parentElement.classList.remove('active');
-        }
-    }
-
-    orgTypeChanged();
-    //showOrg('p1',p1_val);
-    //showOrg('p2',p2_val);
-
-
-}
-
-function crossTypeSelected(e) {
-    el = e.target;
-    val = el.value;
-    var p1_val;
-    var p2_val;
-
-    switch (val) {
-        case '1':
-            p1_val = 0;
-            p2_val = 2;
-            break;
-        case '2':
-            p1_val = 1;
-            p2_val = 2;
-            break;
-        case '3':
-            p1_val = 1;
-            p2_val = 1;
-            break;
-        default:
-            p1_val = 0;
-            p2_val = 0;
-            break;
-
-    }
-
-    p1Ind = p1_val;
-    p2Ind = p2_val;
-    crossTypeChanged();
-
- }
-
-function showOrg(parent, orgNum) {
-    el = document.getElementById('id_' + parent + '_' + orgNum);
-
-    var parents = JSON.parse(document.getElementById('hello-data').textContent);
-    var orgs = JSON.parse(document.getElementById('jOrgs').textContent);
-    var possGametes = JSON.parse(document.getElementById('jPossGametes').textContent);
-    //alert('radio val: ' + (parseInt(radio.value)-1))
-    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[orgNum].phen + ".png"
-    //alert('src: ' + src_txt)
-
-    document.getElementById(parent + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[numTraits][orgNum].phen + ".png"
-    document.getElementById(parent + "_gen").innerText = orgs[numTraits][orgNum].gen;
-
-}
-
-
-function orgTypeChanged() {
-    {#var parents = JSON.parse(document.getElementById('hello-data').textContent);#}
-    var orgs = JSON.parse(document.getElementById('jOrgs').textContent);
-    {#var poss_gametes = JSON.parse(document.getElementById('jPossGametes').textContent);#}
-    {#src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[numTraits-1][parseInt(el.value)-1].phen + ".png"#}
-    {#if (el.name == "p1") {#}
-    {#    p_num = 'p1';#}
-    {#}#}
-    {#else {#}
-    {#    p_num = 'p2';#}
-    {#}#}
-
-    var formattedGameteFreqsP1 = [];
-    for (var i=0;i <possGametesRolledUp[numTraits-1][p1Ind].length;++i ) {
-        formattedGameteFreqsP1.push(possGametesRolledUp[numTraits-1][p1Ind][i][0] + ' ' + possGametesRolledUp[numTraits-1][p1Ind][i][2]  + ' / ' + possGametesRolledUp[numTraits-1][p1Ind][i][3] );
-    }
-    var formattedGameteFreqsP2 = [];
-    for (var i=0;i <possGametesRolledUp[numTraits-1][p2Ind].length;++i ) {
-        formattedGameteFreqsP2.push(possGametesRolledUp[numTraits-1][p2Ind][i][0] + ' ' + possGametesRolledUp[numTraits-1][p2Ind][i][2]  + ' / ' + possGametesRolledUp[numTraits-1][p2Ind][i][3] );
-    }
-    formattedGameteFreqsP1 =  formattedGameteFreqsP1.join('\n');
-    formattedGameteFreqsP2 =  formattedGameteFreqsP2.join('\n');
-
-    document.getElementById("p1" + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[numTraits-1][p1Ind].phen + ".png";
-    document.getElementById("p1" + "_img").title = "Phase:\n" + orgs[numTraits-1][p1Ind].gen_phase + "\n\nExpected gamete frequencies:\n" + formattedGameteFreqsP1;
-    document.getElementById("p1" + "_gen").innerText = orgs[numTraits-1][p1Ind].gen;
-    document.getElementById("p2" + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[numTraits-1][p2Ind].phen + ".png";
-    document.getElementById("p2" + "_img").title = "Phase:\n" + orgs[numTraits-1][p2Ind].gen_phase + "\n\nExpected gamete frequencies:\n" + formattedGameteFreqsP2;
-    document.getElementById("p2" + "_gen").innerText = orgs[numTraits-1][p2Ind].gen;
 
 
 
-    //document.getElementById(p_num + "_gen_phase").innerText = orgs[parseInt(el.value)-1].gen_phase;
-    //document.getElementById(p_num + "_gams").innerText = poss_gametes[parseInt(el.value) -1];
+{#function showOrg(parent, orgNum) {#}
+{#    el = document.getElementById('id_' + parent + '_' + orgNum);#}
+{##}
+{#    var parents = JSON.parse(document.getElementById('hello-data').textContent);#}
+{#    var orgs = JSON.parse(document.getElementById('jOrgs').textContent);#}
+{#    var possGametes = JSON.parse(document.getElementById('jPossGametes').textContent);#}
+{#    //alert('radio val: ' + (parseInt(radio.value)-1))#}
+{#    src_txt = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[orgNum].phen + ".png"#}
+{#    //alert('src: ' + src_txt)#}
+{##}
+{#    document.getElementById(parent + "_img").src = "{% get_static_prefix %}img/{{genome_name}}/{{ genome_name }}_" + orgs[numTraits][orgNum].phen + ".png"#}
+{#    document.getElementById(parent + "_gen").innerText = orgs[numTraits][orgNum].gen;#}
+{##}
+{#}#}
 
-    selectCrossType();
-
-    setPunnettSquare();
-
-
-}
-
-function orgTypeSelected(e) {
-    //alert("oh I see " + e.target.id);
-    el = e.target;
-
-    if (el.name == "p1") {
-        p1Ind = parseInt(el.value)-1;
-    }
-    else {
-        p2Ind= parseInt(el.value)-1;
-    }
-
-    orgTypeChanged();
-
-
-
-}
-
-function genPhenChanged() {
-      {#for (i = 0; i < 2; ++i) {#}
-      {#     el = document.getElementById("id_gen_phen_" + i);#}
-      {#     if (el.value == genPhen) {#}
-      {#         el.parentElement.parentElement.classList.add('active');#}
-      {#     } else {#}
-      {#         el.parentElement.parentElement.classList.remove('active');#}
-      {#     }#}
-      //{#}#}
-
-      setPunnettSquare();
-
-}
-
-function numTraitsChanged(first) {
-
-      first = first || false;
-
-     {# for (i = 0; i < 3; ++i) {#}
-     {#      el = document.getElementById("id_alleles_" + i);#}
-     {#      if (el.value == '' + numTraits) {#}
-     {#         // el.parentElement.classList.add('active');#}
-     {#          //el.checked = true;#}
-     {#      } else {#}
-     {#          //el.parentElement.classList.remove('active');#}
-     {#          if (first) {#}
-     {##}
-     {#          }#}
-     {#          else {#}
-     {#              el.parentElement.parentElement.classList.remove('active');#}
-     {#          }#}
-     {#          //el.checked = false;#}
-     {#      }#}
-     {# }#}
-     {#for (i = 0; i < 3; ++i) {#}
-     {#   el = document.getElementById("id_alleles_" + i);#}
-     {#      if (el.value == '' + numTraits) {#}
-     {#          //el.parentElement.classList.add('active');#}
-     {#          el.parentElement.parentElement.classList.add('active');#}
-     {#          //el.checked = true;#}
-     {#      } else {#}
-     {#         // el.parentElement.classList.remove('active');#}
-     {#          //el.checked = false;#}
-     {#      }#}
-     {# }#}
-
-
-     var crossTypeEl = document.getElementById('id_cross_type');
-     var hybridOptions = ['Monohybrid Cross', 'Dihybrid Cross', 'TriHybrid Cross']
-     crossTypeEl.options[2].innerHTML = hybridOptions[numTraits - 1];
-
-
-      orgTypeChanged();
-      setPunnettSquare();
-
-}
-
-function genPhenSelected(e) {
-       el = e.target;
-       val = el.value;
-
-       genPhen = val;
-       genPhenChanged();
-
-}
 
 
 function genToPhen(gen) {
@@ -1474,17 +284,9 @@ function genToPhen(gen) {
 
 }
 
+
+
 window.onload = function(){
-       var orgs = JSON.parse(document.getElementById('jOrgs').textContent)
-       var options_1 = document.getElementsByName("options_1");
-       var selectedOption1;
-
-       for(var i = 0; i < options_1.length; i++) {
-           if(options_1[i].checked)
-             selectedOption1 = options_1[i].value;
-       }
-       //document.getElementById('p1_img').src="{% get_static_prefix %}img/{{ genome_name }}/{{ genome_name }}_" + orgs[selectedOption1 - 1].phen + ".png";
-
 
 }
 
@@ -1496,6 +298,7 @@ var p2Ind = JSON.parse(document.getElementById('jP2Ind').textContent);
 var possGametes = JSON.parse(document.getElementById('jPossGametes').textContent);
 var possGametesRolledUp = JSON.parse(document.getElementById('jPossGametesRolledUp').textContent);
 var genomeName = JSON.parse(document.getElementById('jGenomeName').textContent);
+var staticPrefix = "{% get_static_prefix %}"
 
 var state = 1;
 
@@ -1504,23 +307,15 @@ var ps = null; //new PunnettSquare(PunnettSquare.InheritanceAutosomal, f, m);
 var psd  = null;
 canvasEl = document.getElementById('canvas');
 fitToContainer(canvasEl);
-//psd = new PunnettSquareDiv(ps, canvasEl, state);
 
-
-
-//radioEls = document.getElementsByName("p2");
-//for (el in radioEls) {
-//    el.onchange = orgTypeSelected;
-//}
 el = document.getElementById("id_p1_0");
 el.onchange = orgTypeSelected;
 
-el = document.getElementById("id_p1_" + {{ sel_p1 }});
+el = document.getElementById("id_p1_" + p1Ind);
 el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
-el = document.getElementById("id_p2_" + {{ sel_p2 }});
+el = document.getElementById("id_p2_" + p2Ind);
 el.parentElement.parentElement.classList.add('active')
 
-//el_lab.className ='active';
 el = document.getElementById("id_p1_1");
 el.onchange = orgTypeSelected;
 el = document.getElementById("id_p1_2");
@@ -1532,10 +327,6 @@ el = document.getElementById("id_p2_1");
 el.onchange = orgTypeSelected;
 el = document.getElementById("id_p2_2");
 el.onchange = orgTypeSelected;
-
-//el = document.getElementById("id_alleles_" + "2");
-//el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
-
 
 el = document.getElementById("id_alleles_0");
 el.onchange = numTraitsSelected;
@@ -1561,30 +352,19 @@ el.onchange = genPhenSelected;
 if (genPhen== 'g') {
     el.parentElement.parentElement.classList.add('active');
 }
-//el.parentElement.parentElement.classList.add('active')  // className = 'active' //addClass('active') // = el.labels[0];
 el = document.getElementById("id_gen_phen_" + "1");
 el.onchange = genPhenSelected;
 if (genPhen== 'p') {
     el.parentElement.parentElement.classList.add('active');
 }
 
-selectCrossType();
+//selectCrossType();
 
 genPhenChanged();
 
-//x=1;
-
-
-
 numTraitsChanged(true);
 
-
 orgTypeChanged();
-
-
-//setPunnettSquare();
-//psd.drawStuff();
-//alert(psd.numCols);
 
 </script>
 

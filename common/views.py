@@ -776,6 +776,15 @@ def cross_type_for_orgs(orgs):
     else:
         return '4'
 
+def orgs_for_cross_type(cross_type):
+    if cross_type == '1':
+        return 0, 2
+    elif cross_type == '2':
+        return 1, 2
+    elif cross_type == '3':
+        return 1, 1
+    else:
+        return 1,1
 
 def cross_sim(request):
     logger.info('Cross Sim Test')
@@ -795,60 +804,23 @@ def cross_sim(request):
 
     phen_descriptions = get_phen_descriptions(genome_name)
 
-
     max_traits = 3
 
     if request.method == 'POST':
-        try:
-             organisms = [Organism._from_attr_dict(org_flat) for org_flat in request.session['cs_organisms']]
-             x=1
-             form = CrossSimForm(request.POST)
-             if form.is_valid():
-                 x=1
-                 p1_choice = int(form.cleaned_data['p1']) - 1
-                 p2_choice = int(form.cleaned_data['p2']) - 1
-                 p1 = organisms[p1_choice]
-                 p2 = organisms[p2_choice]
-                 x=1
-                 children = []
-                 for i in range(0,1000):
-                    child = p1.mate(p2)
-                    children.append(child)
-
-                 unique_genotypes = Organism.unique_genotypes(children)
-                 unique_genotypes = {k: v for k, v in sorted(unique_genotypes.items(), key=lambda item: item[1], reverse=True)}
-                 org_gen_phens = [org.gen_phen() for org in organisms]
-                 poss_gametes = [org.genome.possible_gametes_formatted(dec_places=3) for org in organisms]
-
-                 parents = [org_gen_phens[p1_choice], org_gen_phens[p2_choice]]
-                 parent_poss_gametes = [poss_gametes[p1_choice], poss_gametes[p2_choice]]
-
-                 possibles = [p1.genome.chromosome_pairs[0]]
-                 return render(request, "common/cross_sim.html",
-                               context={'form': form, 'p1': organisms[p1_choice], 'p2': organisms[p2_choice], 'sel_p1':p1_choice,'sel_p2': p2_choice, 'parents': parents,
-                                        'parent_poss_gametes': parent_poss_gametes, 'genome_name': genome_name,
-                                        'org1_phen': 'a+b+c+', 'organims': organisms, 'orgs': org_gen_phens,
-                                        'poss_gametes': poss_gametes, 'children':children, 'children_unique_genotypes':unique_genotypes, 'children_unique_phenotypes':Organism.unique_phenotypes(children)})
-
-
-
-
-        except Exception as e:
-                print('No organisms in session',e)
-
+        pass
     else:
         default_num_traits = int(request.GET.get('loci', '2'))
-        default_cross_type = request.GET.get('cross-type', '3')
+        default_cross_type = request.GET.get('cross-type', 'hybrid')
         default_gen_phen = request.GET.get('gen-phen', 'p')
 
-        #default_cross_type = '2'
-        #default_gen_phen = '1'
-        #default_num_traits = '3'
-        form = CrossSimForm(initial={'p1': '2','p2':'2', 'alleles': str(default_num_traits), 'cross_type': default_cross_type, 'gen_phen':default_gen_phen})
-#        positions_in = ','.join([str(10000000 + (10000000 * i)) for i in range(default_num_traits)])
-#        gt = create_genome_template(request, positions_in=positions_in, num_traits=default_num_traits)
-        #p1 = Organism.organism_with_het_genotype(gt, rand_phase=True)
-        #p2 = Organism.organism_with_hom_recessive_genotype(gt)
+        cross_type_map = {'pure': '1', 'test': '2', 'hybrid': '3'}
+        if default_cross_type in cross_type_map:
+            default_cross_type = cross_type_map[default_cross_type]
+        else:
+            default_cross_type = '3'
+
+        sel_p1, sel_p2 = orgs_for_cross_type(default_cross_type)
+        form = CrossSimForm(initial={'p1': str(sel_p1+1),'p2': str(sel_p2+1), 'alleles': str(default_num_traits), 'cross_type': default_cross_type, 'gen_phen':default_gen_phen})
 
         organisms = []
         for num_traits in range(1, max_traits+1):
@@ -867,17 +839,12 @@ def cross_sim(request):
         poss_gametes = [[org.genome.possible_gametes_formatted(dec_places=3, suppress_combine_same=True) for org in organism_set] for organism_set in organisms]
         poss_gametes_rolled_up = [[org.genome.possible_gametes_formatted(dec_places=3, suppress_combine_same=False) for org in organism_set] for organism_set in organisms]
 
-        sel_p1 = 1
-        sel_p2 = 1
-        cross_type = cross_type_for_orgs([sel_p1,sel_p2])
-
         num_traits_ind = default_num_traits - 1
         parents = [org_gen_phens[num_traits_ind][sel_p1],org_gen_phens[num_traits_ind][sel_p2]]
         parent_poss_gametes = [poss_gametes[num_traits_ind][sel_p1],poss_gametes[num_traits_ind][sel_p2]]
 
-        #possibles = [p1.genome.chromosome_pairs[0]]
         return render(request, "common/cross_sim.html",
-                      context={'form':form,'gen_phen': default_gen_phen, 'num_traits': default_num_traits,'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1':organisms[num_traits_ind][sel_p1],'p2': organisms[num_traits_ind][sel_p2], 'sel_p1':1, 'sel_p2':'2', 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name': genome_name, 'phen_descriptions': phen_descriptions, 'org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes, 'poss_gametes_rolled_up': poss_gametes_rolled_up})
+                      context={'form':form,'gen_phen': default_gen_phen, 'num_traits': default_num_traits,'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1':organisms[num_traits_ind][sel_p1],'p2': organisms[num_traits_ind][sel_p2], 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name': genome_name, 'phen_descriptions': phen_descriptions, 'org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes, 'poss_gametes_rolled_up': poss_gametes_rolled_up})
 
 
 def load_quiz(quiz_code):
