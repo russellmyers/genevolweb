@@ -199,13 +199,13 @@ function handleTabClick(e) {
 
 
 if (answerTitle.length == 0) {
-
+    document.getElementById('answer_div').style.visibility = "hidden";
 }
 else {
-    document.getElementById('answer_div').style.visibility === "visible";
+    document.getElementById('answer_div').style.visibility = "visible";
     showGraph('plotDiv');
     if (correctFlag) { //only show graph if correct answer
-        document.getElementById('answer_div_generator').style.visibility === "visible";
+        document.getElementById('answer_div_generator').style.visibility = "visible";
         showGraph('plotDivGenerator');
     }
 }

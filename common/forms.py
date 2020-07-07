@@ -1,5 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 
 class AlleleFreakForm(forms.Form):
     ALLELE_CHOICES = [('1', 'A'), ('2', 'a') ]
@@ -66,6 +67,35 @@ class BreedersEquationSolverForm(forms.Form):
                 pass
             else:
                 raise ValidationError("Average Response Phenotype must be between Average Starting Phenotype and Average Selected Phenotype")
+
+        return cleaned_data
+
+class HardyWeinbergSolverForm(forms.Form):
+    obs_AA = forms.IntegerField(label='Observed AA count', required=False, validators=[MinValueValidator(0, 'Enter positive AA genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select solver-input', 'step':'1'}))
+    obs_Aa = forms.IntegerField(label='Observed Aa count', required=False, validators=[MinValueValidator(0, 'Enter positive Aa genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select solver-input', 'step':'1'}))
+    obs_aa = forms.IntegerField(label='Observed aa count', required=False, validators=[MinValueValidator(0, 'Enter positive aa genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select solver-input', 'step':'1'}))
+    exp_AA = forms.IntegerField(label='Expected AA count', required=False, validators=[MinValueValidator(0, 'Enter positive AA genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select generator-input', 'step':'1', 'answer_field':True}))
+    exp_Aa = forms.IntegerField(label='Expected Aa count', required=False, validators=[MinValueValidator(0, 'Enter positive Aa genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select generator-input', 'step':'1', 'answer_field': True}))
+    exp_aa = forms.IntegerField(label='Expected aa count', required=False, validators=[MinValueValidator(0, 'Enter positive aa genotype count')], widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm narrow-select generator-input', 'step':'1', 'answer_field': True}))
+    F  = forms.FloatField(label='F value', required=False, widget=forms.NumberInput(attrs={'class': 'form-control  form-control-sm narrow-select generator-input',  'max':'1', 'step':'0.001', 'answer_field': True}))
+
+    answer_field = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    def clean(self):
+        cleaned_data = super(HardyWeinbergSolverForm, self).clean()
+        tot_counts = 0
+        num_missing = 0
+        for form_field in cleaned_data:
+            if form_field == 'answer_field':
+                pass
+            else:
+                if cleaned_data[form_field] is None:
+                    num_missing += 1
+                else:
+                    tot_counts += cleaned_data[form_field]
+
+        if tot_counts == 0:
+            raise ValidationError('Please enter data')
 
         return cleaned_data
 

@@ -1098,6 +1098,14 @@ class Organism(SerialiserMixin):
 if __name__ == '__main__':
     debug = 0
 
+    from scipy.stats import chisquare
+    # obs = [1469, 138, 5]
+    # exp = [1467.4, 141.2, 3.4]
+    obs = [1489, 108, 15]
+    exp = [1467.4, 141.2, 3.4]
+    chisq, p = chisquare(obs, exp, ddof=1)
+    F = 1 - (obs[1] / exp[1])
+
     phens = Genome.test_cross_het_gametes_to_phenotypes(['ABC', 'ABc'])
 
     org = Organism.organism_from_gametes({'ABC':37,'ABc':378,'AbC':10, 'Abc':100,'aBC':88,'aBc':7, 'abC': 344,'abc':36})

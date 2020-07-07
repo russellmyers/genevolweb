@@ -1,10 +1,12 @@
 from django.db import models
 import json
 
-from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm
+from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm
 import random
 import math
 from getools.cross import Organism, Genome
+from scipy.stats import chisquare
+from getools.popdist import PopDist
 
 # Create your models here.
 
@@ -488,4 +490,182 @@ class TestCrossLinkageProblem(Problem):
                    form.fields[param].initial = request.GET.get(param,None)
 
             form.fields['answer_field'].initial = json.dumps({'phenotypes': Genome.test_cross_het_gametes_to_phenotypes()})
+        return form
+
+class HardyWeinbergProblem(Problem):
+
+    ranges = {'obs_AA': [1, 1000], 'obs_Aa': [1, 1000], 'obs_aa': [1, 1000]}
+
+    def __init__(self, solver_form):
+
+        super().__init__('Hardy Weinberg', solver_form, ranges=HardyWeinbergProblem.ranges)
+
+    def solve(self):
+        pass
+
+    def generate(self):
+        pass
+
+    def set_missing_field_in_form(self, missing_field, ans):
+        self.solver_form.data = self.solver_form.data.copy()
+
+        self.solver_form.data[missing_field] = json.dumps(ans)
+
+
+    def calc_allele_frequencies(self, observed):
+        A_count = observed[0]*2 + observed[1]
+        tot_allele_count = sum(observed) *2
+        p = A_count / tot_allele_count
+        q = 1- p
+        return p, q
+
+    def calc_expected_genotype_counts(self, observed, p, q):
+        exp_AA = math.pow(p, 2) * sum(observed)
+        exp_Aa = 2 * p * q * sum(observed)
+        exp_aa = sum(observed) - exp_AA - exp_Aa
+        return [exp_AA, exp_Aa, exp_aa]
+
+    def calc_F(self, observed, expected):
+        obs_Aa_freq = observed[1] / sum(observed)
+        exp_Aa_freq = expected[1] / sum(expected)
+        return 1 - (obs_Aa_freq / exp_Aa_freq)
+
+    def calc(self, values):
+
+        observed = [values['obs_AA'],values['obs_Aa'], values['obs_aa']]
+        p, q = self.calc_allele_frequencies(observed)
+        expected = self.calc_expected_genotype_counts(observed, p, q)
+        chisq, p_val = chisquare(observed, expected, ddof=1)
+        F = self.calc_F(observed, expected)
+
+        expected = [round(exp) for exp in expected]
+        F = round(F, 3)
+
+        return {'exp_AA': expected[0], 'exp_Aa': expected[1], 'exp_aa': expected[2], 'F': F}
+
+    def calc_missing(self):
+        values = {}
+        for range in self.ranges:
+            values[range] = self.solver_form.cleaned_data[range]
+        return self.calc(values)
+
+    def pick_field(self):
+
+        satisfactory = False
+        while not satisfactory:
+            p = random.uniform(0.01, 0.99)
+
+            r = random.randint(0,1)
+            if r == 0:
+                F = 0.01
+            else:
+                F = random.uniform(0.01, 0.4)
+            pd = PopDist(p, pop=1000, F = F, verbose=1)
+            pd.sim_generations(1)
+            print(pd.gens[-1].survived_genotypes)
+            num_fields = len(self.ranges)
+            r = random.randint(0, num_fields - 1)
+            picked_field = 'exp_AA' #list(self.ranges.keys())[r]
+            values = {}
+
+            values['obs_AA'] = pd.gens[-1].survived_genotypes[0]
+            values['obs_Aa'] = pd.gens[-1].survived_genotypes[1]
+            values['obs_aa'] = pd.gens[-1].survived_genotypes[2]
+
+            answer = self.calc(values)
+            if (answer['F'] >= 0):
+               satisfactory = True
+               for field in self.ranges:
+                    self.solver_form.fields[field].initial = values[field]
+                    self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+        #         # form.fields[field].disabled = True
+        #         self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+
+
+        # satisfactory = False
+        # while not satisfactory:
+        #     for field in self.ranges:
+        #         if isinstance(self.ranges[field][0], int):
+        #             r = random.randint(self.ranges[field][0], self.ranges[field][1])
+        #         else:
+        #             r = random.uniform(self.ranges[field][0], self.ranges[field][1])
+        #             r = round(r, 2)
+        #
+        #         values[field] = r
+        #         self.solver_form.fields[field].initial = r
+        #         # form.fields[field].disabled = True
+        #         self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+        #     answer = self.calc(values)
+        #     if (answer['F'] >= 0):
+        #         satisfactory = True
+        return picked_field, values
+
+
+    def check_answer(self):
+        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form  = self.solver_form
+        values = {}
+        for field in self.ranges:
+            #values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+            values[field] = form.cleaned_data[field]
+        correct_answer_title = 'dummy'
+        for field in self.ranges:
+            if field == form.cleaned_data['answer_field']:
+                correct_answer_title = form.fields[field].label
+            else:
+                form.fields[field].widget.attrs.update({'readonly': 'readonly'})
+
+        correct_answer = self.calc(values)
+        #correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+
+        correct_flag = {}
+        #correct_flag = False
+
+        for ans_key, ans_val in correct_answer.items():
+            if form.cleaned_data[ans_key] is None:
+                correct_flag[ans_key] = False
+            else:
+                if ans_key == 'F':
+                    if abs(ans_val - form.cleaned_data[ans_key]) < 0.01:
+                        correct_flag[ans_key]= True
+                    else:
+                        correct_flag[ans_key] = False
+                else:
+                    if abs(ans_val - form.cleaned_data[ans_key]) < 2:
+                        correct_flag[ans_key] = True
+                    else:
+                        correct_flag[ans_key] = False
+
+        # if (abs(correct_answer['expected'][0] - form.cleaned_data['exp_AA'] < 0.01)) and (abs(correct_answer['expected'][1] - form.cleaned_data['exp_Aa'] < 0.01)) and  (abs(correct_answer['expected'][2] - form.cleaned_data['exp_aa'] < 0.01)) and (abs(correct_answer['F'] - form.cleaned_data['F'] < 0.01)):
+        #        correct_flag = True
+
+        plot_data = self.generate_plot_data(correct_answer=correct_answer)
+
+        return correct_answer, correct_answer, correct_answer_title, correct_flag, plot_data
+
+    def generate_plot_data(self, correct_answer=None):
+
+        plot_data = []
+        return plot_data
+
+    def set_fields_from_gametes(self, gametes):
+        for gamete in gametes:
+            self.solver_form.fields[gamete].widget.attrs.update({'readonly': 'readonly'})
+
+        pass
+
+    @staticmethod
+    def create_solver_form_from_query_params(request, post=False):
+        if post:
+            form = HardyWeinbergSolverForm(request.POST)
+        else:
+            form = HardyWeinbergSolverForm()
+            for key in HardyWeinbergProblem.ranges:
+                form.fields[key].initial = '0'
+
+            for param in request.GET:
+                if param in form.fields:
+                   form.fields[param].initial = request.GET.get(param,None)
+
+            form.fields['answer_field'].initial = None
         return form

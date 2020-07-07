@@ -3,12 +3,12 @@ from getools.popdist import PopDist
 from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet, Genome
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm
+from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm
 from itertools import combinations
 from scipy.stats import chisquare
 import random
 import math
-from .models import PopGrowthProblem, BreedersEquationProblem, TestCrossLinkageProblem
+from .models import PopGrowthProblem, BreedersEquationProblem, TestCrossLinkageProblem, HardyWeinbergProblem
 import json
 from django.http import JsonResponse
 from django.conf import settings
@@ -277,6 +277,70 @@ def breeders_equation(request):
         context['default_tab'] = default_tab
 
     return render(request, "common/breeders_equation.html", context=context)
+
+def hardy_weinberg(request):
+    logger.info('Hardy Weinberg')
+
+    tab_requested = request.GET.get('tab', 'solver-tab')
+
+    default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
+
+    context = {}
+
+    if request.method == 'POST':
+
+        if 'solverSubmit' in request.POST:
+            default_tab = 0
+            hw =  HardyWeinbergProblem(HardyWeinbergProblem.create_solver_form_from_query_params(request, post=True))
+            form = hw.solver_form
+
+            if form.is_valid():
+                context['default_tab'] = default_tab
+                context['form'] = form
+                ans = hw.calc_missing()
+                context['answer'] = ans
+                missing_field = 'answer'
+                hw.set_missing_field_in_form(missing_field, ans)
+                context['answer_title'] = 'answer_field'
+                context['plot_data'] =hw.generate_plot_data(correct_answer=ans)
+
+                return render(request, "common/hardy_weinberg.html", context=context)
+            else:
+                print('solver form not valid')
+        else:
+            default_tab = 1
+            hw = HardyWeinbergProblem(HardyWeinbergSolverForm(request.POST))
+            form = hw.solver_form
+            if form.is_valid():
+                context['default_tab'] = default_tab
+                context['form'] = form
+                #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
+                context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = hw.check_answer()
+                context['chosen_target'] = form.cleaned_data['answer_field']
+                return render(request, "common/hardy_weinberg.html", context=context)
+            else:
+                print('generator form not valid')
+
+        context['form'] = form
+        context['default_tab'] = default_tab
+
+    else:
+        if default_tab == 0:
+            hw = HardyWeinbergProblem(HardyWeinbergProblem.create_solver_form_from_query_params(request))
+            form = hw.solver_form
+
+        else:
+            hw =  HardyWeinbergProblem(HardyWeinbergSolverForm())
+            form = hw.solver_form
+            chosen_target, other_values = hw.pick_field()
+            form.fields['answer_field'].initial = chosen_target
+            context['chosen_target'] = None #chosen_target
+            context['other_values'] = other_values
+
+        context['form'] = form
+        context['default_tab'] = default_tab
+
+    return render(request, "common/hardy_weinberg.html", context=context)
 
 
 def children_stats(children):

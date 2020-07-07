@@ -12,7 +12,7 @@ class PopDistGen:
         self.verbose = verbose
 
         self.random_mating_genotypes = None
-        self.survived_genotypes = None
+        #self.survived_genotypes = None
 
         if prev_gen_num is None:
             self.out_fa = fa
@@ -32,6 +32,13 @@ class PopDistGen:
         ''' calculate adjustment to maintain population size'''
         return 1.0 / sum(raw_freqs)
 
+    @property
+    def survived_genotypes(self):
+
+        survived_AA = round(self.survived_genotype_freqs[0] * self.pop)
+        survived_Aa = round(self.survived_genotype_freqs[1] * self.pop)
+        survived_aa = self.pop - survived_AA - survived_Aa
+        return [survived_AA, survived_Aa, survived_aa]
 
     def survival(self):
         raw_survived_genotype_freqs = [self.genotype_fitnesses[i] * genotype_freq for i,genotype_freq in enumerate(self.random_mating_genotype_freqs)]
@@ -156,6 +163,10 @@ if __name__ == '__main__':
         nums.append(np.random.binomial(n, p))
         print(nums[i])
 
+    pdhw = PopDist(0.2, pop=1000, F=0.4, verbose=1)
+    print(pdhw)
+    pdhw.sim_generations(1)
+    print(PopDistGen.hw_genotype_freqs(0.2, F=0.4))
 
     pd = PopDist(0.5,genotype_fitnesses=[0.9,1.0,1.0],pop=100,F=0,verbose=1)
     print(pd)

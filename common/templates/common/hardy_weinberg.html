@@ -1,0 +1,268 @@
+{%  extends 'common/problem.html' %}
+{%  load static %}
+ {% block title %}
+Hardy Weinberg
+{% endblock %}
+
+
+{%  block app_title %}
+Hardy Weinberg
+{% endblock  %}
+
+{%  block problem_solver_leader %}
+          <p class = "lead mt-4 ml-2">
+          </p>
+{%  endblock problem_solver_leader %}
+
+
+{%  block problem_solver_header %}
+                    <p class="lead">
+                        <b>Enter observed genotype counts</b>
+                    </p>
+{%  endblock problem_solver_header %}
+
+{%  block problem_solver_form %}
+            <form id="hardyweinbergsolverform" action="" method="post" >
+                     {% csrf_token %}
+                       <div class="form-group">
+                          <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+
+                              {% for field in form.visible_fields %}
+                                   {% if field.field.widget.attrs.answer_field %}
+
+                                   {% else %}
+                                        <div class = "row mt-1">
+                                            <div class = "col-5">
+                                                {{ field.label_tag }}
+                                            </div>
+                                            <div class = "col-7">
+                                               {{ field.errors }}
+                                              {{ field }}
+                                              {{ field.help_text }}
+                                            </div>
+                                        </div>
+                                 {%  endif %}
+
+                              {% endfor %}
+                          </div>
+{#                          {{ form.as_p }}#}
+                           <input class="btn btn-primary mt-2" name="solverSubmit" type="submit" value="Calculate">
+                           <input class="btn btn-secondary mt-2" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+                           {% for field in form.visible_fields %}
+                               {%  if field.field.widget.attrs.answer_field %}
+                                     {%if answer_title|length  == 0 %}
+                                     {% else %}
+
+                                      {% endif %}
+                                {%  endif %}
+                          {% endfor %}
+                      </div>
+            </form>
+{%  endblock problem_solver_form %}
+
+{%  block problem_solver_answer %}
+            <p class="lead">
+                Expected AA count: {{ answer.exp_AA }}<br>
+                Expected Aa count: {{ answer.exp_Aa }}<br>
+                Expected aa count: {{ answer.exp_aa }}<br>
+                F value: {{ answer.F }}
+                <!--b>{{ answer_title|safe }} {{  answer }}</b-->
+            </p>
+
+                 <div id="plotDiv" style="width:100%;height:400px;">
+
+                 </div>
+{%  endblock problem_solver_answer %}
+
+{%  block problem_generator_leader %}
+          <p class = "lead mt-4 ml-2">
+
+          </p>
+{%  endblock problem_generator_leader %}
+
+{%  block problem_generator_form %}
+
+            <form id="hardyweinberggeneratorform" action="" method="post" >
+                     {% csrf_token %}
+
+                          <div style="color:red">
+                            {{  form.non_field_errors }}
+                          </div>
+
+                      {% for f in form %}
+                         {%  if f.name == chosen_target  %}
+
+                         {%  else %}
+                             {%  if f.name == 'answer_field' %}
+                                 {{ f }}
+                             {% else %}
+                                 {%  if f.field.widget.attrs.answer_field %}
+                                 {%  else %}
+                                 <div class = "row mt-1">
+                                     <div class = "col-5">
+                                      {{ f.label_tag }}
+                                     </div>
+                                     <div class = "col-7">
+                                         {{  f }}
+                                     </div>
+
+
+                                 </div>
+                                 {%  endif %}
+                             {%  endif %}
+
+                         {%  endif %}
+                      {%  endfor %}
+
+                     {%  if plot_data %}
+                     {%  else %}
+                        <p class="lead mt-4"><b>Please calculate:</b></p>
+                     {%  endif %}
+                     <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.exp_AA.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.exp_AA }}
+                         </div>
+                         {% if answer_title  %}
+                             <div class = "col-3">
+                                 {%  if correct_flag.exp_AA %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.exp_AA }})
+                                 {% endif  %}
+                             </div>
+                        {% endif %}
+
+                     </div>
+                   <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.exp_Aa.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.exp_Aa }}
+                         </div>
+                         {% if answer_title  %}
+                             <div class = "col-3">
+                                 {%  if correct_flag.exp_Aa %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.exp_Aa }})
+                                 {% endif  %}
+                             </div>
+                        {% endif %}
+
+
+                     </div>
+
+                   <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.exp_aa.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.exp_aa }}
+                         </div>
+                          {% if answer_title  %}
+                             <div class = "col-3">
+                                 {%  if correct_flag.exp_aa %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.exp_aa }})
+                                 {% endif  %}
+                             </div>
+                        {% endif %}
+                    </div>
+
+                   <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.F.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.F }}
+                         </div>
+                        {% if answer_title  %}
+                        <div class = "col-3">
+                                 {%  if correct_flag.F %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.F }})
+                                 {% endif  %}
+                        </div>
+                        {%  endif %}
+
+
+                     </div>
+
+{#                     {% for f in form %}#}
+{#                        {% if f.field.widget.attrs.answer_field %}#}
+{##}
+{##}
+{#                             <div class="row mt-1">#}
+{#                                <div class = "col-5">#}
+{#                                  {{ f.label_tag }}#}
+{#                                </div>#}
+{#                                 <div class = "col-7">#}
+{#                                  {{ f }}#}
+{#                                 </div>#}
+{##}
+{##}
+{#                                 {% if answer_title  %}#}
+{#                                     {%  if correct_flag %}#}
+{#                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">#}
+{#                                      {%  else %}#}
+{#                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px"> ( Correct answer: {{  answer_rounded }} )#}
+{#                                       {% endif  %}#}
+{#                                 {%  endif %}#}
+{#                             </div>#}
+{#                         {%  else %}#}
+{##}
+{#                         {%  endif %}#}
+{##}
+{#                    {%  endfor %}#}
+
+                    <input class="btn btn-primary mt-4" name="generatorSubmit" type="submit" value="Check Answer">
+                    <input class="btn btn-secondary mt-4" name="anotherButton" type="button" value="New" onclick="getAnother()">
+            </form>
+{%  endblock problem_generator_form %}
+
+ {%  block problem_generator_answer %}
+            <!--p class="lead">
+            {%  if correct_flag %}
+                {{ correct_answer }}
+
+                <b>{{ answer_title|safe }}: {{  answer }}</b>
+            {%  endif %}
+            </p-->
+
+             <div id="plotDivGenerator" style="width:600px;height:400px;">
+
+             </div>
+{% endblock problem_generator_answer %}
+
+{%  block show_graph %}
+    function showGraph(pDiv) {
+
+
+    }
+{%  endblock show_graph %}
+
+{%  block assemble_url %}
+    function assembleUrl() {
+        var url = "{% url 'hardy_weinberg' %}";
+        return url;
+
+    }
+{%  endblock assemble_url %}
+
+{%  block handle_tab_click_url %}
+        url +='&obs_AA=' + document.getElementById('id_obs_AA').value;
+        url +='&obs_Aa=' + document.getElementById('id_obs_Aa').value;
+        url +='&obs_aa=' + document.getElementById('id_obs_aa').value;
+{%  endblock handle_tab_click_url %}
