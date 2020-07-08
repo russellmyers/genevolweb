@@ -7,6 +7,7 @@ import math
 from getools.cross import Organism, Genome
 from scipy.stats import chisquare
 from getools.popdist import PopDist
+import numpy as np
 
 # Create your models here.
 
@@ -531,17 +532,17 @@ class HardyWeinbergProblem(Problem):
         return 1 - (obs_Aa_freq / exp_Aa_freq)
 
     def calc(self, values):
-
         observed = [values['obs_AA'],values['obs_Aa'], values['obs_aa']]
         p, q = self.calc_allele_frequencies(observed)
         expected = self.calc_expected_genotype_counts(observed, p, q)
         chisq, p_val = chisquare(observed, expected, ddof=1)
         F = self.calc_F(observed, expected)
+        pop = sum(observed)
 
         expected = [round(exp) for exp in expected]
         F = round(F, 3)
 
-        return {'exp_AA': expected[0], 'exp_Aa': expected[1], 'exp_aa': expected[2], 'F': F}
+        return {'exp_AA': expected[0], 'exp_Aa': expected[1], 'exp_aa': expected[2], 'F': F, 'p': round(p,3), 'q': round(q,3), 'pop':pop}
 
     def calc_missing(self):
         values = {}
@@ -560,7 +561,10 @@ class HardyWeinbergProblem(Problem):
                 F = 0.01
             else:
                 F = random.uniform(0.01, 0.4)
-            pd = PopDist(p, pop=1000, F = F, verbose=1)
+
+            pop_sizes = [1000, 1200, 1400, 1600, 2000]
+            r = random.randint(0, len(pop_sizes)-1)
+            pd = PopDist(p, pop=pop_sizes[r], F = F, verbose=1)
             pd.sim_generations(1)
             print(pd.gens[-1].survived_genotypes)
             num_fields = len(self.ranges)
@@ -622,10 +626,13 @@ class HardyWeinbergProblem(Problem):
         #correct_flag = False
 
         for ans_key, ans_val in correct_answer.items():
+            if ans_key == 'pop':
+               #ignore
+               continue
             if form.cleaned_data[ans_key] is None:
                 correct_flag[ans_key] = False
             else:
-                if ans_key == 'F':
+                if ans_key == 'F' or ans_key == 'p' or ans_key == 'q':
                     if abs(ans_val - form.cleaned_data[ans_key]) < 0.01:
                         correct_flag[ans_key]= True
                     else:
@@ -645,7 +652,19 @@ class HardyWeinbergProblem(Problem):
 
     def generate_plot_data(self, correct_answer=None):
 
+        values = {}
+        for field in self.ranges:
+            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field else  self.solver_form.cleaned_data[field]
+
         plot_data = []
+
+        p_values = [x for x in np.arange(0, 1.01, 0.01)]
+
+        exp_AA_values = [p*p*correct_answer['pop'] for p in  p_values]
+        exp_aa_values = [(1-p)*(1-p)*correct_answer['pop'] for p in p_values]
+        exp_Aa_values = [2*p*(1-p)*correct_answer['pop'] for p in p_values]
+        plot_data = [{'x_data': p_values, 'y_data': exp_AA_values, 'vert_line': correct_answer['p'], 'annotations': [{'x':correct_answer['p'], 'y': values['obs_AA'], 'title':'  Observed AA count'},{'x':correct_answer['p'], 'y': values['obs_Aa'], 'title':'  Obs Aa'},{'x':correct_answer['p'], 'y': correct_answer['exp_Aa'], 'title':'  Exp Aa'}, {'x':correct_answer['p'], 'y': values['obs_aa'], 'title':'  Observed aa count'} ]},{'x_data': p_values, 'y_data': exp_Aa_values}, {'x_data': p_values, 'y_data': exp_aa_values} ]
+
         return plot_data
 
     def set_fields_from_gametes(self, gametes):

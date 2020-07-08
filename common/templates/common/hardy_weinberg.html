@@ -21,6 +21,7 @@ Hardy Weinberg
                     </p>
 {%  endblock problem_solver_header %}
 
+
 {%  block problem_solver_form %}
             <form id="hardyweinbergsolverform" action="" method="post" >
                      {% csrf_token %}
@@ -46,7 +47,7 @@ Hardy Weinberg
                                  {%  endif %}
 
                               {% endfor %}
-                          </div>
+                       </div>
 {#                          {{ form.as_p }}#}
                            <input class="btn btn-primary mt-2" name="solverSubmit" type="submit" value="Calculate">
                            <input class="btn btn-secondary mt-2" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
@@ -58,16 +59,14 @@ Hardy Weinberg
                                       {% endif %}
                                 {%  endif %}
                           {% endfor %}
-                      </div>
+
             </form>
 {%  endblock problem_solver_form %}
 
 {%  block problem_solver_answer %}
             <p class="lead">
-                Expected AA count: {{ answer.exp_AA }}<br>
-                Expected Aa count: {{ answer.exp_Aa }}<br>
-                Expected aa count: {{ answer.exp_aa }}<br>
-                F value: {{ answer.F }}
+                Population size: {{ answer.pop }} Freq A allele (p): {{ answer.p }} Freq a allele (q): {{ answer.q }}<br>
+                Expected counts at h/w: &nbsp;&nbsp; AA: <b>{{ answer.exp_AA }}</b> Aa: <b>{{ answer.exp_Aa }}</b> aa: <b>{{ answer.exp_aa }}</b>  &nbsp;&nbsp;&nbsp; F value: <b>{{ answer.F }}</b>
                 <!--b>{{ answer_title|safe }} {{  answer }}</b-->
             </p>
 
@@ -120,6 +119,45 @@ Hardy Weinberg
                      {%  else %}
                         <p class="lead mt-4"><b>Please calculate:</b></p>
                      {%  endif %}
+                     <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.p.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.p }}
+                         </div>
+                         {% if answer_title  %}
+                             <div class = "col-3">
+                                 {%  if correct_flag.p %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.p }})
+                                 {% endif  %}
+                             </div>
+                        {% endif %}
+
+                     </div>
+                     <div class="row mt-1">
+                          <div class = "col-5">
+                              {{ form.q.label_tag }}
+                          </div>
+
+                         <div class = "col-4">
+                             {{  form.q }}
+                         </div>
+                         {% if answer_title  %}
+                             <div class = "col-3">
+                                 {%  if correct_flag.q %}
+                                         <img  class ="tick_img" src = "{%  static 'img/tick.jpg' %}" width="20px">
+                                 {%  else %}
+                                         <img  class ="tick_img" src = "{%  static 'img/cross.PNG' %}" width="20px">({{  answer_rounded.q }})
+                                 {% endif  %}
+                             </div>
+                        {% endif %}
+
+                     </div>
+
                      <div class="row mt-1">
                           <div class = "col-5">
                               {{ form.exp_AA.label_tag }}
@@ -248,6 +286,97 @@ Hardy Weinberg
 
 {%  block show_graph %}
     function showGraph(pDiv) {
+    var lineType;
+
+    lineType = 'solid';
+
+    dataList = [];
+    markerColors = ['green','blue','orange','yellow','red','black','purple'];
+
+    traceNames = ['Exp AA count', 'Exp Aa Count', 'Exp aa Count'];
+
+    for (i = 0;i < plotData.length; ++i) {
+        var trace = {
+          x: plotData[i].x_data,
+          y: plotData[i].y_data,
+          {#mode: 'markers',#}
+          type: 'line',
+          name: traceNames[i],
+          marker: {color: markerColors[i % markerColors.length]}
+      };
+      dataList.push(trace);
+    }
+
+
+    var layout = {
+      title:"Expected genotype counts (Population: " + plotData[2].y_data[0] + ")",
+       xaxis: {
+            title: 'Freq Allele A (p)'
+       },
+       shapes: [{
+        type: 'line',
+        x0: plotData[0].vert_line,
+        y0: 0,
+        x1: plotData[0].vert_line,
+        yref: 'paper',
+        y1: 1,
+        line: {
+          color: 'grey',
+          width: 1.5,
+          dash: 'dot'
+        }}],
+        annotations: [
+{#        {#}
+{#          x: plotData[0].annotations[0].x,#}
+{#          y: plotData[0].annotations[0].y,#}
+{#          xref: 'x',#}
+{#          yref: 'y',#}
+{#          text: plotData[0].annotations[0].title,#}
+{#          showarrow: true,#}
+{#          arrowhead: 7,#}
+{#          ax: 40,#}
+{#          ay: -40#}
+{#        },#}
+       {
+          x: plotData[0].annotations[1].x,
+          y: plotData[0].annotations[1].y,
+          xref: 'x',
+          yref: 'y',
+          text: plotData[0].annotations[1].title,
+          showarrow: true,
+          arrowhead: 7,
+          ax: 40,
+          ay: -40
+        },
+        {
+          x: plotData[0].annotations[2].x,
+          y: plotData[0].annotations[2].y,
+          xref: 'x',
+          yref: 'y',
+          text: plotData[0].annotations[2].title,
+          showarrow: true,
+          arrowhead: 7,
+          ax: -40,
+          ay: -40
+        }
+{#       {#}
+{#          x: plotData[0].annotations[2].x,#}
+{#          y: plotData[0].annotations[2].y,#}
+{#          xref: 'x',#}
+{#          yref: 'y',#}
+{#          text: plotData[0].annotations[2].title,#}
+{#          showarrow: true,#}
+{#          arrowhead: 7,#}
+{#          ax: 40,#}
+{#          ay: -40#}
+{#        }#}
+     ]
+
+
+
+    };
+
+    Plotly.newPlot(pDiv, dataList, layout);
 
 
     }
