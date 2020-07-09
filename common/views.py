@@ -462,7 +462,7 @@ def create_children(org_het, org_hom_rec, num_samples=1000):
 
 def get_phen_descriptions(genome_name):
     if genome_name == 'dog':
-        phen_descriptions = ['aa - green eyes (AA or Aa = blue eyes)', 'bb - pink coat (BB or Bb = brown coat)',
+        phen_descriptions = ['aa - pink coat (AA or Aa = brown coat)', 'bb - tailless (BB or Bb = tail)',
                              'cc - spotted (CC or Cc = unspotted)']
     elif genome_name == 'fish':
         phen_descriptions = ['aa - grey body (AA or Aa = gold body)', 'bb - small eyes (BB or Bb = big eyes)',
