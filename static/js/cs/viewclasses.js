@@ -56,6 +56,8 @@ class PunnettCell {
 
         this.parent.ctx.save();
 
+        this.parent.ctx.clearRect(this.cellPosition.x+2,this.cellPosition.y+2,this.cellSize.w-4,this.cellSize.h-4);
+
         if (this.parent.state == PunnettSquareDiv.StateFertilised) {
             var svdFillStyle = this.parent.ctx.fillStyle;
             var cellGenotypes = this.parent.punnettSquare.possibleOffspring();
@@ -100,9 +102,9 @@ class PunnettCell {
 }
 
 class PunnettSquareDiv {
-   static StateHidden = 1;
-   static StateMeiosis = 2;
-   static StateFertilised = 3;
+   // static StateHidden = 1;
+   // static StateMeiosis = 2;
+   // static StateFertilised = 3;
 
   constructor(punnettSquare, canvasEl,state, cellZoom, staticPrefix, padding) {
     this.punnettSquare = punnettSquare;
@@ -171,7 +173,7 @@ class PunnettSquareDiv {
       var imgDict = {}
       var unique = this.punnettSquare.uniquePhenotypes();
       for (i=0;i < unique.length; ++i) {
-           var phen = unique[i];
+           var phen = unique[i]['phen'];
            var phenImgName = this.staticPrefix + "img/" + this.punnettSquare.genomeName + '/' +  this.punnettSquare.genomeName + '_' + phen + ".png";
            var img = new Image;
            var svdThis = this;
@@ -185,7 +187,7 @@ class PunnettSquareDiv {
       return imgDict;
    }
 
-  showCellZoom(numSame, totNum) {
+  showCellZoom(numSameGen, totNumGen, numSamePhen, totNumPhen) {
         if (this.highlightedCell == null) {
             this.cellZoom.style.display = "none";
         }
@@ -226,15 +228,32 @@ class PunnettSquareDiv {
                         zoomGenotypeEl.style.display = "none";
                     }
                 }
+                if (children[i].id == 'zoom-gen') {
+                    var zoomGenotypeEl = children[i];
+                    var possibleGenotypes = this.punnettSquare.possibleOffspring();
+                    var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
+                    if (this.punnettSquare.genPhen == 'p') {
+                        zoomGenotypeEl.innerHTML = highlightedCellGenotype;
+                    }
+                    else {
+                        zoomGenotypeEl.innerHTML = '';
+                    }
+                }
 
 
                 if (children[i].id == 'num-same') {
-                    children[i].innerHTML = numSame;
+                    children[i].innerHTML = numSameGen;
                 }
                  if (children[i].id == 'tot-num') {
-                    children[i].innerHTML = totNum;
+                    children[i].innerHTML = totNumGen;
                 }
 
+                if (children[i].id == 'num-same-phen') {
+                    children[i].innerHTML = numSamePhen;
+                }
+                 if (children[i].id == 'tot-num-phen') {
+                    children[i].innerHTML = totNumPhen;
+                }
 
             x = 1;
            }
@@ -347,9 +366,12 @@ class PunnettSquareDiv {
 
   drawCellsGenotype() {
       var higlightedCellGenotype = null;
+      var highlightedCellPhenotype = null;
 
-      var numSame = 0;
-      var totNum = this.punnettCells.length;
+      var numSameGen = 0;
+      var totNumGen = this.punnettCells.length;
+      var numSamePhen = 0;
+      var totNumPhen = this.punnettCells.length;
 
 
       if (this.highlightedCell == null) {
@@ -357,6 +379,7 @@ class PunnettSquareDiv {
       else {
         var possibleGenotypes = this.punnettSquare.possibleOffspring();
         var highlightedCellGenotype = possibleGenotypes[this.highlightedCell.r][this.highlightedCell.c];
+        highlightedCellPhenotype = genToPhen(highlightedCellGenotype);
       }
 
       for (var i = 0;i < this.punnettCells.length; ++i) {
@@ -367,7 +390,7 @@ class PunnettSquareDiv {
           else {
              if (highlightedCellGenotype == possibleGenotypes[cell.r][cell.c]) {
                 cell.draw();
-                numSame+=1;
+                numSameGen+=1;
              }
              else {
                  cell.draw(0.4);
@@ -375,9 +398,64 @@ class PunnettSquareDiv {
           }
       }
 
-      this.showCellZoom(numSame, totNum);
+     for (var i = 0;i < this.punnettCells.length; ++i) {
+          var cell = this.punnettCells[i];
+          if (highlightedCellPhenotype == null) {
+
+          }
+          else {
+             if (highlightedCellPhenotype == genToPhen(possibleGenotypes[cell.r][cell.c])) {
+
+                numSamePhen+=1;
+             }
+             else {
+
+             }
+          }
+      }
 
 
+      this.showCellZoom(numSameGen, totNumGen, numSamePhen, totNumPhen);
+
+
+
+  }
+
+  highlightCellsWithGenotype(gen) {
+     var possibleGenotypes = this.punnettSquare.possibleOffspring();
+     for (var i = 0;i < this.punnettCells.length; ++i) {
+         var cell = this.punnettCells[i];
+         if (gen == possibleGenotypes[cell.r][cell.c]) {
+             cell.draw();
+         } else {
+             cell.draw(0.4);
+         }
+
+      }
+  }
+
+  highlightCellsWithPhenotype(phen) {
+     var possibleGenotypes = this.punnettSquare.possibleOffspring();
+     for (var i = 0;i < this.punnettCells.length; ++i) {
+         var cell = this.punnettCells[i];
+         if (phen == genToPhen(possibleGenotypes[cell.r][cell.c])) {
+             cell.draw();
+         } else {
+            // alert('Not highlighting: '+ cell.r + ' ' + cell.c);
+             cell.draw(0.4);
+         }
+
+      }
+
+  }
+
+  highlightCellsWithOverride(highlightOverride) {
+       if (this.punnettSquare.genPhen == 'g') {
+           this.highlightCellsWithGenotype(highlightOverride);
+       }
+       else {
+           this.highlightCellsWithPhenotype(highlightOverride);
+       }
 
   }
 
@@ -392,8 +470,11 @@ class PunnettSquareDiv {
         highlightedCellPhenotype = genToPhen(highlightedCellGenotype);
       }
 
-      var numSame = 0;
-      var totNum = this.punnettCells.length;
+      var numSameGen = 0;
+      var totNumGen = this.punnettCells.length;
+      var numSamePhen = 0;
+      var totNumPhen = this.punnettCells.length;
+
 
       for (var i = 0;i < this.punnettCells.length; ++i) {
           var cell = this.punnettCells[i];
@@ -403,7 +484,7 @@ class PunnettSquareDiv {
           else {
              if (highlightedCellPhenotype == genToPhen(possibleGenotypes[cell.r][cell.c])) {
                 cell.draw();
-                numSame+=1;
+                numSamePhen+=1;
              }
              else {
                  cell.draw(0.4);
@@ -411,7 +492,21 @@ class PunnettSquareDiv {
           }
       }
 
-      this.showCellZoom(numSame, totNum);
+     for (var i = 0;i < this.punnettCells.length; ++i) {
+          var cell = this.punnettCells[i];
+          if (highlightedCellGenotype == null) {
+
+          }
+          else {
+             if (highlightedCellGenotype == possibleGenotypes[cell.r][cell.c]) {
+                numSameGen+=1;
+             }
+             else {
+             }
+          }
+      }
+
+      this.showCellZoom(numSameGen, totNumGen, numSamePhen, totNumPhen);
 
 
 
@@ -553,7 +648,9 @@ class PunnettSquareDiv {
 
 
 
-  drawStuff() {
+  drawStuff(highlightOverride) {
+      highlightOverride = highlightOverride || null; //supply this if want to highlighting certain phen or gen regardless of which punnett square hovered over. eg show all with certain ratio
+
       //this.drawLine(new Point(20,20), new Point(50,50));
       this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
       this.canvasEl.width+=0; //trick to refresh if above doesn't work
@@ -564,10 +661,100 @@ class PunnettSquareDiv {
           this.drawGametes();
           this.drawTopCorner();
           this.drawCells();
+          if (highlightOverride) {
+              this.highlightCellsWithOverride(highlightOverride);
+          }
 
       }
 
   }
 
+
+}
+
+PunnettSquareDiv.StateHidden = 1;
+PunnettSquareDiv.StateMeiosis = 2;
+PunnettSquareDiv.StateFertilised = 3;
+
+
+
+class RatioTable {
+
+    constructor(punnettSquare, ratioTableEl, staticPrefix, rowCallback, state) {
+        this.punnettSquare = punnettSquare;
+        this.ratioTableEl = ratioTableEl;
+        this.staticPrefix = staticPrefix;
+        this.state = state || PunnettSquareDiv.StateHidden;
+        this.rowCallback = rowCallback;
+        this.createRows();
+    }
+
+    imgUrlFromPhen(phen) {
+      var phenImgURL = this.staticPrefix + "img/" + this.punnettSquare.genomeName + '/' +  this.punnettSquare.genomeName + '_' + phen + ".png";
+      return phenImgURL
+    }
+
+    handleRowClick(e, row) {
+        //alert('row clicked: ' + row.rowIndex);
+        this.rowCallback(e, row);
+    }
+
+    addRow(cell1Text, cell2Text) {
+        var row = this.ratioTableEl.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = cell1Text;
+        cell2.innerHTML = cell2Text;
+        var svdThis = this;
+        row.addEventListener('click', function(e) {
+            svdThis.handleRowClick(e, row);
+        });
+    }
+
+    createRows() {
+        var numSquares = this.punnettSquare.numSquares();
+
+        var numRows = this.ratioTableEl.rows.length;
+        for (i = 0; i < numRows -1; ++i) {
+           this.ratioTableEl.deleteRow(-1);
+        }
+
+        if (this.punnettSquare.genPhen == 'g') {
+            var unique = this.punnettSquare.uniqueGenotypes();
+            for (var i = 0; i < unique.length; ++i) {
+                this.addRow(unique[i].gen, unique[i].count + " / " + numSquares);
+            }
+        }
+        else {
+            var unique = this.punnettSquare.uniquePhenotypes();
+            for (var i = 0; i < unique.length; ++i) {
+                var cellHTML = "<img src='" + this.imgUrlFromPhen(unique[i].phen) + "' alt='hello' width='60px'/>";
+                this.addRow(cellHTML, unique[i].count + " / " + numSquares);
+            }
+        }
+
+        var allRows = this.ratioTableEl.rows;
+        // allRows[allRows.length-2].scrollIntoView({
+        //     behavior: 'smooth',
+        //     block: 'center'
+        // });
+        allRows[allRows.length-2].scrollIntoView();
+    }
+
+    setState(state) {
+        this.state = state;
+        if (this.state == PunnettSquareDiv.StateFertilised) {
+            this.ratioTableEl.style.display = "block";
+            var allRows = this.ratioTableEl.rows;
+            // allRows[allRows.length-2].scrollIntoView({
+            //     behavior: 'smooth',
+            //     block: 'center'
+            // });
+           
+        }
+        else {
+            this.ratioTableEl.style.display = "none";
+        }
+    }
 
 }

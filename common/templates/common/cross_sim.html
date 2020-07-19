@@ -99,12 +99,15 @@ Cross Simulator
             <div class = "row">
                 <div class = "col-3">
 
-                    <div id = 'cell-zoom' style="display:none;">
+                    <div id = 'cell-zoom' style="display:none;" class="border mt-4">
 
                         <img id="zoom-image" src = "" width="200px" style="display:none;">
                         <span id="zoom-genotype" class="display-4" style="display:none;"></span>
+                        <span id = "zoom-gen">AaBbCC</span>
                         <br>
-                        <span id="num-same"></span> / <span id="tot-num"></span>
+                        <small>Phenotype tot: </small><span id="num-same-phen"></span> / <span id="tot-num-phen"></span>
+                        <br>
+                        <small>Genotype tot: </small><span id="num-same"></span> / <span id="tot-num"></span>
 
                     </div>
                 </div>
@@ -114,6 +117,20 @@ Cross Simulator
                     </canvas>
 
 
+                </div>
+                <div class="col-3">
+                    <table id= "ratio-table" class="table table-hover" style="display:none;">
+                      <thead>
+                        <tr>
+                          <th scope="col">Ratios</th>
+                          <!--th scope="col">First</th>
+                          <th scope="col">Last</th>
+                          <th scope="col">Handle</th-->
+                        </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -165,6 +182,9 @@ function setPunnettSquare() {
    ps = new PunnettSquare(PunnettSquare.InheritanceAutosomal, possGametes[numTraits-1][p1Ind],possGametes[numTraits-1][p2Ind], numTraits, genPhen, genomeName);
    psd = new PunnettSquareDiv(ps, canvasEl, state, cellZoom, staticPrefix);
    psd.drawStuff();
+
+   rt = new RatioTable(ps, document.getElementById('ratio-table'), staticPrefix, ratioRowSelected);
+
    var x = ps.possibleOffspring();
    var y = 1;
 }
@@ -299,12 +319,14 @@ var possGametes = JSON.parse(document.getElementById('jPossGametes').textContent
 var possGametesRolledUp = JSON.parse(document.getElementById('jPossGametesRolledUp').textContent);
 var genomeName = JSON.parse(document.getElementById('jGenomeName').textContent);
 var staticPrefix = "{% get_static_prefix %}"
+var ratioRow = null;
 
 var state = 1;
 
 
 var ps = null; //new PunnettSquare(PunnettSquare.InheritanceAutosomal, f, m);
 var psd  = null;
+var rt = null; //= new RatioTable(ps, document.getElementById('ratio-table'), staticPrefix);
 canvasEl = document.getElementById('canvas');
 fitToContainer(canvasEl);
 

@@ -1,8 +1,8 @@
 // Model classes
 
 class PunnettSquare {
-    static InheritanceAutosomal = 1;
-    static InheritanceXLinked = 2;
+    //static InheritanceAutosomal = 1;
+    //static InheritanceXLinked = 2;
 
     constructor(inheritanceType, femaleParent, maleParent, numTraits, genPhen, genomeName) {
         this.inheritanceType = inheritanceType;
@@ -59,18 +59,30 @@ class PunnettSquare {
     uniquePhenotypes() {
         var unique= [];
 
+        var uniqueDict = {}
         var possPhenotypes = this.possiblePhenotypes();
         for (var r = 0; r < possPhenotypes.length;++r) {
             for (var c = 0; c < possPhenotypes[r].length; ++c) {
                 var phen = possPhenotypes[r][c];
-                if (unique.includes(phen)) {
+                if (phen in uniqueDict) {
+                    uniqueDict[phen] +=1;
                 } else {
-                    unique.push(phen);
+                    uniqueDict[phen] = 1;
                 }
 
             }
         }
-        return unique;
+
+        var uniqueArray = []
+        for (var key in uniqueDict) {
+            uniqueArray.push({'phen': key, 'count': uniqueDict[key]})
+        }
+
+        uniqueArray.sort(function(a,b){ //Array now becomes [7, 8, 25, 41]
+            return b['count'] - a['count']
+        });
+
+        return uniqueArray;
     }
 
 
@@ -88,6 +100,35 @@ class PunnettSquare {
             offspringPhenotypes.push(rowPhenotypes);
         }
         return offspringPhenotypes;
+    }
+
+    uniqueGenotypes() {
+        var unique= [];
+
+        var uniqueDict = {}
+        var possGenotypes = this.possibleOffspring();
+        for (var r = 0; r < possGenotypes.length;++r) {
+            for (var c = 0; c < possGenotypes[r].length; ++c) {
+                var gen = possGenotypes[r][c];
+                if (gen in uniqueDict) {
+                    uniqueDict[gen] +=1;
+                } else {
+                    uniqueDict[gen] = 1;
+                }
+
+            }
+        }
+
+        var uniqueArray = []
+        for (var key in uniqueDict) {
+            uniqueArray.push({'gen': key, 'count': uniqueDict[key]})
+        }
+
+        uniqueArray.sort(function(a,b){ //Array now becomes [7, 8, 25, 41]
+            return b['count'] - a['count']
+        });
+
+        return uniqueArray;
     }
 
 
@@ -108,4 +149,11 @@ class PunnettSquare {
         }
         return offspringGenotypes;
     }
+
+    numSquares() {
+        return this.maleGametes().length * this.femaleGametes().length;
+    }
 }
+
+PunnettSquare.InheritanceAutosomal = 1;
+PunnettSquare.InheritanceXLinked = 2;

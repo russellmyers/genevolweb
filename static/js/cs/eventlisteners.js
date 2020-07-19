@@ -1,5 +1,16 @@
 // Event Listeners
 
+function ratioRowSelected(e, row) {
+    //alert('row selected aaargh: ' + row.rowIndex);
+    if (row.rowIndex == ratioRow) {
+        ratioRow = null;
+    }
+    else {
+        ratioRow = row.rowIndex;
+    }
+    ratioRowChanged();
+}
+
 function genPhenSelected(e) {
        el = e.target;
        val = el.value;

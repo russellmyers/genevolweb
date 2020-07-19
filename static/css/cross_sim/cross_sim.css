@@ -35,3 +35,15 @@
 .switch-toggle input:checked + label {
   background: lightblue;
 }
+
+td:hover{
+ background: #fff0ff;
+}
+
+/*.tr.ratio-row-selected:hover {*/
+/*    background: lightcyan;*/
+/*}*/
+
+.table-hover > tbody > tr.ratio-row-selected:hover > td,
+.ratio-row-selected > td {
+    background: lavender}

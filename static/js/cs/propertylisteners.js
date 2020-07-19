@@ -26,6 +26,40 @@ function stateChanged() {
 
     psd.drawStuff();
 
+    rt.setState(state);
+
+}
+
+function ratioRowChanged() {
+    //alert('row changed');
+    var table = document.getElementById("ratio-table");
+    for (var i = 0, row; row = table.rows[i]; ++i) {
+        row.classList.remove('ratio-row-selected');
+        if (ratioRow == null){
+
+        }
+        else {
+            if (row.rowIndex == ratioRow) {
+                row.classList.add('ratio-row-selected');
+            }
+        }
+    }
+
+    if (ratioRow == null) {
+        psd.drawStuff();
+        return;
+    }
+
+
+    if (ps.genPhen == 'g') {
+        var unique = ps.uniqueGenotypes();
+        var gen = unique[ratioRow - 1].gen;
+        psd.drawStuff(gen);
+    } else {
+        var unique = ps.uniquePhenotypes();
+        var phen = unique[ratioRow - 1].phen;
+        psd.drawStuff(phen);
+    }
 }
 
 function crossTypeChanged() {
