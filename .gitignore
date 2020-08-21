@@ -6,6 +6,7 @@ getools/align_copied_from_dna.py
 getools/dnautils_copied_from_dna.py
 genevolweb.sqlite3
 
+*.~vsdx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

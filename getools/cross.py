@@ -5,6 +5,7 @@ import itertools
 debug = 0
 from getools.gen import SerialiserMixin
 from scipy.stats import chisquare
+import random
 
 class Allele(SerialiserMixin):
 
@@ -66,14 +67,19 @@ class AlleleSet(SerialiserMixin):
         return obj
 
 class Gene(SerialiserMixin):
-    def __init__(self,alleleset,position,name = ''):
+
+    INH_PATTERN_DOMINANT= 'D'
+    INH_PATTERN_RECESSIVE = 'R'
+
+    def __init__(self,alleleset,position,name = '', inheritance_pattern=INH_PATTERN_RECESSIVE):
         self.alleleset = alleleset
         self.position = position
         self.name = name
+        self.inheritance_pattern = inheritance_pattern
         #self.recessive = recessive
 
     def __str__(self):
-        return 'Name: ' + self.name + ' Pos: ' +  str(self.position) + ' Alleles: ' + str(self.alleleset)
+        return 'Name: ' + self.name + ' Pos: ' +  str(self.position) + ' Alleles: ' + str(self.alleleset) + ' IP: ' + str(self.inheritance_pattern)
 
     def distance(self,other_gene):
         return other_gene.position - self.position
@@ -189,84 +195,134 @@ class ChromosomeTemplate(SerialiserMixin):
 
 
 class GenomeTemplate(SerialiserMixin):
-    def __init__(self,ploidy=2,chromosomes=[],X_chromosome=None, Y_chromosome=None, name='Unnamed_Genome'):
+    def __init__(self,  ploidy=2, chromosome_templates=[],X_chromosome_template=None, Y_chromosome_template=None, name='Unnamed_Genome'):
         self.ploidy = ploidy
-        self.chromosomes = chromosomes # autosomal chromosomes
-        self.X_chromosome = X_chromosome
-        self.Y_chromosome = Y_chromosome
+        self.chromosome_templates = chromosome_templates # autosomal chromosome_templates
+        self.X_chromosome_template = X_chromosome_template
+        self.Y_chromosome_template = Y_chromosome_template
         self.name = name
 
     def __str__(self):
 
-        if self.X_chromosome is None:
+        if self.X_chromosome_template is None:
             X_chrom = 'None'
         else:
-            X_chrom = str(self.X_chromosome)
+            X_chrom = str(self.X_chromosome_template)
 
 
-        if self.Y_chromosome is None:
+        if self.Y_chromosome_template is None:
             Y_chrom = 'None'
         else:
-            Y_chrom = str(self.Y_chromosome)
+            Y_chrom = str(self.Y_chromosome_template)
 
-        return 'GenomeTemplate: ' + self.name +  ':'.join(['[' + str(ct) + ']' for ct in self.chromosomes]) + ' X chrom: ' + X_chrom + ' Y chrom: '+ Y_chrom
+        return 'GenomeTemplate: ' + self.name +  ':'.join(['[' + str(ct) + ']' for ct in self.chromosome_templates]) + ' X chrom: ' + X_chrom + ' Y chrom: ' + Y_chrom
 
     @staticmethod
     def _from_attr_dict(attr_dict):
-        chromosome_templates  = [ChromosomeTemplate._from_attr_dict(ct) for ct in attr_dict['chromosomes']]
-        obj = GenomeTemplate(ploidy=attr_dict['ploidy'],chromosomes=chromosome_templates, name=attr_dict['name'])
+        chromosome_templates  = [ChromosomeTemplate._from_attr_dict(ct) for ct in attr_dict['chromosome_templates']]
+        obj = GenomeTemplate(ploidy=attr_dict['ploidy'],chromosome_templates=chromosome_templates, name=attr_dict['name'])
         return obj
 
     def positions(self):
         posns = []
-        for chromosome_template in self.chromosomes:
+        for chromosome_template in self.chromosome_templates:
             posns.extend(chromosome_template.positions())
 
         return posns
 
     def chromosome_names(self):
-        return [chrom.name for chrom in self.chromosomes]
+        return [chrom.name for chrom in self.chromosome_templates]
 
-    def generate_random_sex_pair(self, sex=None):
-        if self.X_chromosome is None:
+    def generate_hom_dominant_sex_pair(self, sex=None):
+        if self.X_chromosome_template is None:
             return None
 
-
-        chrom_1 = self.X_chromosome.generate_random_chromosome() # at least 1 X
-        if (self.Y_chromosome is None) or (sex == Genome.FEMALE):
+        chrom_1 = self.X_chromosome_template.generate_hom_dominant_chromosome() # at least 1 X
+        if (self.Y_chromosome_template is None) or (sex == Genome.FEMALE):
             r = 0
         elif sex == Genome.MALE:
             r = 1
         else:
             r = random.randint(0,1)
-        chrom_2_template = self.X_chromosome if r == 0 else self.Y_chromosome
+        chrom_2_template = self.X_chromosome_template if r == 0 else self.Y_chromosome_template
+        chrom_2 = chrom_2_template.generate_hom_dominant_chromosome()
+        return ChromosomeSexPair([chrom_1,chrom_2], self.X_chromosome_template, chrom_2_template)
+
+    def generate_hom_recessive_sex_pair(self, sex=None):
+        if self.X_chromosome_template is None:
+            return None
+
+        chrom_1 = self.X_chromosome_template.generate_hom_recessive_chromosome() # at least 1 X
+        if (self.Y_chromosome_template is None) or (sex == Genome.FEMALE):
+            r = 0
+        elif sex == Genome.MALE:
+            r = 1
+        else:
+            r = random.randint(0,1)
+        chrom_2_template = self.X_chromosome_template if r == 0 else self.Y_chromosome_template
+        chrom_2 = chrom_2_template.generate_hom_recessive_chromosome()
+        return ChromosomeSexPair([chrom_1,chrom_2], self.X_chromosome_template, chrom_2_template)
+
+    def generate_het_sex_pair(self, sex=None, ploidy=None, rand_phase=None):
+
+        if sex == Genome.MALE:
+            # Can't generate heterozygous. Generate random alleles
+            chrom_1_template = self.X_chromosome_template
+            chrom_2_template = self.Y_chromosome_template
+            chrom_1 = chrom_1_template.generate_random_chromosome()
+            chrom_2 = chrom_2_template.generate_random_chromosome()
+            return ChromosomeSexPair([chrom_1, chrom_2], self.X_chromosome_template, self.Y_chromosome_template)
+
+        if self.X_chromosome_template is None:
+            return None
+
+        pair = self.X_chromosome_template.generate_het_pair(self.ploidy, rand_phase=rand_phase)
+        return ChromosomeSexPair(pair.chrom_pair, self.X_chromosome_template, self.X_chromosome_template)
+
+
+    def generate_random_sex_pair(self, sex=None):
+        if self.X_chromosome_template is None:
+            return None
+
+
+        chrom_1 = self.X_chromosome_template.generate_random_chromosome() # at least 1 X
+        if (self.Y_chromosome_template is None) or (sex == Genome.FEMALE):
+            r = 0
+        elif sex == Genome.MALE:
+            r = 1
+        else:
+            r = random.randint(0,1)
+        chrom_2_template = self.X_chromosome_template if r == 0 else self.Y_chromosome_template
         chrom_2 = chrom_2_template.generate_random_chromosome()
-        return ChromosomeSexPair([chrom_1,chrom_2],self.X_chromosome, chrom_2_template)
+        return ChromosomeSexPair([chrom_1,chrom_2], self.X_chromosome_template, chrom_2_template)
 
     def generate_random_genome(self, sex=None):
         chrom_pairs = []
-        for chromosome in self.chromosomes:
+        for chromosome in self.chromosome_templates:
             chrom_pairs.append(chromosome.generate_random_pair(self.ploidy))
         sex_pair = self.generate_random_sex_pair(sex=sex)
         return Genome(self,chrom_pairs, sex_pair = sex_pair)
 
-    def generate_hom_recessive_genome(self):
+    def generate_hom_recessive_genome(self, sex=None):
         chrom_pairs = []
-        for chromosome in self.chromosomes:
+        for chromosome in self.chromosome_templates:
             chrom_pairs.append(chromosome.generate_hom_recessive_pair(self.ploidy))
-        return Genome(self,chrom_pairs)
+        sex_pair = self.generate_hom_recessive_sex_pair(sex=sex)
+        return Genome(self,chrom_pairs,sex_pair = sex_pair)
 
-    def generate_hom_dominant_genome(self):
+    def generate_hom_dominant_genome(self, sex=None):
         chrom_pairs = []
-        for chromosome in self.chromosomes:
+        for chromosome in self.chromosome_templates:
             chrom_pairs.append(chromosome.generate_hom_dominant_pair(self.ploidy))
-        return Genome(self, chrom_pairs)
+        sex_pair = self.generate_hom_dominant_sex_pair(sex=sex)
+        return Genome(self, chrom_pairs, sex_pair=sex_pair)
 
-    def generate_het_genome(self, rand_phase=False):
+    def generate_het_genome(self, rand_phase=False, sex=None):
         chrom_pairs = []
-        for chromosome in self.chromosomes:
+        for chromosome in self.chromosome_templates:
             chrom_pairs.append(chromosome.generate_het_pair(self.ploidy,rand_phase=rand_phase))
-        return Genome(self,chrom_pairs)
+        sex_pair = self.generate_het_sex_pair(sex=sex, rand_phase=rand_phase)
+        return Genome(self,chrom_pairs, sex_pair=sex_pair)
 
 
 
@@ -419,10 +475,32 @@ class ChromosomePair(SerialiserMixin):
 
         return phen
 
+    def phenotype_afflicted(self,alpha_sort=True):
+        afflicted_list = []
+        for i, gene in enumerate(self.chromosome_template.genes):
+            allele_pair = self.get_allele_pair(i)
+            num_lower = 0
+            for allele in allele_pair:
+                if not (allele.isupper()):
+                    num_lower += 1
+            aff = ''
+            if gene.inheritance_pattern == Gene.INH_PATTERN_DOMINANT:
+               if num_lower > 0:
+                  aff = allele_pair[0].lower()
+               else:
+                  aff =  allele_pair[0].upper()
+            else:
+                if num_lower ==  2:
+                    aff = allele_pair[0].lower()
+                else:
+                    aff = allele_pair[0].upper()
 
+            afflicted_list.append(aff)
 
+        if alpha_sort:
+            afflicted_list.sort(key=lambda x:x.upper())
 
-
+        return ''.join(afflicted_list)
 
     def pick_random_alleles(self):
 
@@ -583,7 +661,10 @@ class ChromosomePair(SerialiserMixin):
 
 class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
     def __init__(self,chrom_pair, chrom_1_template, chrom_2_template):
-        super(ChromosomeSexPair,self).__init__(chrom_1_template, chrom_pair)
+        if chrom_1_template.type == ChromosomeTemplate.X:
+            super(ChromosomeSexPair,self).__init__(chrom_1_template, chrom_pair)
+        else:
+            super(ChromosomeSexPair, self).__init__(chrom_2_template, chrom_pair)
 
         self.chrom_1_template = chrom_1_template # ie first of chrom pair
         self.chrom_2_template = chrom_2_template # ie second of chrom pair
@@ -602,8 +683,9 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
                allele_pair.append('X' + str(chrom.alleles[i]))
 
         else:
-           allele_pair.append('X' + str(self.chrom_pair[0].alleles[i]))
-           allele_pair.append('Y_')
+           if self.chrom_1_template.type == ChromosomeTemplate.X:
+               allele_pair.append('X' + str(self.chrom_pair[0].alleles[i]))
+               allele_pair.append('Y_')
 
         if sort:
             allele_pair.sort()
@@ -617,21 +699,28 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
                     allele_pair.append('X' + str(chrom.alleles[i]))
 
             else:
-                allele_pair.append('X' + str(self.chrom_pair[0].alleles[i]))
-                allele_pair.append('Y ')
+                if self.chrom_1_template.type == ChromosomeTemplate.X:
+                    allele_pair.append('X' + str(self.chrom_pair[0].alleles[i]))
+                    allele_pair.append('Y ')
+                else:
+                    allele_pair.append('X' + str(self.chrom_pair[1].alleles[i]))
+                    allele_pair.append('Y ')
 
             if sort:
                 allele_pair.sort()
             return allele_pair
 
     def get_allele_Y_pair(self, i, sort=True):
-            # TODO fill in allele pair logic:
             allele_pair = []
             if self.chrom_1_template == self.chrom_2_template:
                 return ''
 
-
-            allele_pair.append('Y' + str(self.chrom_pair[1].alleles[i]) + 'X ')
+            if self.chrom_1_template.type == ChromosomeTemplate.Y:
+                allele_pair.append('Y' + str(self.chrom_pair[0].alleles[i]))
+                allele_pair.append('X ')
+            else:
+                allele_pair.append('Y' + str(self.chrom_pair[1].alleles[i]))
+                allele_pair.append('X ')
 
 
             if sort:
@@ -648,22 +737,113 @@ class ChromosomeSexPair(ChromosomePair, SerialiserMixin):
         #     allele_pair.sort()
         # return allele_pair
 
+    def phenotype_afflicted(self,alpha_sort=True):
+        afflicted_list = []
+        if self.chrom_1_template == self.chrom_2_template:
+           x_chrom_template = self.chrom_1_template
+           y_chrom_template = None
+        else:
+           if self.chrom_1_template.type == ChromosomeTemplate.Y:
+               y_chrom_template = self.chrom_1_template
+               x_chrom_template = self.chrom_2_template
+           else:
+               y_chrom_template = self.chrom_2_template
+               x_chrom_template = self.chrom_1_template
+
+        for i, gene in enumerate(x_chrom_template.genes):
+            allele_pair = self.get_allele_X_pair(i)
+            num_lower = 0
+            num_upper = 0
+            aff = ''
+            for allele in allele_pair:
+                if allele[0] == 'X': # female allele
+                    if allele[1].isupper():
+                        num_upper += 1
+                    else:
+                        num_lower +=1
+            if y_chrom_template is not None:
+                aff = allele_pair[0][1]
+                # if allele_pair[0][1].isupper():
+                #     aff = allele_pair[0][1].lower()
+                # else:
+                #     aff = allele_pair[0][1].upper()
+            else:
+
+                if gene.inheritance_pattern == Gene.INH_PATTERN_DOMINANT:
+                   if num_lower > 0:
+                      aff = allele_pair[0][1].lower()
+                   else:
+                      aff =  allele_pair[0][1].upper()
+                else:
+                    if num_upper > 0:
+                        aff = allele_pair[0][1].upper()
+                    else:
+                        aff = allele_pair[0][1].lower()
+
+            afflicted_list.append(aff)
+
+        if y_chrom_template is None:
+                #TODO Need to set afflicted to no for all  Y genes (even though this is a female and doesn't have a Y template)
+                pass
+        else:
+            for i, gene in enumerate(y_chrom_template.genes):
+                    allele_pair = self.get_allele_Y_pair(i)
+                    num_lower = 0
+                    num_upper = 0
+                    aff = ''
+                    for allele in allele_pair:
+                        if allele[0] == 'X': # female allele
+                            pass
+                        else:
+                            if allele[1].isupper():
+                                num_upper += 1
+                                aff = allele[1]
+                            else:
+                                num_lower +=1
+                                aff = allele[1]
+
+
+                    # if gene.inheritance_pattern == Gene.INH_PATTERN_DOMINANT:
+                    #    if num_upper >= 1:
+                    #       aff = allele_pair[0][1].upper()
+                    #    else:
+                    #       aff =  allele_pair[0][1].lower()
+                    # else:
+                    #     if num_upper >= 1:
+                    #         aff = allele_pair[0][1].lower()
+                    #     else:
+                    #         aff = allele_pair[0][1].upper()
+
+                    afflicted_list.append(aff)
+
+
+
+        if alpha_sort:
+            afflicted_list.sort(key=lambda x:x.upper())
+
+        return ''.join(afflicted_list)
+
+
     def num_genes(self):
-         return len(self.chromosome_template.genes)
-        #TODO cater for Y chromosome - add these genes
+         return  self.num_X_genes() + self.num_Y_genes() #len(self.chromosome_template.genes)
 
     def num_X_genes(self):
-        return len(self.chrom_1_template.genes)
+        if self.chrom_1_template.type == ChromosomeTemplate.X:
+            return len(self.chrom_1_template.genes)
+        else:
+            return len(self.chrom_2_template.genes)
 
     def num_Y_genes(self):
         if self.chrom_1_template == self.chrom_2_template:
             return 0
-
-        return len(self.chrom_2_template.genes)
+        if self.chrom_1_template.type == ChromosomeTemplate.Y:
+            return len(self.chrom_1_template.genes)
+        else:
+            return len(self.chrom_2_template.genes)
 
     def meiosis(self):
 
-        if self.chrom_2_template == ChromosomeTemplate.X:
+        if self.chrom_1_template == self.chrom_2_template: #assume female
             return super().meiosis()
         else:
             r = random.randint(0,1) # male or female!
@@ -791,10 +971,10 @@ class Genome(SerialiserMixin):
         else:
             out_str += '  ' + str(self.sex_pair)
 
-        if self.sex() == Genome.UNKNOWN:
+        if self.sex == Genome.UNKNOWN:
             return out_str
         else:
-            return self.sex() + ': ' + out_str
+            return self.sex + ': ' + out_str
         #return out_str
 
     @staticmethod
@@ -849,6 +1029,24 @@ class Genome(SerialiserMixin):
 
         return phen
 
+    def phenotype_afflicted(self,sort_alpha=True):
+        aff = ''
+        for chromosome_pair in self.chromosome_pairs:
+            aff += chromosome_pair.phenotype_afflicted()
+
+        if self.sex_pair is None:
+            pass
+        else:
+            aff += self.sex_pair.phenotype_afflicted()
+
+        if sort_alpha:
+            aff_list = list(aff)
+            aff_list.sort(key=lambda x: x.upper())
+            aff = ''.join(aff_list)
+
+        return aff
+
+
     def gen_phen(self):
         return {'gen':str(self),'phen':self.phenotype(), 'gen_phase':self.genotype()}
 
@@ -894,6 +1092,7 @@ class Genome(SerialiserMixin):
             new_sex_pair = self.sex_pair.mate(other_genome.sex_pair)
         return Genome(self.genome_template,new_chrom_pairs, new_sex_pair)
 
+    @property
     def sex(self):
         if self.sex_pair is None:
             return Genome.UNKNOWN
@@ -910,29 +1109,92 @@ class Genome(SerialiserMixin):
 
 
 class Organism(SerialiserMixin):
-    def __init__(self,genome):
+
+    def __init__(self,genome, partner=None, parents=None, children=None, counter_id = None, level=None):
        self.genome = genome
+       if parents is None:
+           self._parents  = []
+       else:
+           self._parents = parents
+       if level is None:
+           if self.has_parents:
+               self.level = self.parents[0].level + 1
+           else:
+               self.level = 0
+       else:
+           self.level = level
+       self.set_partner(partner)
+       if children is None:
+          self._children = []
+       else:
+          self._children = children
+       if counter_id is None:
+          self.counter_id = self.total_organisms + 1
+       else:
+          self.counter_id = counter_id
+
+       self._possible_genotypes = {} #Inferrable genotypes for each consistent pedigree
+
 
     @staticmethod
-    def organism_with_random_genotype(genome_template, sex=None):
+    def organism_with_random_genotype(genome_template, sex=None, counter_id=None):
         genome = genome_template.generate_random_genome(sex=sex)
-        return Organism(genome)
+        return Organism(genome, counter_id=counter_id)
 
     @staticmethod
-    def organism_with_hom_recessive_genotype(genome_template):
-        genome = genome_template.generate_hom_recessive_genome()
-        return Organism(genome)
+    def organism_with_hom_recessive_genotype(genome_template, sex=None, counter_id=None):
+        genome = genome_template.generate_hom_recessive_genome(sex=sex)
+        return Organism(genome, counter_id=counter_id)
 
     @staticmethod
-    def organism_with_hom_dominant_genotype(genome_template):
-        genome = genome_template.generate_hom_dominant_genome()
-        return Organism(genome)
+    def organism_with_hom_dominant_genotype(genome_template, sex=None, counter_id=None):
+        genome = genome_template.generate_hom_dominant_genome(sex=sex)
+        return Organism(genome, counter_id=counter_id)
 
     @staticmethod
-    def organism_with_het_genotype(genome_template,rand_phase=False):
-        genome = genome_template.generate_het_genome(rand_phase=rand_phase)
-        return Organism(genome)
+    def organism_with_het_genotype(genome_template,rand_phase=False, sex=None, counter_id=None):
+        genome = genome_template.generate_het_genome(rand_phase=rand_phase, sex=sex)
+        return Organism(genome, counter_id=counter_id)
 
+    # @staticmethod
+    # def generate_pedigree(max_levels=2, type='auto_rec', prob_mate = 0.5, max_children=4):
+    #     if type != 'auto_rec':
+    #         raise Exception('pedigree type not allowed: ' + type)
+    #
+    #     g = Gene(AlleleSet.default_alleleset_from_symbol('A'), 1000000,
+    #                   inheritance_pattern=Gene.INH_PATTERN_RECESSIVE)
+    #
+    #     c = ChromosomeTemplate('PedAutoChrom', 2000000, [g1])
+    #     c_X = ChromosomeTemplate('PedXChrom', 2000000, [], type=ChromosomeTemplate.X)
+    #     c_Y = ChromosomeTemplate('PedYChrom', 2000000, [], type=ChromosomeTemplate.Y)
+    #
+    #     gt = GenomeTemplate(ploidy=2, chromosome_templates=[c], X_chromosome_template=c_X,
+    #                         Y_chromosome_template=c_Y, name='PedGT')
+    #     print(str(gt))
+    #
+    #     next_id = 1
+    #     adam = Organism.organism_with_random_genotype(gt, sex=Genome.MALE, counter_id=next_id)
+    #     print(str(adam))
+    #     next_id += 1
+    #     # eve = Organism.organism_with_random_genotype(gt, sex=Genome.FEMALE, counter_id=next_id)
+    #     # print(str(eve))
+    #     # next_id += 1
+    #
+    #     for i in range(0,max_levels-1):
+    #         orgs = adam.all_orgs_in_pedigree(include_in_laws=False, level=i)
+    #         for org in orgs:
+    #             r = random.randint(0,1)
+    #             if i == 0 or r <=  prob_mate:
+    #                 org_mate = Organism.organism_with_random_genotype(gt,
+    #                                                                   sex=Genome.MALE if org.sex == Genome.FEMALE else Genome.FEMALE,
+    #                                                                   counter_id=next_id)
+    #                 next_id += 1
+    #                 org.set_partner(org_mate)
+    #                 num_ch = random.randint(0,max_children)
+    #                 org.mate(times=num_ch, next_id=next_id)
+    #                 next_id += org.num_children
+    #
+    #     return adam
 
     @staticmethod
     def calc_recombination_fractions(gametes):
@@ -1053,10 +1315,38 @@ class Organism(SerialiserMixin):
         #return Organism(genome)
         
 
-    def mate(self,other_org):
-        new_genome = self.genome.mate(other_org.genome)
-        return Organism(new_genome)
+    def mate(self,other_org=None, times=1, next_id=None):
+        partner = None
+        child = None
 
+        if other_org is None:
+            if self.partner is None:
+                return None
+            else:
+                partner = self.partner
+
+        else:
+            partner = other_org
+
+        for i in range(times):
+            new_genome = self.genome.mate(partner.genome)
+
+            if self.genome.sex == Genome.MALE:
+               parent_1 = self
+               parent_2 = partner
+            else:
+               parent_1  = partner
+               parent_2 = self
+
+            if next_id is None:
+               counter_id = None
+            else:
+               counter_id = next_id + i
+            child =  Organism(new_genome, parents = (parent_1, parent_2), counter_id=counter_id )
+            parent_1.add_child(child)
+            parent_2.add_child(child)
+
+        return child
 
     def genotype(self):
         return self.genome.genotype()
@@ -1064,8 +1354,238 @@ class Organism(SerialiserMixin):
     def gen_phen(self):
         return self.genome.gen_phen()
 
+    def set_partner(self, partner):
+        self.partner = partner
+        if partner is None:
+            pass
+        else:
+            partner.partner = self
+            if partner.level > 0:
+               self.level= partner.level
+            elif self.level > 0:
+                partner.level = self.level
+
+
+    def set_parents(self, male_parent, female_parent):
+        self._parents = (male_parent, female_parent)
+
+    def add_child(self, child):
+        self._children.append(child)
+
+    def set_possible_genotype(self, inh_type, chrom_type, possible_gen):
+        ''' Inferrable genotype'''
+        key = chrom_type + str(inh_type)
+
+        gen_set = False
+        err = False
+
+        if key in self._possible_genotypes:
+           if self._possible_genotypes[key] == possible_gen:
+               pass
+           else:
+               if self._possible_genotypes[key] is not None:
+                   err = True
+               self._possible_genotypes[key] = possible_gen
+               gen_set = True
+
+        else:
+           self._possible_genotypes[key] = possible_gen
+           gen_set = True
+
+        return gen_set, err
+
+    @property
+    def is_inlaw(self):
+        if self.level == 0:
+            return False
+
+        return not self.has_parents
+
+    @property
+    def children(self):
+        return self._children
+
+    @property
+    def num_children(self):
+        return len(self._children)
+
+    @property
+    def has_parents(self):
+        return len(self._parents) > 0
+
+    @property
+    def parents(self):
+        return self._parents
+
+    @property
+    def female_parent(self):
+        for parent in self._parents:
+            if parent.sex == Genome.FEMALE:
+                return parent
+
+        return None
+
+    @property
+    def male_parent(self):
+        for parent in self._parents:
+            if parent.sex == Genome.MALE:
+                return parent
+
+        return None
+
+    @property
+    def siblings(self):
+        if self.parents is None:
+            return []
+
+        _siblings = []
+        for child in self.parents[0].children:
+            if child is self:
+                pass
+            else:
+                _siblings.append(child)
+        return _siblings
+
+    @property
+    def num_siblings(self):
+        return len(self.siblings)
+
+    @property
+    def cousins(self):
+        if self.parents is None:
+            return []
+
+        _cousins = []
+        for parent in self.parents:
+            for parent_sibling in parent.siblings:
+                _cousins.extend(parent_sibling.children)
+        return _cousins
+
+    @property
+    def num_cousins(self):
+        return len(self.cousins)
+
+    @property
+    def sex(self):
+        return self.genome.sex
+
+
+    def orgs_afflicted_below(self, allele='a'):
+        affl_list = []
+        if allele in self.genome.phenotype_afflicted():
+            affl_list.append(self.counter_id)
+        if self.partner is None:
+            pass
+        else:
+            if allele in self.partner.genome.phenotype_afflicted():
+                affl_list.append(self.partner.counter_id)
+
+        if self.num_children == 0:
+            return affl_list
+        else:
+            affl_list_children = []
+            for child in self.children:
+                affl_list_children.extend(child.orgs_afflicted_below(allele=allele))
+            affl_list.extend(affl_list_children)
+            return affl_list
+
+
+    # def peers_at_level(self,level,include_in_laws=False):
+    #     pass
+
+    # def all_orgs_in_pedigree(self, include_in_laws=False, level=None):
+    #     adam = self.adam
+    #     all_related = [adam]
+    #     if adam.partner is not None:
+    #         all_related.append(adam.partner)
+    #     all_related.extend(adam.descendants)
+    #     if include_in_laws:
+    #         all_related.extend(adam.descendant_partners)
+    #
+    #     if level is None:
+    #         return all_related
+    #     else:
+    #         all_related_with_level = [org for org in all_related if org.level == level]
+    #         return all_related_with_level
+
+    def print_org_tree_below(self):
+
+        print('\t' * self.level + str(self) + ' affl: ' + str(self.genome.phenotype_afflicted()))
+        if self.partner is None:
+            pass
+        else:
+            print('\t' * self.partner.level  +'P '+ str(self.partner) + ' affl: ' + str(self.partner.genome.phenotype_afflicted()))
+        for child in self.children:
+            #print('\t' * child.level + str(child) + ' affl: ' + str(child.genome.phenotype_afflicted()))
+            child.print_org_tree_below()
+
+
+
+    @property
+    def descendants(self):
+        _descendants = []
+        for child in self.children:
+            _descendants.append(child)
+            _descendants.extend(child.descendants)
+        return _descendants
+
+    @property
+    def descendant_partners(self):
+        _descendant_partners = []
+        for child in self.children:
+            if child.partner is None:
+                pass
+            else:
+                _descendant_partners.append(child.partner)
+            _descendant_partners.extend(child.descendant_partners)
+        return _descendant_partners
+
+    @property
+    def num_descendant_partners(self):
+        return len(self.descendant_partners)
+
+
+    # @property
+    # def adam(self):
+    #     if self.parents is None:
+    #        if self.sex == Genome.MALE:
+    #             return self
+    #        else:
+    #            if self.partner is None:
+    #                 return None
+    #            else:
+    #                 return self.partner.adam
+    #
+    #     org = self
+    #     while org.parents is not None:
+    #         org = org.parents[0]
+    #     return org
+
+    @property
+    def num_descendants(self):
+        return len(self.descendants)
+
+    # @property
+    # def total_organisms(self):
+    #     if self.adam is None:
+    #        return 1 if self.partner is None else 2
+    #
+    #     tot_orgs = self.adam.num_descendants + self.adam.num_descendant_partners +  1  # +1 for adam himself
+    #     if self.adam.partner is None:
+    #        pass
+    #     else:
+    #       tot_orgs +=1 # +1 for adams partner
+    #     return tot_orgs
+
+    @property
+    def afflicted(self):
+        return self.genome.phenotype_afflicted()
+
     def __str__(self):
-        return str(self.genome)
+        if self.counter_id is None:
+            return str(self.genome)
+        else:
+            return f'{self.counter_id} - {self.genome}'
 
     @staticmethod
     def _from_attr_dict(attr_dict):
@@ -1095,6 +1615,789 @@ class Organism(SerialiserMixin):
                 unique_phens[phen] = 1
         return unique_phens
 
+class Pedigree:
+    def __init__(self, max_levels=2, inh_type=Gene.INH_PATTERN_RECESSIVE, chrom_type = ChromosomeTemplate.AUTOSOMAL, symbol='A', prob_mate=0.5, max_children=4):
+        self.max_levels = max_levels
+        self.inh_type = inh_type
+        self.chrom_type = chrom_type
+        self.symbol = symbol
+        self.prob_mate  = prob_mate
+        self.max_children = max_children
+        self.gt = None
+        self.next_id = 1
+        self._organisms = []
+
+    @property
+    def adam(self):
+
+        for org in self._organisms:
+            if org.parents is None and org.level == 0 and org.sex == Genome.MALE:
+                return org
+
+        return None
+
+    @property
+    def total_organisms(self):
+        return len(self._organisms)
+
+
+    def add_organism(self, sex, hom_rec=False):
+        if hom_rec:
+            org = Organism.organism_with_hom_recessive_genotype(self.gt, sex=sex, counter_id=self.next_id)
+        else:
+            org = Organism.organism_with_random_genotype(self.gt, sex=sex, counter_id=self.next_id)
+        print(str(org))
+        self._organisms.append(org)
+        self.next_id += 1
+        return org
+
+    def all_orgs_in_pedigree(self, include_inlaws=True, level=None):
+
+        if include_inlaws:
+           orgs = self._organisms
+        else:
+           orgs= [org for org in self._organisms if not org.is_inlaw]
+
+        if level is None:
+            return orgs
+
+        all_orgs_with_level = [org for org in orgs if org.level == level]
+        return all_orgs_with_level
+
+    def possible_genotypes(self, chrom_type=None, inh_type = None):
+
+        if chrom_type is None:
+            chrom_type =self.chrom_type
+        if inh_type is None:
+            inh_type = self.inh_type
+
+        poss_gens = []
+        done = False
+        while not done:
+
+            done = True
+
+    def generate(self, hom_rec_partners = False):
+
+        # if self.inh_type != Gene.INH_PATTERN_RECESSIVE:
+        #     raise Exception('pedigree type not allowed: ' + self.inh_type)
+
+        g = Gene(AlleleSet.default_alleleset_from_symbol(self.symbol), 1000000,
+                 inheritance_pattern=self.inh_type)
+
+        gene_list = [g]
+        c = ChromosomeTemplate('PedAutoChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.AUTOSOMAL else [])
+        c_X = ChromosomeTemplate('PedXChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.X else [], type=ChromosomeTemplate.X)
+        c_Y = ChromosomeTemplate('PedYChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.Y else [], type=ChromosomeTemplate.Y)
+
+        self.gt = GenomeTemplate(ploidy=2, chromosome_templates=[c], X_chromosome_template=c_X,
+                            Y_chromosome_template=c_Y, name='PedGT')
+        print(str(self.gt))
+
+        adam = self.add_organism(sex=Genome.MALE)
+        # eve = Organism.organism_with_random_genotype(gt, sex=Genome.FEMALE, counter_id=next_id)
+        # print(str(eve))
+        # next_id += 1
+
+        for i in range(0, self.max_levels - 1):
+            orgs = self.all_orgs_in_pedigree(include_inlaws=False, level=i)
+            for org in orgs:
+                r = random.randint(0, 1)
+                if i == 0 or r <= self.prob_mate:
+                    org_mate = self.add_organism(sex = Genome.MALE if org.sex == Genome.FEMALE else Genome.FEMALE, hom_rec=hom_rec_partners)
+                    org.set_partner(org_mate)
+                    if i == 0:
+                        min_children = 2
+                    else:
+                        min_children = 0
+                    num_ch = random.randint(min_children, self.max_children)
+                    org.mate(times=num_ch, next_id=self.next_id)
+                    self._organisms.extend(org.children)
+                    self.next_id += org.num_children
+
+        return adam
+
+
+class GenotypeInferrer:
+    def __init__(self, pedigree, chrom_type, inh_type, def_male_unaf=None, def_female_unaf=None,def_male_af=None, def_female_af=None):
+        self.pedigree = pedigree
+        self.chrom_type = chrom_type
+        self.inh_type = inh_type
+        self.def_male_unaf = def_male_unaf
+        self.def_female_unaf = def_female_unaf
+        self.def_male_af = def_male_af
+        self.def_female_af = def_female_af
+
+
+    def infer_org(self):
+
+        return False
+
+
+    @property
+    def inferrer_type(self):
+        return self.chrom_type + str(self.inh_type)
+
+    def initialise(self):
+
+        orgs = self.pedigree.all_orgs_in_pedigree()
+        for org in orgs:
+            #affl = org.genome.phenotype_afflicted()[0]
+            if org.sex == Genome.MALE:
+               if self.is_afflicted(org): # affl.islower():
+                   org.set_possible_genotype(self.inh_type, self.chrom_type, self.def_male_af)
+               else:
+                   org.set_possible_genotype(self.inh_type, self.chrom_type, self.def_male_unaf)
+            else:
+                if self.is_afflicted(org): #affl.islower():
+                    org.set_possible_genotype(self.inh_type, self.chrom_type, self.def_female_af)
+                else:
+                    org.set_possible_genotype(self.inh_type, self.chrom_type, self.def_female_unaf)
+
+
+
+    def is_afflicted(self, org):
+        affl_list = org.genome.phenotype_afflicted()
+        if len(affl_list) == 0:
+            #TODO - replace with actual allele, not hard code A
+            affl = 'A'
+        else:
+            affl = affl_list[0]
+
+        return affl.islower()
+
+    def infer(self):
+
+        self.initialise()
+
+        orgs = self.pedigree.all_orgs_in_pedigree()
+        done = False
+
+        consistent = True
+        err_msg = None
+
+        while not done:
+            num_inferred_this_pass = 0
+            for org in orgs:
+                changed_this_pass, err_msg_this_pass = self.infer_org(org)
+                if changed_this_pass:
+                    num_inferred_this_pass += 1
+                if err_msg_this_pass is not None:
+                    consistent = False
+                    err_msg = err_msg_this_pass
+                    done = True
+                    break
+            if num_inferred_this_pass == 0:
+                done = True  # Can't do any more
+
+        return consistent, err_msg
+
+    def set_err_msg(self, rule, org):
+        return {'rule': rule, 'org': org.counter_id}
+
+    def num_parents_afflicted(self, org):
+        _num_parents_afflicted = 0
+        for parent in org.parents:
+            if self.is_afflicted(parent):# parent.genome.phenotype_afflicted()[0].islower():
+                _num_parents_afflicted += 1
+        return _num_parents_afflicted
+
+    def show_inferred(self):
+        orgs = self.pedigree.all_orgs_in_pedigree()
+        inferred_list = []
+        key = self.chrom_type + str(self.inh_type)
+        for org in orgs:
+            if key in org._possible_genotypes:
+                inferred = org._possible_genotypes[key]
+            else:
+                inferred = None
+            inferred_list.append(str(org.counter_id) + ':' + ('*' if inferred is None else inferred))
+        print(inferred_list)
+
+
+    def rule_1(self, org):
+        return False, False
+
+    def rule_2(self, org):
+        return False, False
+
+    def rule_3(self, org):
+        return False, False
+
+    def rule_4(self, org):
+        return False, False
+
+    def rule_5(self, org):
+        return False, False
+
+    def rule_6(self, org):
+        return False, False
+
+    def rule_7(self, org):
+        return False, False
+
+    def rule_8(self, org):
+        return False, False
+
+    def rule_9(self, org):
+        return False, False
+
+    def rule_10(self, org):
+        return False, False
+
+    def rule_11(self, org):
+        return False, False
+
+    def rule_12(self, org):
+        return False, False
+
+    def rule_13(self, org):
+        return False, False
+
+    def rule_14(self, org):
+        return False, False
+
+    def rule_15(self, org):
+        return False, False
+
+    def rule_16(self, org):
+        return False, False
+
+    def infer_org(self, org):
+
+        any_change = False
+        err_msg = None
+
+        # Rule 1  MCA  / MPA
+        if org.sex == Genome.MALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_1(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(1, org)
+
+        # Rule 2  MCA  / FPA
+        if org.sex == Genome.MALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_2(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(2, org)
+
+        # Rule 3  MCA  / BPA
+        if org.sex == Genome.MALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_3(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(3, org)
+
+        # Rule 4  MCA  / NPA
+        if org.sex == Genome.MALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_4(org)
+
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(4, org)
+
+
+        # Rule 5  FCA  / MPA
+        if org.sex == Genome.FEMALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_5(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(5, org)
+
+        # Rule 6  FCA  / FPA
+        if org.sex == Genome.FEMALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_6(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(6, org)
+
+        # Rule 7  FCA  / BPA
+        if org.sex == Genome.FEMALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_7(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(7, org)
+
+        # Rule 8  FCA  / NPA
+        if org.sex == Genome.FEMALE and self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_8(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(8, org)
+
+
+        # Rule 9  MCN  / MPA
+        if org.sex == Genome.MALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_9(org)
+
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(9, org)
+
+        # Rule 10  MCN  / FPA
+        if org.sex == Genome.MALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_10(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(10, org)
+
+        # Rule 11  MCN  / BPA
+        if org.sex == Genome.MALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+
+                changed, err = self.rule_11(org)
+                if changed:
+                    any_change = True
+                if err:
+                    err_msg = self.set_err_msg(11, org)
+
+        # Rule 12  MCN  / NPA
+        if org.sex == Genome.MALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+
+                changed, err = self.rule_12(org)
+                if changed:
+                    any_change = True
+                if err:
+                    err_msg = self.set_err_msg(12, org)
+
+         # Rule 13  FCN  / MPA
+        if org.sex == Genome.FEMALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_13(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(13, org)
+
+        # Rule 14  FCN  / FPA
+        if org.sex == Genome.FEMALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_14(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(14, org)
+
+        # Rule 15  FCN  / BPA
+        if org.sex == Genome.FEMALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and self.is_afflicted(org.male_parent) and self.is_afflicted(org.female_parent):
+            changed, err = self.rule_15(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(15, org)
+
+        # Rule 16  FCN  / NPA
+        if org.sex == Genome.FEMALE and not self.is_afflicted(org) \
+                and org.has_parents \
+                and not self.is_afflicted(org.male_parent) and  not self.is_afflicted(org.female_parent):
+            changed, err = self.rule_16(org)
+            if changed:
+                any_change = True
+            if err:
+                err_msg = self.set_err_msg(16, org)
+
+
+        return any_change, err_msg
+
+
+
+class ARGenotypeInferrer(GenotypeInferrer):
+
+    def __init__(self, pedigree):
+
+        #affl = pedigree.all_orgs_in_pedigree()[0].genome.phenotype_afflicted()[0]
+        alleles = pedigree.all_orgs_in_pedigree()[0].afflicted
+        if len(alleles) == '':
+            # TODO replace with proper sourcing of allele name
+            self.allele = 'A'
+        else:
+            self.allele = alleles[0]
+        #allele = pedigree.all_orgs_in_pedigree()[0].genotype()[0]
+        def_male_unaf = None
+        def_female_unaf = None
+        def_male_af = self.allele.lower() + self.allele.lower()
+        def_female_af = self.allele.lower() + self.allele.lower()
+
+        super(ARGenotypeInferrer, self).__init__(pedigree,
+                                                 ChromosomeTemplate.AUTOSOMAL,
+                                                 Gene.INH_PATTERN_RECESSIVE,
+                                                 def_male_unaf=def_male_unaf,
+                                                 def_female_unaf=def_female_unaf,
+                                                 def_male_af=def_male_af,
+                                                 def_female_af=def_female_af
+                                                 )
+
+
+    def rule_1(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_2(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_4(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_5(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_6(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_8(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+
+        if err:
+            return changed, err
+
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                           self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_9(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_10(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_11(self, org):
+        return False , True
+
+    def rule_13(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_14(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_15(self, org):
+        return False, True
+
+
+
+class ADGenotypeInferrer(GenotypeInferrer):
+
+    def __init__(self, pedigree):
+
+        alleles = pedigree.all_orgs_in_pedigree()[0].afflicted
+        if len(alleles) == '':
+            #TODO replace with proper sourcing of allele name
+            self.allele = 'A'
+        else:
+            self.allele = alleles[0]
+            #pedigree.all_orgs_in_pedigree()[0].genotype()[0] #pedigree.all_orgs_in_pedigree()[0].genome.phenotype_afflicted()[0]
+        def_male_unaf = self.allele.upper() + self.allele.upper()
+        def_female_unaf = self.allele.upper() + self.allele.upper()
+        def_male_af = None
+        def_female_af = None
+
+        super(ADGenotypeInferrer, self).__init__(pedigree,
+                                                 ChromosomeTemplate.AUTOSOMAL,
+                                                 Gene.INH_PATTERN_DOMINANT,
+                                                 def_male_unaf=def_male_unaf,
+                                                 def_female_unaf=def_female_unaf,
+                                                 def_male_af=def_male_af,
+                                                 def_female_af=def_female_af
+                                                 )
+
+    def rule_1(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_2(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_4(self, org):
+        return False, True
+
+    def rule_5(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_6(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_8(self, org):
+        return False, True
+
+    def rule_9(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_10(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_11(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        if err:
+            return changed, err
+
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+
+        return changed, err
+
+    def rule_13(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_14(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+        return changed, err
+
+    def rule_15(self, org):
+        changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                             self.allele.upper() + self.allele.lower())
+        if err:
+            return changed, err
+
+
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+        return changed, err
+
+
+
+class XRGenotypeInferrer(GenotypeInferrer):
+
+    def __init__(self, pedigree):
+
+        #affl = pedigree.all_orgs_in_pedigree()[0].genome.phenotype_afflicted()[0]
+        alleles = pedigree.all_orgs_in_pedigree()[0].afflicted
+        if len(alleles) == '':
+            # TODO replace with proper sourcing of allele name
+            self.allele = 'A'
+        else:
+            self.allele = alleles[0]
+        #allele = pedigree.all_orgs_in_pedigree()[0].genotype()[0]
+        def_male_unaf = 'X' + self.allele.upper() + 'Y'
+        def_female_unaf = None
+        def_male_af = 'X' + self.allele.lower() + 'Y'
+        def_female_af = 'X' + self.allele.lower() + 'X' + self.allele.lower()
+
+        super(XRGenotypeInferrer, self).__init__(pedigree,
+                                                 ChromosomeTemplate.X,
+                                                 Gene.INH_PATTERN_RECESSIVE,
+                                                 def_male_unaf=def_male_unaf,
+                                                 def_female_unaf=def_female_unaf,
+                                                 def_male_af=def_male_af,
+                                                 def_female_af=def_female_af
+                                                 )
+
+    def rule_1(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+
+    def rule_4(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               'X' + self.allele.upper() + 'X' + self.allele.lower())
+
+        return changed, err
+
+    def rule_5(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+    def rule_6(self, org):
+       return False, True
+
+    def rule_8(self, org):
+        return False, True
+
+
+    def rule_10(self, org):
+        return False, True
+
+    def rule_11(self, org):
+        return False, True
+
+    def rule_13(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+    def rule_14(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+    def rule_15(self, org):
+        return False, True
+
+
+class XDGenotypeInferrer(GenotypeInferrer):
+
+    def __init__(self, pedigree):
+
+        #affl = pedigree.all_orgs_in_pedigree()[0].genome.phenotype_afflicted()[0]
+        alleles = pedigree.all_orgs_in_pedigree()[0].afflicted
+        if len(alleles) == '':
+            # TODO replace with proper sourcing of allele name
+            self.allele = 'A'
+        else:
+            self.allele = alleles[0]
+        #allele = pedigree.all_orgs_in_pedigree()[0].genotype()[0]
+        def_male_unaf = 'X' + self.allele.upper() + 'Y'
+        def_female_unaf = 'X' + self.allele.upper() + 'X' + self.allele.upper()
+        def_male_af = 'X' + self.allele.lower() + 'Y'
+        def_female_af = None
+
+        super(XDGenotypeInferrer, self).__init__(pedigree,
+                                                 ChromosomeTemplate.X,
+                                                 Gene.INH_PATTERN_DOMINANT,
+                                                 def_male_unaf=def_male_unaf,
+                                                 def_female_unaf=def_female_unaf,
+                                                 def_male_af=def_male_af,
+                                                 def_female_af=def_female_af
+                                                 )
+
+    def rule_1(self, org):
+        return False, True
+
+    def rule_4(self, org):
+        return False, True
+
+    def rule_5(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+    def rule_6(self, org):
+        changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                 'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+    def rule_8(self, org):
+        return False, True
+
+
+    def rule_13(self, org):
+        return False, True
+
+    def rule_15(self, org):
+        return False, True
+
+
+class YGenotypeInferrer(GenotypeInferrer):
+
+    def __init__(self, pedigree):
+
+        #affl = pedigree.all_orgs_in_pedigree()[0].genome.phenotype_afflicted()[0]
+        alleles = pedigree.all_orgs_in_pedigree()[0].afflicted
+        if len(alleles) == '':
+            # TODO replace with proper sourcing of allele name
+            self.allele = 'A'
+        else:
+            self.allele = alleles[0]
+        #allele = pedigree.all_orgs_in_pedigree()[0].genotype()[0]
+        def_male_unaf = 'Y' + self.allele.upper() + 'X'
+        def_female_unaf = 'X'  + 'X'
+        def_male_af = 'Y' + self.allele.lower() + 'X'
+        def_female_af = None #Not allowed
+
+        super(YGenotypeInferrer, self).__init__(pedigree,
+                                                 ChromosomeTemplate.Y,
+                                                 Gene.INH_PATTERN_RECESSIVE,
+                                                 def_male_unaf=def_male_unaf,
+                                                 def_female_unaf=def_female_unaf,
+                                                 def_male_af=def_male_af,
+                                                 def_female_af=def_female_af
+                                                 )
+
+
+
+    def infer_org(self, org):
+
+        any_change = False
+        err_msg = None
+
+        # Rule 0 FCA
+        if org.sex == Genome.FEMALE and self.is_afflicted(org):
+            err_msg = self.set_err_msg(0, org)
+
+        # Rule 17 Male afflicted / male parent unafflicted or Male unafflicted / male parent afflicted
+        if   (org.sex == Genome.MALE and self.is_afflicted(org) \
+              and  org.has_parents \
+              and not self.is_afflicted(org.male_parent)) or \
+             (org.sex == Genome.MALE and not self.is_afflicted(org) \
+              and  org.has_parents \
+              and self.is_afflicted(org.male_parent)):
+             err_msg = self.set_err_msg(17, org)
+
+
+        return any_change, err_msg
+
+
 if __name__ == '__main__':
     debug = 0
 
@@ -1113,12 +2416,17 @@ if __name__ == '__main__':
     #a2 = Allele('a')
     alleles_a = AlleleSet.default_alleleset_from_symbol('A')
     g1 = Gene(alleles_a,10000000)
+    g1_dom = Gene(alleles_a,10000000,inheritance_pattern=Gene.INH_PATTERN_DOMINANT)
+
     g2 = Gene(AlleleSet.default_alleleset_from_symbol('B'),170)
     g3 = Gene(AlleleSet.default_alleleset_from_symbol('C'),80000000)
     g5 = Gene(AlleleSet.default_alleleset_from_symbol('D'),50000000)
     g4 = Gene(AlleleSet.default_alleleset_from_symbol('G'),150)
     g6 = Gene(AlleleSet.default_alleleset_from_symbol('E'),30000000)
+    g6_dom = Gene(AlleleSet.default_alleleset_from_symbol('E'),30000000, inheritance_pattern=Gene.INH_PATTERN_DOMINANT)
+
     g7 = Gene(AlleleSet.default_alleleset_from_symbol('F'),90000000)
+    g7_dom = Gene(AlleleSet.default_alleleset_from_symbol('F'), 90000000,inheritance_pattern = Gene.INH_PATTERN_DOMINANT )
 
     print(str(alleles_a))
     print(g1)
@@ -1134,6 +2442,8 @@ if __name__ == '__main__':
 
     c2 = ChromosomeTemplate('XL',350,[g1,g3,g5])
 
+    c_ped = ChromosomeTemplate('XL', 1000, [g1])
+
     c_attr_dict = c2._to_attr_dict()
 
     c2_inflated = ChromosomeTemplate._from_attr_dict(c_attr_dict)
@@ -1146,13 +2456,132 @@ if __name__ == '__main__':
     c5 = ChromosomeTemplate('YChrom', 10000000, [g7], type=ChromosomeTemplate.Y)
 
 
-    gt = GenomeTemplate(ploidy=2,chromosomes = [c1,c2,c3], X_chromosome=c4, Y_chromosome=c5, name='Fivechroms')
+    gt = GenomeTemplate(ploidy=2,chromosome_templates = [c1,c2,c3], X_chromosome_template=c4, Y_chromosome_template=c5, name='Fivechroms')
     print(str(gt))
 
+    c_ped_x = ChromosomeTemplate('XChrom',30000000,[g6],type=ChromosomeTemplate.X)
+    c_ped_y = ChromosomeTemplate('YChrom', 10000000, [g7], type=ChromosomeTemplate.Y)
+    gt_ped = GenomeTemplate(chromosome_templates = [c_ped],X_chromosome_template = c_ped_x, Y_chromosome_template = c_ped_y, name='Pedigree' )
+    # org_ped = Organism.organism_with_random_genotype(gt_ped)
+    # print('org_ped: ',org_ped)
+    # org_ped_2 = Organism.organism_with_random_genotype(gt_ped)
+    # print('org_ped_2: ',org_ped_2
+    # org_ped.set_partner(org_ped_2)
+    #
+    # org_ped.mate(times=4)
+    # print('org_ped child 1: ',org_ped.children[0])
+    c_ped_dom = ChromosomeTemplate('XL', 1000, [g1_dom])
+    c_ped_x_dom = ChromosomeTemplate('XChrom', 30000000, [g6_dom], type=ChromosomeTemplate.X)
+    c_ped_y_dom = ChromosomeTemplate('YChrom', 10000000, [g7_dom], type=ChromosomeTemplate.Y)
+
+    gt_tst = GenomeTemplate(chromosome_templates=[c_ped_dom], X_chromosome_template=c_ped_x_dom, Y_chromosome_template=c_ped_y_dom,
+                            name='Pedigree')
+
+    tst = Organism.organism_with_het_genotype(gt_tst,sex=Genome.MALE,counter_id=-3)
+
+    next_id = 1
+    org_ped_root_1 = Organism.organism_with_hom_dominant_genotype(gt_ped, sex=Genome.MALE, counter_id=next_id)
+    print(str(org_ped_root_1))
+    next_id +=1
+    print(org_ped_root_1.genome.phenotype_afflicted())
+
+    org_ped_root_2 =Organism.organism_with_het_genotype(gt_ped, sex=Genome.FEMALE, counter_id=next_id)
+    org_ped_root_1.set_partner(org_ped_root_2)
+    next_id +=1
+    org_ped_root_1.mate(times=4, next_id=next_id)
+    next_id += org_ped_root_2.num_children
+
+    org_ped_1_1 = org_ped_root_1.children[0]
+    print(org_ped_1_1.genome.phenotype_afflicted())
+    print(org_ped_1_1.genome.sex_pair)
+    org_ped_mate = Organism.organism_with_hom_recessive_genotype(gt_ped, sex=Genome.MALE if org_ped_1_1.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_1_1.set_partner(org_ped_mate)
+    org_ped_1_1.mate(times=2, next_id=next_id)
+    next_id +=org_ped_1_1.num_children
+
+    org_ped_2_1  = org_ped_1_1.children[0]
+    org_ped_mate = Organism.organism_with_hom_recessive_genotype(gt_ped, sex=Genome.MALE if org_ped_2_1.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_2_1.set_partner(org_ped_mate)
+
+    org_ped_1_2 = org_ped_root_1.children[1]
+    org_ped_mate = Organism.organism_with_het_genotype(gt_ped, sex=Genome.MALE if org_ped_1_2.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_1_2.set_partner(org_ped_mate)
+    org_ped_1_2.mate(times=1, next_id=next_id)
+    next_id +=org_ped_1_2.num_children
+
+    org_ped_2_2  = org_ped_1_2.children[0]
+    org_ped_mate = Organism.organism_with_hom_recessive_genotype(gt_ped, sex=Genome.MALE if org_ped_2_2.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_2_2.set_partner(org_ped_mate)
+    org_ped_2_2.mate(times=2, next_id=next_id)
+    next_id +=org_ped_2_2.num_children
+
+
+    org_ped_1_3 = org_ped_root_1.children[2]
+    org_ped_1_3_mate = Organism.organism_with_hom_recessive_genotype(gt_ped, sex=Genome.MALE if org_ped_1_3.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_1_3.set_partner(org_ped_1_3_mate)
+    org_ped_1_3.mate(times=1, next_id = next_id)
+    next_id += org_ped_1_3.num_children
+
+    org_ped_2_3 = org_ped_1_3.children[0]
+    org_ped_2_3_mate = Organism.organism_with_hom_recessive_genotype(gt_ped, sex=Genome.MALE if org_ped_2_3.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_2_3.set_partner(org_ped_2_3_mate)
+    org_ped_2_3.mate(times=4, next_id = next_id)
+    next_id += org_ped_2_3.num_children
+
+
+    org_ped_1_4 = org_ped_root_1.children[3]
+    org_ped_1_4_mate = Organism.organism_with_hom_dominant_genotype(gt_ped, sex=Genome.MALE if org_ped_1_4.sex == Genome.FEMALE else Genome.FEMALE, counter_id=next_id)
+    next_id +=1
+    org_ped_1_4.set_partner(org_ped_1_4_mate)
+    org_ped_1_4.mate(times=4, next_id = next_id)
+    next_id += org_ped_1_4.num_children
+
+    print(org_ped_1_4.descendants)
     gt_attr_dict = gt._to_attr_dict()
 
+    print('Descendant tree')
+    print('\t' * org_ped_root_1.level + str(org_ped_root_1) + ' affl: ' + str(org_ped_root_1.genome.phenotype_afflicted()))
+    org_ped_root_1.print_org_tree_below()
 
-    gt_prob_test = GenomeTemplate(ploidy=2,chromosomes = [c2], name='Probtest')
+    print(org_ped_root_1.orgs_afflicted_below('a'))
+    print(org_ped_root_1.orgs_afflicted_below('e'))
+    print(org_ped_root_1.orgs_afflicted_below('f'))
+
+#    x= org_ped_1_4.all_orgs_in_pedigree(include_in_laws =True, level=4)
+
+    #adam = Organism.generate_pedigree(max_levels=4)
+
+    prob_mate = 0.9 #0.5
+    max_children = 8 #4
+    max_levels = 5 # 4
+    p = Pedigree(max_levels=max_levels, inh_type=Gene.INH_PATTERN_RECESSIVE, chrom_type=ChromosomeTemplate.X, prob_mate = prob_mate, max_children = max_children)
+    adam = p.generate(hom_rec_partners=False)
+
+    adam.print_org_tree_below()
+
+    inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p), YGenotypeInferrer(p)]
+    for inferrer in inferrers:
+        consistent, err_msg = inferrer.infer()
+        if consistent:
+            print(f'Consistent with {inferrer.inferrer_type}')
+        else:
+            print(f'Inconsistent with {inferrer.inferrer_type} -  {err_msg}')
+        inferrer.show_inferred()
+
+    act_gens = []
+    for org in p.all_orgs_in_pedigree():
+        act_gens.append(f'{org}')
+    print('Act: ')
+    print(str(act_gens))
+
+
+    gt_prob_test = GenomeTemplate(ploidy=2,chromosome_templates = [c2], name='Probtest')
     org_prob_test = Organism.organism_with_het_genotype(gt_prob_test, rand_phase=True)
     print(org_prob_test.genome.possible_gametes_formatted())
     print('org prob test genotype: ',org_prob_test.genotype())
@@ -1166,7 +2595,7 @@ if __name__ == '__main__':
 
     ch1 = ChromosomeTemplate('3',100,[g1])
     ch2 = ChromosomeTemplate('XL-group1',300,[g2])
-    gt2 = GenomeTemplate(ploidy=2,chromosomes = [ch1,ch2],name='Twochroms')
+    gt2 = GenomeTemplate(ploidy=2,chromosome_templates = [ch1,ch2],name='Twochroms')
     gt2_attr_dict = gt2._to_attr_dict()
     gt2_inflated = GenomeTemplate._from_attr_dict(gt2_attr_dict)
     print(gt2_inflated)
@@ -1221,7 +2650,7 @@ if __name__ == '__main__':
         for child in children:
          print(child)
 
-    gt_linkage = GenomeTemplate(ploidy=2, chromosomes=[c2])
+    gt_linkage = GenomeTemplate(ploidy=2, chromosome_templates=[c2])
     print(gt)
 
     org_hom = Organism.organism_with_hom_recessive_genotype(gt_linkage)
