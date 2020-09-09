@@ -592,7 +592,7 @@ def create_genome_template(request, positions_in = 'rand', chroms_in='rand', gen
     else:
         genome_name = use_specific_genome_name
 
-    gt = GenomeTemplate(ploidy=2, chromosomes=chrom_list, name=genome_name)
+    gt = GenomeTemplate(ploidy=2, chromosome_templates=chrom_list, name=genome_name)
 
     return gt
 
@@ -763,9 +763,6 @@ def cross_map(request):
     #print (org_hom_rec.genotype())
     request.session['gcm_org_hom_rec'] = org_hom_rec._to_attr_dict()
 
-    if 'gcm_children' in request.session:
-        del request.session['gcm_children']
-
     if default_tab == 1:
         logger.debug('gcm Creating children')
         children = create_children(org_het, org_hom_rec, num_samples=num_samples)
@@ -790,10 +787,6 @@ def cross_map(request):
 
     positions = org_het.genome.genome_template.positions()
 
-    if default_tab == 1:
-        child_list = [child._to_attr_dict() for child in children]
-        request.session['gcm_children'] = child_list
-
     genome_name = org_het.genome.genome_template.name
     phen_descriptions = get_phen_descriptions(genome_name)
 
@@ -810,6 +803,11 @@ def cross_map(request):
     form = tcl.solver_form
 
     proposed['phenotypes'] = Genome.test_cross_het_gametes_to_phenotypes()
+
+    tst = org_het.genome.phenotype()
+    tst = org_hom_rec.genome.phenotype()
+
+
     return render(request, "common/cross_map.html",
                   context={'genome_name': genome_name, 'phen_descriptions': phen_descriptions,
                            'org_het_phase': org_het_phase,
@@ -828,6 +826,7 @@ def cross_map(request):
                            'parsed_order': parsed_order,
                            'default_tab': default_tab
                            })
+
 
     #return render(request, "common/cross_map_old.html", context={'phen_descriptions': phen_descriptions,  'org_het_phase':org_het_phase,'show_cross': show_cross, 'cross_type': cross_type, 'positions_in':positions_in,'positions':positions, 'chroms_in':chroms_in,'org1':org_het,'org1_phen':org_het.genome.phenotype(),'org2':org_hom_rec,'org2_phen':org_hom_rec.genome.phenotype(),'children_phenotypes':phenotypes,'pairs_cis':pairs_cis,'dists':dists, 'parentals':parentals,'double_crossovers':double_crossovers,'recomb_fraction_list':recomb_fraction_list, 'pairs_list':pairs_list,'phen_combs_per_pair':phen_combinations_per_pair})
 

@@ -469,9 +469,11 @@ class ChromosomePair(SerialiserMixin):
         if len(phen) == 6:
             pass
         elif (len(phen) == 4) :
-            phen += 'c+'
+            #phen += 'c+'
+            pass
         elif (len(phen) == 2):
-            phen += 'b+c+'
+            #phen += 'b+c+'
+            pass
 
         return phen
 
@@ -1019,6 +1021,13 @@ class Genome(SerialiserMixin):
         for chromosome_pair in self.chromosome_pairs:
             phen += chromosome_pair.phenotype()
 
+        if not 'a' in phen:
+           phen += 'a+'
+        if not 'b' in phen:
+           phen += 'b+'
+        if not 'c' in phen:
+           phen += 'c+'
+
         if sort_alpha:
             phen_list = []
             for i in range(int(len(phen) / 2)):
@@ -1129,7 +1138,7 @@ class Organism(SerialiserMixin):
        else:
           self._children = children
        if counter_id is None:
-          self.counter_id = self.total_organisms + 1
+          self.counter_id = 1
        else:
           self.counter_id = counter_id
 
@@ -1660,6 +1669,7 @@ class Organism(SerialiserMixin):
 
     @staticmethod
     def _from_attr_dict(attr_dict):
+        ''' Note - serialisation currently only possible for Organism objects which have no parents or children (and hence have no recursion involved)'''
         genome =  Genome._from_attr_dict(attr_dict['genome'])
         obj = Organism(genome)
         return obj
