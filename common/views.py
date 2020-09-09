@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from getools.popdist import PopDist
-from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet, Genome
+from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, Allele, AlleleSet, Genome, Pedigree, ARGenotypeInferrer, ADGenotypeInferrer, XRGenotypeInferrer, XDGenotypeInferrer, YGenotypeInferrer
+
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm
+from .forms import AlleleFreakForm, CrossSimForm, PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm, PedigreeAnalyserForm
 from itertools import combinations
 from scipy.stats import chisquare
 import random
@@ -909,6 +910,107 @@ def cross_sim(request):
 
         return render(request, "common/cross_sim.html",
                       context={'form':form,'gen_phen': default_gen_phen, 'num_traits': default_num_traits,'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1':organisms[num_traits_ind][sel_p1],'p2': organisms[num_traits_ind][sel_p2], 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name': genome_name, 'phen_descriptions': phen_descriptions, 'org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes, 'poss_gametes_rolled_up': poss_gametes_rolled_up})
+
+def ped_an(request):
+    logger.info('Pedigree Analyser')
+
+    inh_pattern_requested = request.GET.get('inh_pattern', None)
+    if inh_pattern_requested is None:
+        chrom_type_requested = None
+        inh_type_requested = None
+    else:
+        chrom_type_requested = inh_pattern_requested[0]
+        inh_type_requested = inh_pattern_requested[1]
+
+
+
+    if request.method == 'POST':
+        pass
+    else:
+        form = PedigreeAnalyserForm(initial={'inh_patterns': str(-1)})
+
+
+        prob_mate = 0.5  # 0.9
+        max_children = 4  # 8
+        max_levels = 4  # 5
+
+        if chrom_type_requested is None:
+            r = random.randint(0,2)
+            chrom_type = None
+            if r== 0:
+               chrom_type = ChromosomeTemplate.AUTOSOMAL
+            elif r == 1:
+               chrom_type = ChromosomeTemplate.X
+            else:
+                chrom_type = ChromosomeTemplate.Y
+        else:
+            chrom_type = chrom_type_requested
+
+        if chrom_type ==  ChromosomeTemplate.Y:
+            inh_type = Gene.INH_PATTERN_RECESSIVE
+        else:
+            if inh_type_requested is None:
+                r = random.randint(0,1)
+                if r == 0:
+                    inh_type = Gene.INH_PATTERN_RECESSIVE
+                else:
+                    inh_type = Gene.INH_PATTERN_DOMINANT
+            else:
+                inh_type = inh_type_requested
+
+
+        done = False
+        while not done:
+            p = Pedigree(max_levels=max_levels, inh_type=inh_type, chrom_type=chrom_type,
+                         prob_mate=prob_mate, max_children=max_children)
+            adam = p.generate(hom_rec_partners=False)
+            if len(p.all_orgs_in_pedigree()) > 5:
+                actual_inferrer = None
+                inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p),
+                             YGenotypeInferrer(p)]
+                for inferrer in inferrers:
+                    if (inferrer.inh_type == inh_type) and (inferrer.chrom_type == chrom_type):
+                        actual_inferrer = inferrer
+                        break
+                num_afflicted = 0
+                for org in p.all_orgs_in_pedigree():
+                    if actual_inferrer.is_afflicted(org):
+                        num_afflicted +=1
+                if (num_afflicted == 0)   or (num_afflicted == len(p.all_orgs_in_pedigree())):
+                    pass
+                else:
+                    done = True
+                    break
+
+        ped_j = p.to_json()
+
+        act_gens = []
+        for org in p.all_orgs_in_pedigree():
+            act_gens.append(f'{org}')
+        print('Act: ')
+        print(str(act_gens))
+
+        consistent_per_inferrer = {}
+
+        inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p),
+                     YGenotypeInferrer(p)]
+        for inferrer in inferrers:
+            consistent, err_msg = inferrer.infer()
+
+            if consistent:
+                if inferrer.inferrer_type in consistent_per_inferrer:
+                    consistent_per_inferrer[inferrer.inferrer_type] += 1
+                else:
+                    consistent_per_inferrer[inferrer.inferrer_type] = 1
+            else:
+                consistent_per_inferrer[inferrer.inferrer_type] = 0
+            #     print(f'Consistent with {inferrer.inferrer_type}')
+
+        ped_j['consistent'] = consistent_per_inferrer
+        ped_j['actual'] = chrom_type + str(inh_type)
+
+        return render(request, "common/ped_an.html",
+                      context={'form':form, 'ped_j':ped_j, 'act_gens': act_gens, 'cons_per_inferrer': consistent_per_inferrer})
 
 
 def load_quiz(quiz_code):

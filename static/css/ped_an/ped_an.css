@@ -1,0 +1,51 @@
+#canvas {
+    background-color: lightgray;
+}
+
+.pedigree-diagram {
+    height: 350px;
+    width: 700px;
+    /*background-color: beige;*/
+}
+
+.tick-img {
+    display: none;
+}
+
+#show-but {
+    display: none;
+}
+
+.slim-button {
+    height: 30px;
+}
+
+.switch-toggle {
+   float: left;
+   background: #242729;
+}
+.switch-toggle input {
+  position: absolute;
+  opacity: 0;
+}
+.switch-toggle input + label {
+  padding: 7px;
+  float:left;
+  color: #fff;
+  cursor: pointer;
+}
+.switch-toggle input:checked + label {
+  background: lightblue;
+}
+
+td:hover{
+ background: #fff0ff;
+}
+
+/*.tr.ratio-row-selected:hover {*/
+/*    background: lightcyan;*/
+/*}*/
+
+.table-hover > tbody > tr.ratio-row-selected:hover > td,
+.ratio-row-selected > td {
+    background: lavender}

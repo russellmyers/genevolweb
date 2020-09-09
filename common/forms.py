@@ -142,3 +142,7 @@ class CrossSimForm(forms.Form):
     gen_phen = forms.ChoiceField(widget=forms.RadioSelect, choices=GEN_PHEN_CHOICES)
     p1 = forms.ChoiceField(widget=forms.RadioSelect(attrs={'class':'slim-button'}), choices=GEN_CHOICES)
     p2 = forms.ChoiceField(widget=forms.RadioSelect, choices=GEN_CHOICES)
+
+class PedigreeAnalyserForm(forms.Form):
+    INH_PATTERN_CHOICES = [('-1', '-- Select inheritance pattern --'),('AR', 'Autosomal Recesssive'), ('AD', 'Autosomal Dominant'), ('XR', 'X-Linked Recesssive'), ('XD', 'X-Linked Dominant'),  ('YR', 'Y-Linked') ]
+    inh_patterns = forms.ChoiceField(widget=forms.Select(attrs={'class': 'form-control'}), choices=INH_PATTERN_CHOICES)

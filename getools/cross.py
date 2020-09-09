@@ -1315,6 +1315,19 @@ class Organism(SerialiserMixin):
         #return Organism(genome)
         
 
+    def to_json(self):
+        """ Serialise to json for sending to javascript"""
+        org = { 'id': self.counter_id,
+                'sex': 'male' if self.sex == Genome.MALE else 'female',
+                'afflicted': True if self.afflicted == 'a' else False,
+                'level': self.level + 1, #javascript levels are 1 based
+                'isInLaw': self.is_inlaw,
+                'partner': None if self.partner is None else self.partner.counter_id,
+                'children': [child.counter_id for child in self.children],
+                'inferrable_genotypes': self._possible_genotypes
+        }
+        return org
+
     def mate(self,other_org=None, times=1, next_id=None):
         partner = None
         child = None
@@ -1435,7 +1448,7 @@ class Organism(SerialiserMixin):
 
     @property
     def siblings(self):
-        if self.parents is None:
+        if not self.has_parents:
             return []
 
         _siblings = []
@@ -1447,8 +1460,66 @@ class Organism(SerialiserMixin):
         return _siblings
 
     @property
+    def next_younger_sibling(self):
+        siblings = self.siblings
+        lowest_younger_id = math.inf
+        lowest_younger = None
+        for sibling in siblings:
+            if (sibling.counter_id > self.counter_id) and (sibling.counter_id < lowest_younger_id):
+                lowest_younger = sibling
+                lowest_younger_id = sibling.counter_id
+        return lowest_younger
+
+    @property
+    def next_older_sibling(self):
+        siblings = self.siblings
+        highest_older_id = -1 * math.inf
+        highest_older = None
+        for sibling in siblings:
+            if (sibling.counter_id < self.counter_id) and (sibling.counter_id > highest_older_id):
+                highest_older = sibling
+                highest_older_id = sibling.counter_id
+        return highest_older
+
+    @property
     def num_siblings(self):
         return len(self.siblings)
+
+    def _get_nephews(self, include='all'):
+        _nephews = []
+        if include == 'all':
+            for sibling in self.siblings:
+                if sibling is self:
+                    pass
+                else:
+                    _nephews.extend(sibling.children)
+
+        elif include == 'o':
+            next_older = self.next_older_sibling
+            if next_older is None:
+                pass
+            else:
+                _nephews = next_older.children
+        elif include == 'y':
+            next_younger = self.next_younger_sibling
+            if next_younger is None:
+                pass
+            else:
+                _nephews = next_younger.children
+
+        return _nephews
+
+    @property
+    def next_older_nephews(self):
+        return self._get_nephews(include='o')
+
+    @property
+    def next_younger_nephews(self):
+        return self._get_nephews(include='y')
+
+    @property
+    def nephews(self):
+        return self._get_nephews(include='all')
 
     @property
     def cousins(self):
@@ -1677,6 +1748,13 @@ class Pedigree:
 
             done = True
 
+    def to_json(self):
+        ped = { 'adam': 1,
+                'orgs' : [org.to_json() for org in self._organisms]}
+
+        return ped
+
+
     def generate(self, hom_rec_partners = False):
 
         # if self.inh_type != Gene.INH_PATTERN_RECESSIVE:
@@ -1702,18 +1780,22 @@ class Pedigree:
         for i in range(0, self.max_levels - 1):
             orgs = self.all_orgs_in_pedigree(include_inlaws=False, level=i)
             for org in orgs:
-                r = random.randint(0, 1)
-                if i == 0 or r <= self.prob_mate:
+                r = random.randint(0, 1) # prob of mating
+                if i == 0:
+                    min_children = 2
+                else:
+                    min_children = 0
+                num_ch = random.randint(min_children, self.max_children)
+
+                if (i == 0 or r <= self.prob_mate)\
+                        and (num_ch > 0): # N.B. don't bother mating if no children
+
                     org_mate = self.add_organism(sex = Genome.MALE if org.sex == Genome.FEMALE else Genome.FEMALE, hom_rec=hom_rec_partners)
                     org.set_partner(org_mate)
-                    if i == 0:
-                        min_children = 2
-                    else:
-                        min_children = 0
-                    num_ch = random.randint(min_children, self.max_children)
                     org.mate(times=num_ch, next_id=self.next_id)
                     self._organisms.extend(org.children)
                     self.next_id += org.num_children
+
 
         return adam
 
@@ -2079,6 +2161,12 @@ class ARGenotypeInferrer(GenotypeInferrer):
     def rule_4(self, org):
         changed, err = org.male_parent.set_possible_genotype(self.inh_type, self.chrom_type,
                                                              self.allele.upper() + self.allele.lower())
+        if err:
+            return changed, err
+
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               self.allele.upper() + self.allele.lower())
+
         return changed, err
 
     def rule_5(self, org):
@@ -2360,9 +2448,9 @@ class YGenotypeInferrer(GenotypeInferrer):
         else:
             self.allele = alleles[0]
         #allele = pedigree.all_orgs_in_pedigree()[0].genotype()[0]
-        def_male_unaf = 'Y' + self.allele.upper() + 'X'
-        def_female_unaf = 'X'  + 'X'
-        def_male_af = 'Y' + self.allele.lower() + 'X'
+        def_male_unaf =  'XY' # 'Y' + self.allele.upper() + 'X'
+        def_female_unaf = 'XX' #'X'  + 'X'
+        def_male_af =  'Xy'  #'Y' + self.allele.lower() + 'X'
         def_female_af = None #Not allowed
 
         super(YGenotypeInferrer, self).__init__(pedigree,
@@ -2563,6 +2651,13 @@ if __name__ == '__main__':
     p = Pedigree(max_levels=max_levels, inh_type=Gene.INH_PATTERN_RECESSIVE, chrom_type=ChromosomeTemplate.X, prob_mate = prob_mate, max_children = max_children)
     adam = p.generate(hom_rec_partners=False)
 
+    j = p.to_json()
+    next_l = adam.next_older_sibling
+
+    neph = adam._get_nephews()
+
+    neph_2 = adam.children[0]._get_nephews()
+
     adam.print_org_tree_below()
 
     inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p), YGenotypeInferrer(p)]
@@ -2579,6 +2674,25 @@ if __name__ == '__main__':
         act_gens.append(f'{org}')
     print('Act: ')
     print(str(act_gens))
+
+
+    consistent_per_inferrer = {}
+    for i in range(50):
+        print('i: ',i)
+        p = Pedigree(max_levels=max_levels, inh_type=Gene.INH_PATTERN_RECESSIVE, chrom_type=ChromosomeTemplate.Y, prob_mate = prob_mate, max_children = max_children)
+        adam = p.generate(hom_rec_partners=False)
+
+        inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p), YGenotypeInferrer(p)]
+        for inferrer in inferrers:
+            consistent, err_msg = inferrer.infer()
+
+            if consistent:
+                if inferrer.inferrer_type in consistent_per_inferrer:
+                    consistent_per_inferrer[inferrer.inferrer_type] +=1
+                else:
+                    consistent_per_inferrer[inferrer.inferrer_type] = 1
+            #     print(f'Consistent with {inferrer.inferrer_type}')
+
 
 
     gt_prob_test = GenomeTemplate(ploidy=2,chromosome_templates = [c2], name='Probtest')
