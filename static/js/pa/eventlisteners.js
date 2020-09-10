@@ -3,19 +3,10 @@
 function showGenotypeButClicked(e) {
     var showBut = e.target;
 
-
     showGenotypes = !(showGenotypes);
 
-    if (showGenotypes) {
-        showBut.innerHTML = 'Hide Inferrable Genotypes';
-    }
-    else {
-        showBut.innerHTML = 'Reveal Inferrable Genotypes';
-    }
+    showGenotypesChanged();
 
-    pd.showGenotypes = showGenotypes;
-
-    pd.drawStuff();
 }
 
 
@@ -31,17 +22,21 @@ function inhPatternSelected(e) {
         tickEl.style.display = "none";
         showBut.style.display = "none";
         pd.inhTypeToShow = null;
-        pd.showGenotypes = true;
+        //showGenotypes = true;
     }
     else {
         tickEl.style.display = "block";
         pd.inhTypeToShow = selectedOption;
-        pd.showGenotypes= true;
+        //showGenotypes= true;
     }
+
+
+
     if (selectedOption in consistentPerInferrer) {
         if (consistentPerInferrer[selectedOption] == 0) {
             tickEl.src = staticPrefix + "img/cross.PNG";
             showBut.style.display = "none";
+            showGenotypes = false;
 
         }
 
@@ -54,7 +49,11 @@ function inhPatternSelected(e) {
     else {
             tickEl.src = staticPrefix + "img/cross.PNG";
             showBut.style.display = "none";
+            showGenotypes = false;
     }
+
+    showGenotypesChanged();
+
     //alert("yeah " + selectedOption + " " + consistentPerInferrer.toString());
 
 }

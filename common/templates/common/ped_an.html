@@ -1,12 +1,12 @@
 {%  extends 'common/base.html' %}
 {%  load static %}
  {% block title %}
-Pedigree Analyser
+Pedigree Analyzer
 {% endblock %}
 
 
 {%  block app_title %}
-Pedigree Analyser
+Pedigree Analyzer
 {% endblock  %}
 
 {%  block custom_css %}
@@ -42,6 +42,7 @@ Pedigree Analyser
                          <button type="button" id="show-but" class="btn btn-info btn-large" onclick="showGenotypeButClicked(event);">Reveal Inferrable Genotypes</button>
 
                      </div>
+
                  </div>
              </form>
         </div>
@@ -59,6 +60,7 @@ Pedigree Analyser
                 </canvas>
             </div>
 
+            {%if  debug == 'Y' %}
             <div class = "col-1 border mt-4" id="pa-settings">
                 <form method="GET" id="type_form" action="{%  url 'ped_an' %}">
                     {% csrf_token %}
@@ -84,9 +86,11 @@ Pedigree Analyser
 
 
             </div>
+            {%endif %}
 
 
     </div>
+
 </div>
 
 
@@ -111,7 +115,7 @@ Pedigree Analyser
 
 <script src="{% get_static_prefix %}js/pa/viewclasses.js"></script>
 <script src="{% get_static_prefix %}js/pa/modelclasses.js"></script>
-<!--script src="{% get_static_prefix %}js/cs/propertylisteners.js"></script-->
+<script src="{% get_static_prefix %}js/pa/propertylisteners.js"></script>
 <script src="{% get_static_prefix %}js/pa/eventlisteners.js"></script>
 
 <script>

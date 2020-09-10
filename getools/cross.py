@@ -1727,7 +1727,7 @@ class Pedigree:
             org = Organism.organism_with_hom_recessive_genotype(self.gt, sex=sex, counter_id=self.next_id)
         else:
             org = Organism.organism_with_random_genotype(self.gt, sex=sex, counter_id=self.next_id)
-        print(str(org))
+        #print(str(org))
         self._organisms.append(org)
         self.next_id += 1
         return org
@@ -1780,7 +1780,7 @@ class Pedigree:
 
         self.gt = GenomeTemplate(ploidy=2, chromosome_templates=[c], X_chromosome_template=c_X,
                             Y_chromosome_template=c_Y, name='PedGT')
-        print(str(self.gt))
+        #print(str(self.gt))
 
         adam = self.add_organism(sex=Genome.MALE)
         # eve = Organism.organism_with_random_genotype(gt, sex=Genome.FEMALE, counter_id=next_id)

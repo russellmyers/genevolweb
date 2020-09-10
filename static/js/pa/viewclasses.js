@@ -594,10 +594,29 @@ class PedigreeDiagram {
 
   }
 
+  drawAlleleLegend() {
+     this.ctx.save();
+     if (this.showGenotypes) {
+         //this.inhTypeToShow = null;
+         var txt = 'Wild type Allele - A, Afflicted Allele - a'
+         if (this.inhTypeToShow == 'YR') {
+             txt = 'Wild type Allele - Y, Afflicted Allele - y'
+         }
+
+         this.ctx.font = "14px Helvetica Neue"; //Arial";
+         var textWidth = this.ctx.measureText(txt).width;
+         this.ctx.fillText(txt, this.padding.l + this.usableWidth - textWidth - 10, this.padding.t + 10);
+     }
+     this.ctx.restore()
+
+
+  }
+
   drawStuff(resize = false) {
 
       this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
       this.canvasEl.width+=0; //trick to refresh if above doesn't work
+
 
       // this.ctx.beginPath();
       // this.ctx.rect(this.padding.l, this.padding.t, this.usableWidth, this.usableHeight);
@@ -605,6 +624,9 @@ class PedigreeDiagram {
       if (resize) {
           this.resizeOrgPairCells();
       }
+
+
+      this.drawAlleleLegend();
 
       this.drawOrgPairs();
 
