@@ -14,14 +14,13 @@ class Point {
     }
 }
 
-class OrgCell {
-    constructor(parent, org, pos, dim ) {
+class Cell {
+   constructor(parent, pos, dim ) {
         this.parent = parent;
-        this.org = org;
         this.pos = pos;
         this.dim = dim;
         this.ctx = this.parent.ctx;
-        this.text = 'Aa';
+        this.text = '*';
     }
 
     get cellSize() {
@@ -31,6 +30,45 @@ class OrgCell {
     get cellPosition() {
         return this.pos;
     }
+
+    /**
+     * Redefine in subclasses
+     * @param alpha - transparency
+     * @private
+     */
+    _draw(alpha) {
+        this.ctx.font = "12px Arial";
+        this.ctx.fillStyle = 'black';
+        this.ctx.fillText(this.text, this.cellPosition.x + 1 + (this.cellSize.w / 2), this.cellPosition.y + this.cellSize.h/2);
+    }
+
+
+    draw(alpha) {
+
+        alpha = alpha || 1.0;
+
+        this.ctx.save();
+
+        this.ctx.clearRect(this.cellPosition.x,this.cellPosition.y,this.cellSize.w,this.cellSize.h);
+
+        this._draw(alpha);
+
+        this.ctx.restore();
+
+    }
+
+
+}
+
+
+
+class OrgCell extends Cell {
+    constructor(parent, org, pos, dim ) {
+        super(parent, pos, dim);
+        this.org = org;
+        this.text = 'Aa';
+    }
+
 
     get actInhKey() {
         var actInhKey =  this.parent.parent.pedigree.actual;
@@ -111,13 +149,13 @@ class OrgCell {
 
     }
 
-    draw(alpha) {
+    _draw(alpha) {
 
-        alpha = alpha || 1.0;
+        //alpha = alpha || 1.0;
 
-        this.ctx.save();
+        //this.ctx.save();
 
-        this.ctx.clearRect(this.cellPosition.x,this.cellPosition.y,this.cellSize.w,this.cellSize.h);
+        //this.ctx.clearRect(this.cellPosition.x,this.cellPosition.y,this.cellSize.w,this.cellSize.h);
         this.ctx.strokeStyle = "black";
         this.ctx.lineWidth = 1;
         if (this.org.sex == 'male') {
@@ -127,8 +165,9 @@ class OrgCell {
             else {
                 this.ctx.fillStyle = 'white';
             }
+            this.ctx.strokeRect(this.cellPosition.x, this.cellPosition.y, this.cellSize.w, this.cellSize.h);
             this.ctx.fillRect(this.cellPosition.x + 1, this.cellPosition.y + 1, this.cellSize.w - 2, this.cellSize.h - 2);
-
+            this.ctx.lineWidth = 1;
         }
         else {
             var r = this.cellSize.w / 2;
@@ -142,9 +181,13 @@ class OrgCell {
                 this.ctx.fillStyle = 'white';
             }
             this.ctx.fill();
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.stroke();
+            this.ctx.closePath();
         }
         this.ctx.fillStyle = 'black';
-        this.ctx.fillText(this.org.id,this.cellPosition.x + 1 + (this.cellSize.w / 2), this.cellPosition.y  + this.cellSize.h + 10);
+        this.ctx.fillText(this.org.id,this.cellPosition.x + 1 + (this.cellSize.w / 2) - 5, this.cellPosition.y  + this.cellSize.h + 10);
 
 
         if (this.showInhKey  == null) {
@@ -165,19 +208,20 @@ class OrgCell {
             }
         }
 
-        this.ctx.restore();
+        //this.ctx.restore();
     }
 
 
 }
 
 
-class OrgPairCell {
+class OrgPairCell extends Cell {
    constructor(parent, org, partner, pos, partnerPos, orgDim ) {
-        this.parent = parent;
+        super(parent, pos, orgDim);
+        //this.parent = parent;
         this.org = org;
         this.partner = partner;
-        this.pos = pos;
+        //this.pos = pos;
         this.partnerPos = partnerPos || null;
         this.orgDim = orgDim;
         if (this.partner == null) {
@@ -187,7 +231,7 @@ class OrgPairCell {
             this.pairWidth = this.orgDim.w * 2 + OrgPairCell.PartnerSpacing;
         }
         this.dim = this.orgDim || this.calcDim();
-        this.ctx = this.parent.ctx;
+        //this.ctx = this.parent.ctx;
 
         this._childOrgPairCells = [];
 
@@ -223,7 +267,7 @@ class OrgPairCell {
 
     }
 
-    draw() {
+    _draw(alpha) {
        for (var i = 0; i < this._orgCells.length; ++i) {
            var orgCell = this._orgCells[i];
            orgCell.draw();
@@ -305,9 +349,60 @@ class OrgPairCell {
 
 OrgPairCell.PartnerSpacing = 10
 
+/**
+ * Genotype selection cell
+ */
+class GenCell extends Cell {
+    constructor(parent, pos, dim ) {
+        super(parent, pos, dim);
+        this.text = 'XAXa';
+    }
 
+
+    _draw(alpha) {
+
+     this.ctx.strokeStyle = 'black';
+     this.ctx.strokeRect(this.pos.x, this.pos.y, this.dim.w, this.dim.h);
+     this.ctx.fillStyle = 'green';
+     this.ctx.fillRect(this.pos.x+1,this.pos.y+1,this.dim.w - 2,this.dim.h-2);
+     this.ctx.fillStyle = 'white';
+     this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + 10));
+
+    }
+
+
+}
+
+
+
+/** Class representing a pedigree diagram drawn within a canvas element.
+ *  Paired with a Pedigree model object which contains the pedigree details
+ *
+ *   Object attributes:
+ *  - pedigree - pedigree object
+ *  - canvasEl - canvas element to draw pedigree diagram in
+ *  - staticPrefix - prefix to static file location
+ *  - padding - padding around pedigree diagram (dict - 't', 'b', 'l', 'r')
+ *  - orgDim: Size of orgs
+ *  - showGenotypes: flag indicating whether to show genotypes
+ *  - inhTypeToShow: inheritance type to show
+ *  - _orgPairCells: List of OrgPairCell cells (ie org and partner cells)
+ *
+ *  Object properties:
+ *  - canvasSize
+ *  - useableHeight (canvas height - top and bottom padding)
+ *  - useableWidth (canvas widht - left and right padding)
+ */
 class PedigreeDiagram {
 
+    /**
+     *
+     * @param pedigree - pedigree object associated with diagram
+     * @param canvasEl - canvas element to draw pedigree diagram in
+     * @param staticPrefix - prefix to static file location
+     * @param padding - padding around pedigree diagram (dict - 't', 'b', 'l', 'r')
+     *
+     */
   constructor(pedigree, canvasEl, staticPrefix, padding) {
     this.pedigree = pedigree;
     this.canvasEl = canvasEl;
@@ -323,6 +418,8 @@ class PedigreeDiagram {
     var self = this;
 
     this.initOrgPairCells();
+
+    this.createGenCells();
 
     // this.canvasEl.onmousemove =  function(e) {
     // };
@@ -345,6 +442,19 @@ class PedigreeDiagram {
       // return punnettCells;
   }
 
+  createGenCells() {
+      this.gCells = [];
+      var xPos = 100;
+      var yPos = 300;
+      var genTexts = ['XAXA','XAXa', 'XaXa', 'XAX-'];
+      for (var i=0;i < genTexts.length;++i) {
+          var gCell = new GenCell(this, {'x': xPos, 'y': yPos}, {'w': 35, 'h': 15})
+          gCell.text = genTexts[i];
+          this.gCells.push(gCell);
+          xPos += 50;
+      }
+
+  }
 
 
   get canvasSize() {
@@ -364,6 +474,16 @@ class PedigreeDiagram {
       return width;
   }
 
+    /**
+     * Recursive method to initialise an OrgPairCell for on orgPair and all its child orgPairs.
+     *
+     * Available space calculation:
+     * - add OrgPairCell for current orgPair using availSpace
+     * - For each child of current OrgPair:  determine proportion  of available space depending on how many children **that** child has, and call ths method recursively to create OrgPairCell for each child and link each child OrgPairCell as child of OrgPairCell for current orgPair
+     * @param orgPair - org pair to initialise
+     * @param availSpace - available space to create orgPairCell in
+     * @returns {OrgPairCell} - created OrgPairCell
+     */
   initOrgPair(orgPair, availSpace) {
 
       // Create OrgPairCell for orgpair
@@ -397,11 +517,11 @@ class PedigreeDiagram {
 
       // Join orgpaircell to child orgpaircells
 
-
-
-
   }
 
+    /**
+     * Get root org pair from pedigree and call initOrgPair for root pair (which then recursively inits all other org pairs)
+     */
   initOrgPairCells() {
       var hardCodedPoints = [new Point(250, 40), new Point(100, 100), new Point(200, 100), new Point(300, 100), new Point(400, 100)]
       var pairs = this.pedigree.orgPairs;
@@ -453,6 +573,16 @@ class PedigreeDiagram {
   //
   //
   // }
+
+
+    /**
+     * Create OrgPairCell  for an orgPair and add to this._orgPairCells list
+     * @param orgPair
+     * @param pos - optional: if not specified, automatically determine x pos depending on avail space
+     * @param yPos - optional: if not specified, automatically determine y pos
+     * @param availSpace
+     * @returns {OrgPairCell}
+     */
 
   addOrgPairCell(orgPair, pos = null, yPos = null, availSpace = null) {
           // var c = new OrgCell(this, this.pedigree.orgWithId(pair[0]), hardCodedPoints[i], this.orgDim);
@@ -612,6 +742,71 @@ class PedigreeDiagram {
 
   }
 
+  drawPhenotypeLegend() {
+     this.ctx.save();
+
+     //this.ctx.scale(0.2, 0.2)
+
+     //this.ctx.fillText("Hello there", canvas.width / 2 * 1 / 0.3, canvas.height * 2.8 / 4 * 1 / 0.3, canvas.width * 0.9 * 1 / 0.3);
+    //this.ctx.font = canvas.width / 15 + "px Arial";
+    //this.ctx.fillText("Want to talk? Mail me at mher@movsisyan.info", canvas.width / 2 * 1 / 0.3, canvas.height * 3.6 / 4 * 1 / 0.3, canvas.width * 0.9 * 1 / 0.3);
+    //this.ctx.fillText("Want to see my code? Find me on GitHub as MovsisyanM", canvas.width / 2 * 1 / 0.3, canvas.height * 3.8 / 4 * 1 / 0.3, canvas.width * 0.9 * 1 / 0.3);
+
+
+     // this.ctx.font = "60px Helvetica Neue"; //Arial";
+     // this.ctx.fillText('Afflicted individual',10*5 ,20*5);
+     // this.ctx.font = "150px Helvetica Neue"; //Arial";
+     // this.ctx.fillText('\u{25A0}',110*5,20*5);
+     // this.ctx.font = "60px Helvetica Neue"; //Arial";
+     // this.ctx.fillText('Unafflicted individual',150*5,20*5);
+     // this.ctx.font = "150px Helvetica Neue"; //Arial";
+     // this.ctx.fillText('\u{25A1}',260*5,20*5);
+
+     this.ctx.font = "12px Helvetica Neue"; //Arial";
+     this.ctx.fillText('Afflicted individual',10 ,20);
+     this.ctx.font = "30px Helvetica Neue"; //Arial";
+     this.ctx.fillText('\u{25A0}',110,20);
+     this.ctx.font = "12px Helvetica Neue"; //Arial";
+     this.ctx.fillText('Unafflicted individual',150,20);
+     this.ctx.font = "30px Helvetica Neue"; //Arial";
+     this.ctx.fillText('\u{25A1}',260,20);
+
+
+     this.ctx.font = "12px Helvetica Neue"; //Arial";
+     this.ctx.fillText('Male ',10,45);
+     this.ctx.font = "30px Helvetica Neue"; //Arial";
+     this.ctx.fillText('\u{25A1}',40,45);
+     this.ctx.font = "12px Helvetica Neue"; //Arial";
+     this.ctx.fillText('Female ',75,45);
+     this.ctx.font = "30px Helvetica Neue"; //Arial";
+     this.ctx.fillText('\u{25CB}',115,48);
+
+     //this.ctx.scale(1, 1)
+
+     // var txt = 'Wild type Allele - A, Afflicted Allele - a'
+     // if (this.inhTypeToShow == 'YR') {
+     //     txt = 'Wild type Allele - Y, Afflicted Allele - y'
+     // }
+     //
+     // this.ctx.font = "14px Helvetica Neue"; //Arial";
+     // var textWidth = this.ctx.measureText(txt).width;
+     // this.ctx.fillText(txt, this.padding.l + this.usableWidth - textWidth - 10, this.padding.t + 10);
+
+     this.ctx.restore()
+
+
+  }
+
+
+    /**
+     * Master draw method for PedigreeDiagram
+     * Calls:
+     * - drawAlleleLegend()
+     * - drawPhenotypeLegend()
+     * - drawOrgPairs()
+     *
+     * @param resize - if specified, automatically resize all org pair cells before drawing
+     */
   drawStuff(resize = false) {
 
       this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
@@ -628,7 +823,15 @@ class PedigreeDiagram {
 
       this.drawAlleleLegend();
 
+      this.drawPhenotypeLegend();
+
       this.drawOrgPairs();
+
+      for (var i = 0;i < this.gCells.length;++i) {
+          this.gCells[i].draw();
+      }
+
+
 
   }
 

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drag and drop playground</title>
+</head>
+<body>
+<h1>Drag and drop playground</h1>
+
+<div style="background-color:lightpink">
+    Controls:<br>
+    <label id="biga-el" draggable="true">XAXa</label>
+    <br>
+    <label id = "littlea-el" draggable="true">XaXa</label>
+    <br>
+    <label for="da">Drop area:</label>
+    <textarea id ="da" name = "da" rows = "2" cols="10"></textarea>
+   <textarea id="ta" name="ta" rows="4" cols="100"></textarea>
+
+</div>
+&#10004; Test &#65039;
+<div id="divdrop-el" style="background-color:lightgrey" ondrop="divDrop(event)" ondragover="allowDrop(event)">>Try dropping into <br>this div </div>
+<div style="background-color:lightblue">
+    <canvas id="canvas"  style="background-color:beige" ondrop="canvasDrop(event)" onmousemove="canvasMouseMove(event)" onmouseup="canvasMouseUp(event)" ondragOver="allowDrop(event)"  onmousedown="canvasMouseDown(event)" width="500px" height = "400px" style="border:1px solid #000000;">
+
+    </canvas>
+</div>
+</body>
+<script>
+var logCount = 0;
+
+class Shape {
+  constructor(canv, size, pos, text) {
+    this.canv = canv;
+    this.size = size;
+    this.pos = pos;
+    this.text = text || '*';
+    this.ctx = null;
+    this.colour = 'white';
+  }
+
+  pointInShape(p) {
+    if ((this.pos.x <= p.x) && (p.x <= (this.pos.x + this.size.w)) && (this.pos.y <= p.y) && (p.y <= (this.pos.y + this.size.h))) {
+      return true;
+  }
+    else {
+       return false;
+    }
+  }
+
+  drawStart() {
+     this.ctx = this.canv.getContext("2d");
+     this.ctx.save();
+
+  }
+
+  drawExecute(data, pos) {
+     //redefine in subclass
+  
+  }
+
+  drawEnd() {
+     this.ctx.restore();
+  }
+
+  draw(data, pos) {
+     this.drawStart();
+     if (data == null) {
+        data = this.text;
+     }
+     if (pos == null) {
+         pos = this.pos;
+     }
+     this.drawExecute(data, pos);
+     this.drawEnd();
+
+  }
+
+  
+
+}
+
+class DRect extends Shape {
+  constructor(canv, size, pos, text) {
+      super(canv, size, pos, text);
+  }
+
+  drawExecute(data, pos) {
+     /*
+     if (this.colour == 'white') {
+         this.ctx.fillStyle = "#FFFFFF";
+     }
+     else {
+        this.ctx.fillStyle = "#00FF00";
+
+     }
+     */
+     this.ctx.fillStyle = this.colour;
+     this.ctx.strokeRect(pos.x, pos.y, this.size.w, this.size.h);
+     this.ctx.fillRect(pos.x+1,pos.y+1,this.size.w - 2,this.size.h-2);
+     if (this.colour == 'white') {
+     		this.ctx.fillStyle = "#000000";
+     }
+     else {
+          this.ctx.fillStyle = "#FFFFFF";
+     }
+     this.ctx.fillText(data, (pos.x + 2), (pos.y + 10));
+
+  }
+
+}
+
+
+class DCircle extends Shape {
+  constructor(canv, size, pos, text) {
+      super(canv, size, pos, text);
+  }
+
+  drawExecute(data, pos) {
+    this.ctx.beginPath();
+    this.ctx.arc(pos.x + (this.size.w / 2), pos.y + (this.size.h / 2), this.size.w/2, 0, 2 * Math.PI, false);
+    this.ctx.fillStyle =  this.colour; // == 'white' ? "#FFFFFF" : "#00FF00";
+    this.ctx.fill();
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = '#000000';
+    this.ctx.stroke();
+    //this.ctx.fillStyle = "#000000";
+    if (this.colour == 'white') {
+     		this.ctx.fillStyle = "#000000";
+     }
+     else {
+          this.ctx.fillStyle = "#FFFFFF";
+     }
+
+    this.ctx.fillText(data + "\u{274C} \u{2714}" , (pos.x + 2), (pos.y + (this.size.h / 2) ));
+    this.ctx.closePath();
+
+
+  }
+
+}
+
+class CanvShapes {
+  constructor(canv)  {
+    this.canv = canv;
+    this.shapes = [];
+    this.legends = [];
+    this.draggingLegend = null;
+    this.draggingShape = null;
+
+    var s1 = new DRect(this.canv, {'w':30, 'h':30}, {'x':20, 'y': 50});
+    this.shapes.push(s1);
+    var s2 = new DCircle(this.canv, {'w':30, 'h':30}, {'x':70, 'y': 100});
+    this.shapes.push(s2);
+
+
+    var l1 = new DRect(this.canv, {'w':30, 'h':15}, {'x':20, 'y': 200}, 'XAXa');
+    this.legends.push(l1);
+    var l2 = new DRect(this.canv, {'w':30, 'h':15}, {'x':20, 'y': 220}, 'XaXa');
+    this.legends.push(l2);
+
+     var l3 = new DRect(this.canv, {'w':30, 'h':15}, {'x':20, 'y': 240}, 'XAX-');
+    this.legends.push(l3);
+
+
+
+
+
+  }
+
+  draw() {
+    var ctx = this.canv.getContext('2d');
+    ctx.clearRect(0,0, this.canv.width, this.canv.height);
+
+    for (var i = 0; i < this.shapes.length; ++i) {
+        this.shapes[i].draw();
+
+    }
+    for (var i = 0; i < this.legends.length; ++i) {
+        this.legends[i].draw();
+
+    }
+
+    if (this.draggingLegend == null) {
+
+    }
+    else {
+        this.draggingLegend.draw();
+    }
+
+
+
+
+  }
+
+  checkPointInShapes(p) {
+
+     
+     for (var i = 0; i < this.shapes.length; ++i) {
+          if (this.shapes[i].pointInShape(p)) {
+             return this.shapes[i];
+          }
+
+    }
+    return null;
+
+  }
+
+  checkPointInLegends(p) {
+
+     
+     for (var i = 0; i < this.legends.length; ++i) {
+          if (this.legends[i].pointInShape(p)) {
+             return this.legends[i];
+          }
+
+    }
+    return null;
+
+  }
+  
+
+
+}
+
+function log(e, text) {
+    ta = document.getElementById("ta");
+    logCount +=1;
+    ta.innerHTML = '[' + logCount  + ']' + ' target: ' + e.target.id + ': ' + text + '\n' + ta.innerHTML;
+}
+
+function dragStart(e) {
+    var dataToCopy = event.target.id;
+    log(event, 'Drag start - data: ' + dataToCopy);
+    event.dataTransfer.setData("Text",dataToCopy );
+    event.dataTransfer.effectAllowed = "copy";
+    return true;
+
+}
+
+
+var dragSource1 = document.getElementById("biga-el");
+dragSource1.ondragstart = dragStart;
+
+var dragSource2 = document.getElementById("littlea-el");
+dragSource2.ondragstart =  dragStart;
+
+var dropTarget = document.getElementById("da");
+
+dropTarget.ondrop = function(event) {
+    log(event, 'Dropped');
+    this.innerText = this.innerText +" "+ event.dataTransfer.getData("Text");
+    event.preventDefault();
+    return false;
+};
+dropTarget.ondragover = function(event) {
+    event.preventDefault();
+    return false;
+};
+
+dropTarget.ondragend = function(event) {
+    event.preventDefault();
+    return false;
+};
+
+function allowDrop(e) {
+	e.preventDefault();
+
+}
+
+function divDrop(e) {
+  log(e, 'Dropped');
+  e.preventDefault();
+  var id = e.dataTransfer.getData("Text");
+  var data = document.getElementById(id).innerText;
+  var par = document.createElement("P"); 
+  var textNode = document.createTextNode(data);
+  par.appendChild(textNode);
+  e.target.appendChild(par);
+
+}
+
+function getRelPos(e) {
+  var c = e.target;
+  var rect = c.getBoundingClientRect();
+  posX = e.clientX - rect.left;
+  posY = e.clientY - rect.top;
+  return {'x':posX, 'y':posY};
+
+}
+
+function canvasDrop(e) {
+  
+  var c = e.target;
+  //var rect = c.getBoundingClientRect();
+  //posX = e.clientX - rect.left;
+  //posY = e.clientY - rect.top;
+  pos = getRelPos(e);
+  log(e, 'Dropped on canvas: ' + pos.x + ' ' + pos.y);
+  e.preventDefault();
+  var id = e.dataTransfer.getData("Text");
+  var data = document.getElementById(id).innerText;
+  var ctx = c.getContext("2d");
+  var sourceEl = document.getElementById(id);
+  if (id == "biga-el") {
+  	var s = new DRect(document.getElementById("canvas"), 50, pos, data);
+  }
+  else {
+    var s = new DCircle(document.getElementById("canvas"), 50, pos, data);
+  }
+ 
+  //s.draw(data, {'x':pos.x, 'y': pos.y});
+  shapes.shapes.push(s);
+  shapes.draw();
+
+  //ctx.fillText(data, pos.x, pos.y);
+
+}
+
+function canvasMouseUp(e) {
+   pos = getRelPos(e);
+   log(e, ' Canvas mouse up: ' + pos.x + ' ' + pos.y );
+
+   if (canvDragging) {
+
+	if (shapes.draggingLegend == null) {
+     }
+     else {
+         var s = shapes.checkPointInShapes(pos);
+         if (s == null) {
+         }
+         else {
+            s.text = shapes.draggingLegend.text;
+         }
+
+      }
+      canvDragging = false;
+      shapes.draggingLegend = null;
+      shapes.draggingShape = null;
+      prevMousePos = null;
+
+      shapes.draw()
+
+   }
+}
+
+
+function canvasMouseDown(e) {
+   canvDragging = false;
+   pos = getRelPos(e);
+   var s = shapes.checkPointInLegends(pos);
+   log(e, ' Canvas mouse doown: ' + pos.x + ' ' + pos.y + 'sel: ' + s);
+   if (s == null) {
+   }
+   else {
+      canvDragging = true;
+      var draggingLegend = new DRect(s.canv, {'x':s.size.w, 'y':s.size.h}, {'x':s.pos.x, 'y': s.pos.y}, s.text);
+      shapes.draggingLegend = draggingLegend;
+      prevMousePos = pos;
+      if (s.colour == 'white') {
+          s.colour = 'green';
+      }
+      else {
+          s.colour =  'white';
+     }
+   }
+   var t = shapes.checkPointInShapes(pos);
+   if (t == null) {
+
+   }
+   else {
+      canvDragging = true;
+      var draggingShape = t;
+      shapes.draggingShape = draggingShape;
+      prevMousePos = pos;
+ 
+      if (t.colour == 'white') {
+          t.colour = 'black';
+      }
+      else {
+          t.colour =  'white';
+     }
+
+
+   }
+
+
+   shapes.draw();
+   
+}
+
+function canvasMouseMove(e) {
+   pos = getRelPos(e);
+   log(e, ' Canvas mouse move: ' + pos.x + ' ' + pos.y );
+   if (canvDragging) {
+      var dx = pos.x - prevMousePos.x;
+      var dy = pos.y - prevMousePos.y;
+      log(e, ' Canvas move delta: ' + dx + ' ' + dy );
+      prevMousePos = pos;
+      if (shapes.draggingLegend == null) {
+      }
+      else {
+      	shapes.draggingLegend.pos.x += dx;
+      	shapes.draggingLegend.pos.y += dy;
+      }
+      if (shapes.draggingShape == null) {
+      }
+      else {
+      	shapes.draggingShape.pos.x += dx;
+      	shapes.draggingShape.pos.y += dy;
+      }
+
+
+      shapes.draw();
+    
+     
+   }
+}
+
+
+
+
+function drawRect(pos) {
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeRect(pos.x, pos.y, 40, 40);
+    ctx.fillRect(pos.x+1,pos.y+1,38,38);
+}
+
+function drawCircle(pos) {
+    var c = document.getElementById("canvas");
+    var ctx = c.getContext("2d");
+    
+    ctx.arc(pos.x, pos.y + 20, 20, 0, 2 * Math.PI, false);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#000000';
+    ctx.stroke();
+}
+
+var canvDragging = false;
+//var draggingLegend = null;
+var prevMousePos = null;
+
+shapes = new CanvShapes(document.getElementById("canvas"));
+shapes.draw();
+
+
+
+//drawRect({'x':20,'y':20});
+//drawRect({'x':120,'y':20});
+//drawCircle({'x':240,'y': 20})
+</script>
+
+</html>

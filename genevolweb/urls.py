@@ -18,5 +18,10 @@ from django.urls import include, path
 
 urlpatterns = [
     path('', include('common.urls')),
+    path('quiz/',include('quiz.urls')),
+    path('pa/', include('pedan.urls')),
+    path('af/', include('allelefreak.urls')),
+    path('cross_sim/', include('crosssim.urls')),
+    path('pc/', include('problems.urls')),
     path('admin/', admin.site.urls),
 ]

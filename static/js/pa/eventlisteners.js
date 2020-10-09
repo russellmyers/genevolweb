@@ -57,3 +57,29 @@ function inhPatternSelected(e) {
     //alert("yeah " + selectedOption + " " + consistentPerInferrer.toString());
 
 }
+
+function logEvent(e, text) {
+    text = text || '*';
+    var targ = e.target;
+    var rect = targ.getBoundingClientRect();
+    posX = e.clientX - rect.left;
+    posY = e.clientY - rect.top;
+
+    console.log(e.target.id + ' ' + text + ' x: ' + posX + ' y: ' + posY);
+
+}
+
+function canvasMouseDown(e) {
+
+     var doSomething = false;
+     if (!(pd.inhTypeToShow == null)) {
+         doSomething = true;
+     }
+     logEvent(e, 'Mouse down ' + doSomething);
+
+     if (!doSomething) {
+         return;
+     }
+
+
+}

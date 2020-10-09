@@ -2,7 +2,7 @@ from django.shortcuts import render
 from getools.popdist import PopDist
 import plotly.graph_objs as go
 import plotly
-from .forms import AlleleFreakForm
+#from .forms import AlleleFreakForm
 
 
 
