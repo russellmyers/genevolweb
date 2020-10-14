@@ -1820,6 +1820,7 @@ class GenotypeInferrer:
         self.def_male_af = def_male_af
         self.def_female_af = def_female_af
 
+        self.all_possible_genotypes = self.init_all_possible_genotypes()
 
     def infer_org(self):
 
@@ -1829,6 +1830,10 @@ class GenotypeInferrer:
     @property
     def inferrer_type(self):
         return self.chrom_type + str(self.inh_type)
+
+
+    def init_all_possible_genotypes(self):
+        return []
 
     def initialise(self):
 
@@ -2157,6 +2162,13 @@ class ARGenotypeInferrer(GenotypeInferrer):
                                                  def_female_af=def_female_af
                                                  )
 
+    def init_all_possible_genotypes(self):
+        return [
+            self.allele.upper() + self.allele.lower(),
+            self.allele.lower() + self.allele.lower(),
+            self.allele.upper() + '-'
+        ]
+
 
     def rule_1(self, org):
         changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
@@ -2252,6 +2264,13 @@ class ADGenotypeInferrer(GenotypeInferrer):
                                                  def_male_af=def_male_af,
                                                  def_female_af=def_female_af
                                                  )
+
+    def init_all_possible_genotypes(self):
+        return [
+            self.allele.upper() + self.allele.upper(),
+            self.allele.upper() + self.allele.lower(),
+            '-' + self.allele.lower()
+        ]
 
     def rule_1(self, org):
         changed, err = org.set_possible_genotype(self.inh_type, self.chrom_type,
@@ -2349,6 +2368,15 @@ class XRGenotypeInferrer(GenotypeInferrer):
                                                  def_female_af=def_female_af
                                                  )
 
+    def init_all_possible_genotypes(self):
+        return [
+            'X' + self.allele.upper() + 'X' + self.allele.lower(),
+            'X' + self.allele.upper() + 'X' + '-',
+            'X' + self.allele.lower() + 'X' + self.allele.lower(),
+            'X' + self.allele.upper() + 'Y',
+            'X' + self.allele.lower() + 'Y'
+        ]
+
     def rule_1(self, org):
         changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
                                                                'X' + self.allele.upper() + 'X' + self.allele.lower())
@@ -2419,6 +2447,15 @@ class XDGenotypeInferrer(GenotypeInferrer):
                                                  def_female_af=def_female_af
                                                  )
 
+    def init_all_possible_genotypes(self):
+        return [
+            'X' + self.allele.upper() + 'X' + self.allele.upper(),
+            'X' + '-' + 'X' + self.allele.lower(),
+            'X' + self.allele.upper() + 'X' + self.allele.lower(),
+            'X' + self.allele.upper() + 'Y',
+            'X' + self.allele.lower() + 'Y'
+        ]
+
     def rule_1(self, org):
         return False, True
 
@@ -2438,6 +2475,12 @@ class XDGenotypeInferrer(GenotypeInferrer):
     def rule_8(self, org):
         return False, True
 
+    def rule_11(self, org):
+
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               'X' + self.allele.upper() + 'X' + self.allele.lower())
+
+        return changed, err
 
     def rule_13(self, org):
         return False, True
@@ -2472,7 +2515,12 @@ class YGenotypeInferrer(GenotypeInferrer):
                                                  def_female_af=def_female_af
                                                  )
 
-
+    def init_all_possible_genotypes(self):
+        return [
+            'X' + 'X',
+            'X' + 'Y',
+            'X' + 'y'
+        ]
 
     def infer_org(self, org):
 

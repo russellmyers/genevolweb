@@ -151,6 +151,7 @@ def ped_an(request):
         print(str(act_gens))
 
         consistent_per_inferrer = {}
+        possible_genotypes_per_inferrer = {}
 
         inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p),
                      YGenotypeInferrer(p)]
@@ -166,8 +167,10 @@ def ped_an(request):
                 consistent_per_inferrer[inferrer.inferrer_type] = 0
             #     print(f'Consistent with {inferrer.inferrer_type}')
 
+            possible_genotypes_per_inferrer[inferrer.inferrer_type] = inferrer.all_possible_genotypes
+
         ped_j['consistent'] = consistent_per_inferrer
         ped_j['actual'] = chrom_type + str(inh_type)
 
         return render(request, "common/ped_an.html",
-                      context={'form':form, 'ped_j':ped_j, 'act_gens': act_gens, 'cons_per_inferrer': consistent_per_inferrer, 'debug': debug})
+                      context={'form':form, 'ped_j':ped_j, 'act_gens': act_gens, 'cons_per_inferrer': consistent_per_inferrer, 'poss_gens_per_inferrer': possible_genotypes_per_inferrer, 'debug': debug})

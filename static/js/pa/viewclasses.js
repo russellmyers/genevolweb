@@ -18,17 +18,40 @@ class Cell {
    constructor(parent, pos, dim ) {
         this.parent = parent;
         this.pos = pos;
-        this.dim = dim;
+        this.dim = new Dimension(dim.w, dim.h);
         this.ctx = this.parent.ctx;
         this.text = '*';
+        this.textFillStyle = 'black';
     }
 
     get cellSize() {
         return this.dim;
     }
+    set cellSize(newSize) {
+       this.dim = new Dimension(newSize.w, newSize.h);
+    }
 
     get cellPosition() {
         return this.pos;
+    }
+
+    superSize() {
+       this.dim.w += 4;
+       this.dim.h += 4;
+    }
+
+    shrink() {
+       this.dim.w -= 4;
+       this.dim.h -= 4;
+    }
+
+    pointInCell(p) {
+      if ((this.pos.x <= p.x) && (p.x <= (this.pos.x + this.dim.w)) && (this.pos.y <= p.y) && (p.y <= (this.pos.y + this.dim.h))) {
+          return true;
+      }
+      else {
+         return false;
+      }
     }
 
     /**
@@ -37,19 +60,25 @@ class Cell {
      * @private
      */
     _draw(alpha) {
-        this.ctx.font = "12px Arial";
-        this.ctx.fillStyle = 'black';
-        this.ctx.fillText(this.text, this.cellPosition.x + 1 + (this.cellSize.w / 2), this.cellPosition.y + this.cellSize.h/2);
+        this.ctx.font = "14px Arial";
+        this.ctx.fillStyle =  this.textFillStyle; //'black';
+        this.ctx.fillText(this.text, this.cellPosition.x , this.cellPosition.y+10);
     }
 
 
-    draw(alpha) {
+    draw(alpha, dontClear) {
+
+        dontClear = dontClear || false;
 
         alpha = alpha || 1.0;
 
         this.ctx.save();
 
-        this.ctx.clearRect(this.cellPosition.x,this.cellPosition.y,this.cellSize.w,this.cellSize.h);
+        if (dontClear) {
+        }
+        else {
+            this.ctx.clearRect(this.cellPosition.x, this.cellPosition.y, this.cellSize.w, this.cellSize.h);
+        }
 
         this._draw(alpha);
 
@@ -67,6 +96,7 @@ class OrgCell extends Cell {
         super(parent, pos, dim);
         this.org = org;
         this.text = 'Aa';
+        this.proposedText = null;
     }
 
 
@@ -166,7 +196,7 @@ class OrgCell extends Cell {
                 this.ctx.fillStyle = 'white';
             }
             this.ctx.strokeRect(this.cellPosition.x, this.cellPosition.y, this.cellSize.w, this.cellSize.h);
-            this.ctx.fillRect(this.cellPosition.x + 1, this.cellPosition.y + 1, this.cellSize.w - 2, this.cellSize.h - 2);
+              this.ctx.fillRect(this.cellPosition.x + 1, this.cellPosition.y + 1, this.cellSize.w - 2, this.cellSize.h - 2);
             this.ctx.lineWidth = 1;
         }
         else {
@@ -206,6 +236,9 @@ class OrgCell extends Cell {
             if (this.showGenTexts) {
                 this.drawGenotypeText(txt);
             }
+            else if (!(this.proposedText == null)) {
+                this.drawGenotypeText(this.proposedText);
+            }
         }
 
         //this.ctx.restore();
@@ -214,6 +247,8 @@ class OrgCell extends Cell {
 
 }
 
+OrgCell.defaultSize = {'w':30,'h':30};
+OrgCell.defaultOverSize = {'w':32, 'h': 32};
 
 class OrgPairCell extends Cell {
    constructor(parent, org, partner, pos, partnerPos, orgDim ) {
@@ -239,6 +274,7 @@ class OrgPairCell extends Cell {
 
         this.initOrgCells();
 
+        this._draggingCell = null;
 
 
     }
@@ -265,6 +301,15 @@ class OrgPairCell extends Cell {
        var orgCell = new OrgCell(this, org, pos, this.orgDim);
        this._orgCells.push(orgCell);
 
+    }
+
+    addDraggingCell(pos, text) {
+       this._draggingCell = new Cell(this, pos, {'w':50,'h':20})
+       this._draggingCell.text = text;
+    }
+
+    removeDraggingCell() {
+       this._draggingCell = null;
     }
 
     _draw(alpha) {
@@ -356,6 +401,7 @@ class GenCell extends Cell {
     constructor(parent, pos, dim ) {
         super(parent, pos, dim);
         this.text = 'XAXa';
+        this.backgroundFillStyle = 'green';
     }
 
 
@@ -363,10 +409,23 @@ class GenCell extends Cell {
 
      this.ctx.strokeStyle = 'black';
      this.ctx.strokeRect(this.pos.x, this.pos.y, this.dim.w, this.dim.h);
-     this.ctx.fillStyle = 'green';
+     this.ctx.fillStyle = this.backgroundFillStyle;
      this.ctx.fillRect(this.pos.x+1,this.pos.y+1,this.dim.w - 2,this.dim.h-2);
      this.ctx.fillStyle = 'white';
+     this.ctx.font = "16px Helvetica Neue";
      this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + 10));
+
+    }
+
+    /** Override parent methods: - set background light instead of making bigger
+     *
+     */
+    superSize() {
+       this.backgroundFillStyle = '#00A000';
+    }
+
+    shrink() {
+       this.backgroundFillStyle = 'green';
 
     }
 
@@ -419,7 +478,7 @@ class PedigreeDiagram {
 
     this.initOrgPairCells();
 
-    this.createGenCells();
+    this.createGenCells(['XAXA','XAXa', 'XaXa', 'XAX-', 'XQXq']);
 
     // this.canvasEl.onmousemove =  function(e) {
     // };
@@ -442,17 +501,52 @@ class PedigreeDiagram {
       // return punnettCells;
   }
 
-  createGenCells() {
+  createGenCells(genTexts=[]) {
       this.gCells = [];
       var xPos = 100;
-      var yPos = 300;
-      var genTexts = ['XAXA','XAXa', 'XaXa', 'XAX-'];
+      var yPos = 350;
+      //var genTexts = ['XAXA','XAXa', 'XaXa', 'XAX-'];
       for (var i=0;i < genTexts.length;++i) {
-          var gCell = new GenCell(this, {'x': xPos, 'y': yPos}, {'w': 35, 'h': 15})
+          var gCell = new GenCell(this, {'x': xPos, 'y': yPos}, {'w': 50, 'h': 20})
           gCell.text = genTexts[i];
           this.gCells.push(gCell);
-          xPos += 50;
+          xPos += 100;
       }
+
+  }
+  addDraggingCell(pos, text) {
+      this._draggingCell = new Cell(this, pos, {'w': 50, 'h': 20});
+      this._draggingCell.text = text;
+  }
+
+  removeDraggingCell() {
+      this._draggingCell = null;
+  }
+
+  pointInGenCells(p) {
+
+      for (var i=0;i < this.gCells.length;++i) {
+          var gCell = this.gCells[i];
+          if (gCell.pointInCell(p)) {
+              return gCell;
+          }
+      }
+
+      return null;
+  }
+
+  pointInOrgCells(p) {
+     for (var i=0;i < this._orgPairCells.length;++i) {
+          var orgPairCell = this._orgPairCells[i];
+          for (var j= 0;j < orgPairCell._orgCells.length; ++j) {
+              var orgCell = orgPairCell._orgCells[j];
+              if (orgCell.pointInCell(p)) {
+                  return orgCell;
+              }
+          }
+     }
+
+      return null;
 
   }
 
@@ -827,10 +921,21 @@ class PedigreeDiagram {
 
       this.drawOrgPairs();
 
-      for (var i = 0;i < this.gCells.length;++i) {
-          this.gCells[i].draw();
+      if (this.inhTypeToShow == null) {
+
+      }
+      else {
+          for (var i = 0; i < this.gCells.length; ++i) {
+              this.gCells[i].draw();
+          }
       }
 
+      if (this._draggingCell == null) {
+
+      }
+      else {
+          this._draggingCell.draw(null, true);
+      }
 
 
   }

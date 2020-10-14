@@ -76,14 +76,18 @@ var pedigreeJson = {
 
 pedigreeJson =  JSON.parse(document.getElementById('jPedigree').textContent);
 consistentPerInferrer = JSON.parse(document.getElementById('jConsPerInferrer').textContent);
-
-
+possGensPerInferrer = JSON.parse(document.getElementById('jPossGensPerInferrer').textContent);
 
 var pedigree = null;
 var pd = null;
 
-var showGenotypes = false;
+var canvDrag = {'isDragging': false,
+               'prevMousePos': null,
+               'overOrgCell': null,
+               'overGenCell': null
+               };
 
+//var showGenotypes = false;
 
 window.onresize = function () {
     canvasEl = document.getElementById('canvas');
@@ -105,6 +109,9 @@ window.onload = function(){
     var canvasEl = document.getElementById('canvas');
     //fitToContainer(canvasEl);
     canvasEl.addEventListener('mousedown', canvasMouseDown, false);
+    canvasEl.addEventListener('mousemove', canvasMouseMove, false);
+    canvasEl.addEventListener('mouseup', canvasMouseUp, false);
+
 
     pedigree = new Pedigree(pedigreeJson);
     pd = new PedigreeDiagram(pedigree,canvasEl, null);
