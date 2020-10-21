@@ -99,9 +99,11 @@ function canvasMouseDown(e) {
          return;
      }
 
+     var dragPos = {'x': pos.x, 'y': pos.y - 10};
+
      canvDrag.isDragging = true;
      canvDrag.prevMousePos = pos;
-     pd.addDraggingCell(pos, gCell.text);
+     pd.addDraggingCell(dragPos, gCell.text);
 
      pd.drawStuff();
 
@@ -208,6 +210,7 @@ function canvasMouseUp(e) {
      else {
          // dropping
          canvDrag.overOrgCell.proposedText = pd._draggingCell.text;
+         canvDrag.overOrgCell.shrink();
      }
 
       canvDrag.isDragging = false;

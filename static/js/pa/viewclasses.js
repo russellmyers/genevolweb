@@ -90,8 +90,13 @@ class Cell {
 }
 
 
-
+/**
+ * Attributes:
+ *
+ * this.proposedText = genotype proposed by user
+ */
 class OrgCell extends Cell {
+
     constructor(parent, org, pos, dim ) {
         super(parent, pos, dim);
         this.org = org;
@@ -118,6 +123,24 @@ class OrgCell extends Cell {
     // get cellPosition() {
     //     return new Point(this.parent.padding.l + this.cellSize.w * (this.c + 1), this.parent.padding.t + this.cellSize.h * (this.r + 1));
     // }
+
+    drawTick(correct=false) {
+
+        var img = correct ? this.parent.parent.tickImg : this.parent.parent.crossImg;
+        if (img ==  null) {
+            return;
+        }
+
+        var xPos =  null;
+        if (this.org.isInLaw) {
+            xPos = this.cellPosition.x; //this.cellPosition.x + this.cellSize.w + 5;
+        }
+        else {
+            xPos = this.cellPosition.x; //this.cellPosition.x - 15 - 5;
+        }
+        this.ctx.drawImage(img, xPos, this.cellPosition.y + this.cellSize.h, 12, 12);
+
+    }
 
     drawGenotypeText(genotypeText) {
         this.ctx.font = "12px Arial";
@@ -238,6 +261,7 @@ class OrgCell extends Cell {
             }
             else if (!(this.proposedText == null)) {
                 this.drawGenotypeText(this.proposedText);
+                this.drawTick(this.proposedText == txt);
             }
         }
 
@@ -401,19 +425,30 @@ class GenCell extends Cell {
     constructor(parent, pos, dim ) {
         super(parent, pos, dim);
         this.text = 'XAXa';
-        this.backgroundFillStyle = 'green';
+        this.backgroundFillStyle = 'beige';
     }
 
 
     _draw(alpha) {
+    this.ctx.font = "18px Helvetica Neue";
 
+     var w = null;
+     var h = null;
+     if (true) {
+         //auto-size
+         w = this.ctx.measureText(this.text).width + 5;
+         h = this.ctx.measureText('M').width + 5;
+     }
+     else {
+         w = this.dim.w;
+         h = this.dim.h;
+     }
      this.ctx.strokeStyle = 'black';
-     this.ctx.strokeRect(this.pos.x, this.pos.y, this.dim.w, this.dim.h);
+     this.ctx.strokeRect(this.pos.x, this.pos.y, w, h);
      this.ctx.fillStyle = this.backgroundFillStyle;
-     this.ctx.fillRect(this.pos.x+1,this.pos.y+1,this.dim.w - 2,this.dim.h-2);
-     this.ctx.fillStyle = 'white';
-     this.ctx.font = "16px Helvetica Neue";
-     this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + 10));
+     this.ctx.fillRect(this.pos.x+1,this.pos.y+1,w - 2,h-2);
+     this.ctx.fillStyle = 'black';
+     this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + h - 5));
 
     }
 
@@ -425,7 +460,7 @@ class GenCell extends Cell {
     }
 
     shrink() {
-       this.backgroundFillStyle = 'green';
+       this.backgroundFillStyle = 'beige';
 
     }
 
@@ -471,6 +506,8 @@ class PedigreeDiagram {
     this.orgDim = new Dimension(30,30);
     this.showGenotypes = false;
     this.inhTypeToShow = null;
+    this.tickImg = null;
+    this.crossImg = null;
 
     this._orgPairCells = [];
 
@@ -480,6 +517,7 @@ class PedigreeDiagram {
 
     this.createGenCells(['XAXA','XAXa', 'XaXa', 'XAX-', 'XQXq']);
 
+    this.loadImages();
     // this.canvasEl.onmousemove =  function(e) {
     // };
 
@@ -488,6 +526,22 @@ class PedigreeDiagram {
   }
 
 
+  loadImages() {
+      var imgTick = new Image();
+      var self = this;
+      imgTick.onload = function() {
+          // image loaded
+          self.tickImg = imgTick;
+      }
+      imgTick.src = this.staticPrefix + 'img/tick.png';
+      var imgCross = new Image();
+      imgCross.onload = function() {
+          // image loaded
+          self.crossImg = imgCross;
+      }
+      imgCross.src = this.staticPrefix + 'img/cross.png';
+
+  }
   createOrgCells() {
 
       // var punnettCells = [];
@@ -507,10 +561,10 @@ class PedigreeDiagram {
       var yPos = 350;
       //var genTexts = ['XAXA','XAXa', 'XaXa', 'XAX-'];
       for (var i=0;i < genTexts.length;++i) {
-          var gCell = new GenCell(this, {'x': xPos, 'y': yPos}, {'w': 50, 'h': 20})
+          var gCell = new GenCell(this, {'x': xPos, 'y': yPos},{'w': 50, 'h': 20})
           gCell.text = genTexts[i];
           this.gCells.push(gCell);
-          xPos += 100;
+          xPos += 60;
       }
 
   }
@@ -927,6 +981,12 @@ class PedigreeDiagram {
       else {
           for (var i = 0; i < this.gCells.length; ++i) {
               this.gCells[i].draw();
+          }
+          if (this.gCells.length > 0) {
+              this.ctx.font = "16px Helvetica Neue"; //Arial";
+              this.ctx.fillText('Genotype toolbox', this.gCells[0].pos.x, this.gCells[0].pos.y - 10);
+              this.ctx.font = "12px Helvetica Neue"; //Arial";
+              this.ctx.fillText('(drag and drop genotypes onto organisms to infer genotypes)', this.gCells[0].pos.x, this.gCells[0].pos.y + 40);
           }
       }
 
