@@ -116,7 +116,8 @@ window.onload = function(){
     pedigree = new Pedigree(pedigreeJson);
     pd = new PedigreeDiagram(pedigree,canvasEl, staticPrefix=staticPrefix);
 
-    pd.drawStuff()
+    pd.drawStuff();
+
 
 }
 

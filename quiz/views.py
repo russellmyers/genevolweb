@@ -24,4 +24,4 @@ def quiz(request):
     terms = load_quiz(quiz_code_requested)
     context= {"terms": terms, 'max_questions': max_questions}
 
-    return render(request, "common/quiz.html", context=context)
+    return render(request, "quiz/quiz.html", context=context)

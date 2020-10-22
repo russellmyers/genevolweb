@@ -2475,6 +2475,12 @@ class XDGenotypeInferrer(GenotypeInferrer):
     def rule_8(self, org):
         return False, True
 
+    def rule_10(self, org):
+        changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,
+                                                               'X' + self.allele.upper() + 'X' + self.allele.lower())
+        return changed, err
+
+
     def rule_11(self, org):
 
         changed, err = org.female_parent.set_possible_genotype(self.inh_type, self.chrom_type,

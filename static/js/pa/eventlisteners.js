@@ -83,6 +83,7 @@ function logEvent(e, text) {
 }
 
 function canvasMouseDown(e) {
+
      canvDrag.isDragging = false;
 
      if (pd.inhTypeToShow == null)  {
@@ -209,7 +210,12 @@ function canvasMouseUp(e) {
      }
      else {
          // dropping
-         canvDrag.overOrgCell.proposedText = pd._draggingCell.text;
+         canvDrag.overOrgCell.proposedTexts[canvDrag.overOrgCell.showInhKey] = pd._draggingCell.text;
+         if (canvDrag.overOrgCell.correctGuess(true)) {
+             var audioEl = document.getElementById('myAudio');
+             audioEl.play();
+         }
+         proposedTextsChanged(canvDrag.overOrgCell.showInhKey);
          canvDrag.overOrgCell.shrink();
      }
 

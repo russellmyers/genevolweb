@@ -20,6 +20,19 @@ class Pedigree {
         return null;
     }
 
+    numInferrable(inhType) {
+        var num = 0;
+        for (var i = 0; i < this.orgs.length;++i) {
+            if (this.orgs[i].inferrable_genotypes[inhType] == null) {
+
+            }
+            else {
+                num +=1;
+            }
+        }
+        return num;
+    }
+
     get orgPairs() {
         var pairs = [];
         for (var i = 0;i < this.orgs.length;++i) {

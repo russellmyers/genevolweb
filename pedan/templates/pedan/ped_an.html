@@ -14,6 +14,11 @@ Pedigree Analyzer
 {%  endblock custom_css %}
 
 {%  block content %}
+<audio id="myAudio">
+  <source src="{% static 'audio/ding-sound-effect_2.mp3' %}" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
 
 
 <div class = "container-fluid">
@@ -44,7 +49,12 @@ Pedigree Analyzer
 
                      </div>
 
+                     <div id = "tot-found-div" class = "col-2">
+                         <span><span id="num-correct">12</span> / <span id = "tot-num">25</span> inferrable genotypes found</span>
+                     </div>
+
                  </div>
+
              </form>
         </div>
         <div class = "col-1">

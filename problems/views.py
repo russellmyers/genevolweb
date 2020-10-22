@@ -37,7 +37,7 @@ def population_growth(request):
                 context['answer_title'], missing_field = pg.missing_field()
                 pg.set_missing_field_in_form(missing_field, ans)
                 context['plot_data'] = pg.generate_plot_data(correct_answer=ans)
-                return render(request, "common/pop_growth.html", context=context)
+                return render(request, "problems/pop_growth.html", context=context)
             else:
                 print('solver form not valid')
         else:
@@ -49,7 +49,7 @@ def population_growth(request):
                 context['form'] = form
                 context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = pg.check_answer()
                 context['chosen_target'] = form.cleaned_data['answer_field']
-                return render(request, "common/pop_growth.html", context=context)
+                return render(request, "problems/pop_growth.html", context=context)
             else:
                 print('generator form not valid')
 
@@ -71,7 +71,7 @@ def population_growth(request):
         context['form'] = form
         context['default_tab'] = default_tab
 
-    return render(request, "common/pop_growth.html", context=context)
+    return render(request, "problems/pop_growth.html", context=context)
 
 def breeders_equation(request):
     logger.info('Breeders Equation')
@@ -98,7 +98,7 @@ def breeders_equation(request):
                 be.set_missing_field_in_form(missing_field, ans)
                 context['plot_data'] =be.generate_plot_data(correct_answer=ans)
 
-                return render(request, "common/breeders_equation.html", context=context)
+                return render(request, "problems/breeders_equation.html", context=context)
             else:
                 print('solver form not valid')
         else:
@@ -111,7 +111,7 @@ def breeders_equation(request):
                 #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
                 context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = be.check_answer()
                 context['chosen_target'] = form.cleaned_data['answer_field']
-                return render(request, "common/breeders_equation.html", context=context)
+                return render(request, "common/problems/breeders_equation.html", context=context)
             else:
                 print('generator form not valid')
 
@@ -134,7 +134,7 @@ def breeders_equation(request):
         context['form'] = form
         context['default_tab'] = default_tab
 
-    return render(request, "common/breeders_equation.html", context=context)
+    return render(request, "problems/breeders_equation.html", context=context)
 
 def hardy_weinberg(request):
     logger.info('Hardy Weinberg')
@@ -162,7 +162,7 @@ def hardy_weinberg(request):
                 context['answer_title'] = 'answer_field'
                 context['plot_data'] =hw.generate_plot_data(correct_answer=ans)
 
-                return render(request, "common/hardy_weinberg.html", context=context)
+                return render(request, "problems/hardy_weinberg.html", context=context)
             else:
                 print('solver form not valid')
         else:
@@ -175,7 +175,7 @@ def hardy_weinberg(request):
                 #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
                 context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = hw.check_answer()
                 context['chosen_target'] = form.cleaned_data['answer_field']
-                return render(request, "common/hardy_weinberg.html", context=context)
+                return render(request, "problems/hardy_weinberg.html", context=context)
             else:
                 print('generator form not valid')
 
@@ -198,7 +198,7 @@ def hardy_weinberg(request):
         context['form'] = form
         context['default_tab'] = default_tab
 
-    return render(request, "common/hardy_weinberg.html", context=context)
+    return render(request, "problems/hardy_weinberg.html", context=context)
 
 
 def children_stats(children):
@@ -423,7 +423,7 @@ def cross_map(request):
                     #context['answer_title'], missing_field = tcl.missing_field()
                     #tcl.set_missing_field_in_form(missing_field, ans)
                     #context['plot_data'] = tcl.generate_plot_data(correct_answer=ans)
-                    return render(request, "common/cross_map.html", context=context)
+                    return render(request, "problems/cross_map.html", context=context)
                 else:
                     print('solver form not valid')
                     context['default_tab'] = default_tab
@@ -455,7 +455,7 @@ def cross_map(request):
 
                     cross_type = request.session.get('gcm_cross_type', 'g')
                     context['cross_type'] = cross_type
-                return render(request, "common/cross_map.html", context=context)
+                return render(request, "problems/cross_map.html", context=context)
 
 
         else:
@@ -533,7 +533,7 @@ def cross_map(request):
     tst = org_hom_rec.genome.phenotype()
 
 
-    return render(request, "common/cross_map.html",
+    return render(request, "problems/cross_map.html",
                   context={'genome_name': genome_name, 'phen_descriptions': phen_descriptions,
                            'org_het_phase': org_het_phase,
                            'show_cross': show_cross, 'cross_type': cross_type, 'positions_in': positions_in,

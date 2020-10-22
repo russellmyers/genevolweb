@@ -90,6 +90,6 @@ def cross_sim(request):
         parents = [org_gen_phens[num_traits_ind][sel_p1],org_gen_phens[num_traits_ind][sel_p2]]
         parent_poss_gametes = [poss_gametes[num_traits_ind][sel_p1],poss_gametes[num_traits_ind][sel_p2]]
 
-        return render(request, "common/cross_sim.html",
+        return render(request, "crosssim/cross_sim.html",
                       context={'form':form,'gen_phen': default_gen_phen, 'num_traits': default_num_traits,'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1':organisms[num_traits_ind][sel_p1],'p2': organisms[num_traits_ind][sel_p2], 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name': genome_name, 'phen_descriptions': phen_descriptions, 'org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes, 'poss_gametes_rolled_up': poss_gametes_rolled_up})
 

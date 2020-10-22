@@ -101,7 +101,12 @@ class OrgCell extends Cell {
         super(parent, pos, dim);
         this.org = org;
         this.text = 'Aa';
-        this.proposedText = null;
+        this.proposedTexts = {};
+        for (var key in this.org.inferrable_genotypes) {
+            if (this.org.inferrable_genotypes.hasOwnProperty(key)) {
+                this.proposedTexts[key] = null;
+            }
+        }
     }
 
 
@@ -124,8 +129,9 @@ class OrgCell extends Cell {
     //     return new Point(this.parent.padding.l + this.cellSize.w * (this.c + 1), this.parent.padding.t + this.cellSize.h * (this.r + 1));
     // }
 
-    drawTick(correct=false) {
+    drawTick() {
 
+        var correct = this.correctGuess();
         var img = correct ? this.parent.parent.tickImg : this.parent.parent.crossImg;
         if (img ==  null) {
             return;
@@ -202,6 +208,30 @@ class OrgCell extends Cell {
 
     }
 
+    getInferrableGenotypeText() {
+            var txt = this.org.inferrable_genotypes[this.showInhKey];
+            var uninferrables = {'AR': 'A-', 'AD': '-a', 'XR': 'XAX-', 'XD': 'X-Xa', 'YR': 'X-Y'}
+            txt = txt || uninferrables[this.showInhKey];
+            return txt;
+
+
+    }
+
+    getProposedGenotypeText() {
+           return this.proposedTexts[this.showInhKey];
+    }
+
+    correctGuess(exclUninferrables=false) {
+        if (exclUninferrables ) {
+           if (this.org.inferrable_genotypes[this.showInhKey] == null) {
+               return false;
+           }
+
+        }
+
+        return this.getInferrableGenotypeText() == this.getProposedGenotypeText();
+    }
+
     _draw(alpha) {
 
         //alpha = alpha || 1.0;
@@ -247,10 +277,8 @@ class OrgCell extends Cell {
 
         }
         else {
-
-            var txt = this.org.inferrable_genotypes[this.showInhKey];
-            var uninferrables = {'AR': 'A-', 'AD': '-a', 'XR': 'XAX-', 'XD': 'X-Xa', 'YR': 'X-Y'}
-            txt = txt || uninferrables[this.showInhKey];
+            var txt = this.getInferrableGenotypeText();
+            var proposedTxt = this.getProposedGenotypeText();
             // this.ctx.font = "12px Arial";
             // var w = this.ctx.measureText(txt).width;
             // var hApprox = this.ctx.measureText('M').width;
@@ -259,9 +287,9 @@ class OrgCell extends Cell {
             if (this.showGenTexts) {
                 this.drawGenotypeText(txt);
             }
-            else if (!(this.proposedText == null)) {
-                this.drawGenotypeText(this.proposedText);
-                this.drawTick(this.proposedText == txt);
+            else if (!(proposedTxt == null)) {
+                this.drawGenotypeText(proposedTxt);
+                this.drawTick();
             }
         }
 

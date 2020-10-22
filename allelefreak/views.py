@@ -100,7 +100,7 @@ def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_cl
     context['plot_data'] = plot_data
     context['show_allele'] = show_allele
 
-    return render(request, "common/allele_freak.html", context=context)
+    return render(request, "allelefreak/allele_freak.html", context=context)
 
 
 

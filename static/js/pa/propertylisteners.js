@@ -23,16 +23,19 @@ function inhTypeToShowChanged() {
 
     var tickEl = document.getElementById("tick-img");
     var showBut = document.getElementById("show-but");
+    var showNumFoundDiv = document.getElementById("tot-found-div");
 
     if (pd.inhTypeToShow == null) {
         tickEl.style.display = "none";
         showBut.style.display = "none";
         selected_option = "-1";
-        pd.createGenCells([])
+        pd.createGenCells([]);
+        showNumFoundDiv.style.display = "none";
     }
     else {
         tickEl.style.display = "block";
         selectedOption = pd.inhTypeToShow;
+
     }
 
     if (selectedOption in consistentPerInferrer) {
@@ -40,14 +43,17 @@ function inhTypeToShowChanged() {
             tickEl.src = staticPrefix + "img/cross.PNG";
             showBut.style.display = "none";
             pd.showGenotypes = false;
-            pd.createGenCells([])
+            pd.createGenCells([]);
+            showNumFoundDiv.style.display = "none";
 
         }
 
         else {
             tickEl.src = staticPrefix + "img/tick.jpg";
             showBut.style.display = "block";
-            pd.createGenCells(possGensPerInferrer[selectedOption])
+            pd.createGenCells(possGensPerInferrer[selectedOption]);
+            proposedTextsChanged(selectedOption);
+            showNumFoundDiv.style.display = "block";
         }
 
     }
@@ -56,8 +62,33 @@ function inhTypeToShowChanged() {
             showBut.style.display = "none";
             pd.showGenotypes = false;
             pd.createGenCells([]);
+            showNumFoundDiv.style.display = "none";
     }
 
     showGenotypesChanged();
+
+}
+
+function proposedTextsChanged(inhType) {
+        var totNumInferrableEl = document.getElementById('tot-num');
+        var numFoundEl = document.getElementById('num-correct');
+
+        totNumInferrableEl.innerHTML = '' + pedigree.numInferrable(inhType);
+
+
+        var numCorrect = 0;
+        for (var i = 0;i < pd._orgPairCells.length; ++ i) {
+            var orgPairCell = pd._orgPairCells[i];
+            for (var j = 0; j < orgPairCell._orgCells.length;++j) {
+                var orgCell = orgPairCell._orgCells[j];
+                if (orgCell.correctGuess(exclUninferrables=true)) {
+                    numCorrect +=1;
+                }
+            }
+        }
+        numFoundEl.innerHTML = '' + numCorrect;
+
+
+
 
 }

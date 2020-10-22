@@ -172,5 +172,5 @@ def ped_an(request):
         ped_j['consistent'] = consistent_per_inferrer
         ped_j['actual'] = chrom_type + str(inh_type)
 
-        return render(request, "common/ped_an.html",
+        return render(request, "pedan/ped_an.html",
                       context={'form':form, 'ped_j':ped_j, 'act_gens': act_gens, 'cons_per_inferrer': consistent_per_inferrer, 'poss_gens_per_inferrer': possible_genotypes_per_inferrer, 'debug': debug})
