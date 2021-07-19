@@ -211,21 +211,100 @@ function canvasMouseUp(e) {
      else {
          // dropping
          canvDrag.overOrgCell.proposedTexts[canvDrag.overOrgCell.showInhKey] = pd._draggingCell.text;
-         if (canvDrag.overOrgCell.correctGuess(true)) {
+         if (canvDrag.overOrgCell.correctGuess()) {
              var audioEl = document.getElementById('myAudio');
+             audioEl.pause();
+             audioEl.currentTime = 0;
+             audioEl.play();
+             //ping.play();
+         }
+         else {
+             var audioEl = document.getElementById('myAudio2');
+             audioEl.pause();
+             audioEl.currentTime = 0;
              audioEl.play();
          }
          proposedTextsChanged(canvDrag.overOrgCell.showInhKey);
          canvDrag.overOrgCell.shrink();
+
+         //Temporarily deactivate click if drag just ended successfully
+         deactivateClick = true;
+         setTimeout(function(){
+               deactivateClick = false;
+                }, 50);
+
      }
 
-      canvDrag.isDragging = false;
-      canvDrag.prevMousePos = null;
-      canvDrag.overOrgCell = null;
+     canvDrag.isDragging = false;
+     canvDrag.prevMousePos = null;
+     canvDrag.overOrgCell = null;
+
+
+
       pd.removeDraggingCell();
 
       pd.drawStuff();
 
    }
+
+}
+
+function canvasClick(e) {
+    if (pd.inhTypeToShow == null)  {
+         return;
+     }
+
+    if (canvDrag.isDragging) {
+        return;
+    }
+
+    if (deactivateClick) {
+        return;
+    }
+
+
+     var pos = getRelPos(e);
+
+     var gCell = pd.pointInGenCells(pos);
+     var txt = (gCell == null) ? ' No gen cell selected' : gCell.text;
+     logEvent(e, 'Mouse click ' + txt);
+
+     if (gCell == null)  {
+
+     }
+     else {
+         pd.selectGenCell(gCell);
+         pd.drawStuff();
+     }
+
+
+     var overCell = pd.pointInOrgCells(pos);
+
+
+     if (overCell == null) {
+
+     }
+     else {
+         overCell.proposedTexts[overCell.showInhKey] = pd.selectedGenCell.text;
+         if (overCell.correctGuess()) {
+             var audioEl = document.getElementById('myAudio');
+             audioEl.pause();
+             audioEl.currentTime = 0;
+             audioEl.play();
+             //ping.play();
+         }
+         else {
+             var audioEl = document.getElementById('myAudio2');
+             audioEl.pause();
+             audioEl.currentTime = 0;
+             audioEl.play();
+         }
+         proposedTextsChanged(overCell.showInhKey);
+         pd.drawStuff();
+     }
+
+
+
+
 
 }

@@ -111,7 +111,7 @@ window.onload = function(){
     canvasEl.addEventListener('mousedown', canvasMouseDown, false);
     canvasEl.addEventListener('mousemove', canvasMouseMove, false);
     canvasEl.addEventListener('mouseup', canvasMouseUp, false);
-
+    canvasEl.addEventListener('click', canvasClick, false);
 
     pedigree = new Pedigree(pedigreeJson);
     pd = new PedigreeDiagram(pedigree,canvasEl, staticPrefix=staticPrefix);
@@ -123,4 +123,6 @@ window.onload = function(){
 
 var orgs = JSON.parse(document.getElementById('jOrgs').textContent);
 var state = 1;
-
+var deactivateClick = false;
+var ping = new Audio(staticPrefix + "audio/ding-sound-effect-2.mp3");
+var x = 1;

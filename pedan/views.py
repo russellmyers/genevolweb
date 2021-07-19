@@ -144,6 +144,11 @@ def ped_an(request):
 
         ped_j = p.to_json()
 
+        test_load_ped = True
+        if test_load_ped:
+            ped_j, p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer = Pedigree.pedigree_from_text('1MA/2F:3F,4MA\n3/5MA:6F,7MA,8FA\n6/9M:10FU,11MA')
+            ped_j = p.to_json()
+
         act_gens = []
         for org in p.all_orgs_in_pedigree():
             act_gens.append(f'{org}')
@@ -169,8 +174,18 @@ def ped_an(request):
 
             possible_genotypes_per_inferrer[inferrer.inferrer_type] = inferrer.all_possible_genotypes
 
+
+#        ped_j, p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer = Pedigree.pedigree_from_text('1MA/2F:3F,4MA\n3/5MA:6F,7MA,8FA\n6/9M:10FU,11MA')
+#        ped_j = p.to_json()
+
         ped_j['consistent'] = consistent_per_inferrer
         ped_j['actual'] = chrom_type + str(inh_type)
+
+        if test_load_ped:
+            ped_j['actual'] = 'AR'
+
+        #ped_j['consistent'] = {'AR':1, 'AD': 0, 'XR': 0, 'XD':0, 'YR': 0}
+        #ped_j['actual'] = 'AR'
 
         return render(request, "pedan/ped_an.html",
                       context={'form':form, 'ped_j':ped_j, 'act_gens': act_gens, 'cons_per_inferrer': consistent_per_inferrer, 'poss_gens_per_inferrer': possible_genotypes_per_inferrer, 'debug': debug})

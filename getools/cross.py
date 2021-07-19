@@ -1,6 +1,7 @@
 import random
 import math
 import itertools
+import re
 
 debug = 0
 from getools.gen import SerialiserMixin
@@ -1146,24 +1147,24 @@ class Organism(SerialiserMixin):
 
 
     @staticmethod
-    def organism_with_random_genotype(genome_template, sex=None, counter_id=None):
+    def organism_with_random_genotype(genome_template, sex=None, counter_id=None, level=None):
         genome = genome_template.generate_random_genome(sex=sex)
-        return Organism(genome, counter_id=counter_id)
+        return Organism(genome, counter_id=counter_id, level=level)
 
     @staticmethod
-    def organism_with_hom_recessive_genotype(genome_template, sex=None, counter_id=None):
+    def organism_with_hom_recessive_genotype(genome_template, sex=None, counter_id=None, level=None):
         genome = genome_template.generate_hom_recessive_genome(sex=sex)
-        return Organism(genome, counter_id=counter_id)
+        return Organism(genome, counter_id=counter_id, level=level)
 
     @staticmethod
-    def organism_with_hom_dominant_genotype(genome_template, sex=None, counter_id=None):
+    def organism_with_hom_dominant_genotype(genome_template, sex=None, counter_id=None, level=None):
         genome = genome_template.generate_hom_dominant_genome(sex=sex)
-        return Organism(genome, counter_id=counter_id)
+        return Organism(genome, counter_id=counter_id, level=level)
 
     @staticmethod
-    def organism_with_het_genotype(genome_template,rand_phase=False, sex=None, counter_id=None):
+    def organism_with_het_genotype(genome_template,rand_phase=False, sex=None, counter_id=None, level=None):
         genome = genome_template.generate_het_genome(rand_phase=rand_phase, sex=sex)
-        return Organism(genome, counter_id=counter_id)
+        return Organism(genome, counter_id=counter_id, level=level)
 
     # @staticmethod
     # def generate_pedigree(max_levels=2, type='auto_rec', prob_mate = 0.5, max_children=4):
@@ -1707,6 +1708,7 @@ class Pedigree:
         self.gt = None
         self.next_id = 1
         self._organisms = []
+        self.gt = self.initialise_genome()
 
     @property
     def adam(self):
@@ -1721,15 +1723,27 @@ class Pedigree:
     def total_organisms(self):
         return len(self._organisms)
 
+    def org_with_id(self, id):
+        for org in self._organisms:
+            if org.counter_id == id:
+               return org
+        return None
 
-    def add_organism(self, sex, hom_rec=False):
-        if hom_rec:
-            org = Organism.organism_with_hom_recessive_genotype(self.gt, sex=sex, counter_id=self.next_id)
+    def add_organism(self, sex, hom_rec=False, het=False, id=None, level=None):
+        if id is None:
+           id_to_allocate = self.next_id
+           self.next_id +=1
         else:
-            org = Organism.organism_with_random_genotype(self.gt, sex=sex, counter_id=self.next_id)
+           id_to_allocate = id
+        if hom_rec:
+            org = Organism.organism_with_hom_recessive_genotype(self.gt, sex=sex, counter_id=id_to_allocate, level=level)
+        elif het:
+            org = Organism.organism_with_het_genotype(self.gt, sex=sex, counter_id=id_to_allocate, level=level)
+        else:
+            org = Organism.organism_with_random_genotype(self.gt, sex=sex, counter_id=id_to_allocate, level=level)
         #print(str(org))
         self._organisms.append(org)
-        self.next_id += 1
+        #self.next_id += 1
         return org
 
     def all_orgs_in_pedigree(self, include_inlaws=True, level=None):
@@ -1764,22 +1778,154 @@ class Pedigree:
 
         return ped
 
+    @staticmethod
+    def pedigree_from_json(j):
+       x = 1
+       p = Pedigree(inh_type=Gene.INH_PATTERN_RECESSIVE, chrom_type=ChromosomeTemplate.AUTOSOMAL)
+
+       def find_j_org_with_id_in_json(j, id):
+           for j_org in j['orgs']:
+               if j_org['id'] == id:
+                   return j_org
+           return None
+
+       def add_org_for_j_org(j_org):
+           if j_org['afflicted']:
+               hom_rec = True
+               het = False
+           else:
+               hom_rec = False
+               het = True
+           org = p.add_organism(sex='M' if j_org['sex'] == 'male' else 'F', hom_rec=hom_rec, het=het, id=j_org['id'], level=j_org['level'])
+           return org
+
+       for j_org in j['orgs']:
+           org = p.org_with_id(j_org['id'])
+           if org is not None:
+               continue
+           org = add_org_for_j_org(j_org) #p.add_organism(sex='M' if j_org['sex'] == 'male' else 'F', hom_rec = j_org['afflicted'], id=j_org['id'])
+           org_mate = p.org_with_id(j_org['partner'])
+           if org_mate is None:
+              org_mate = add_org_for_j_org(find_j_org_with_id_in_json(j, j_org['partner']))
+           org.set_partner(org_mate)
+
+           for j_child_org_id in j_org['children']:
+
+               child_org = add_org_for_j_org(find_j_org_with_id_in_json(j, j_child_org_id))
+               male_parent = org if org.sex == Genome.MALE else org_mate
+               female_parent = org if org.sex == Genome.FEMALE else org_mate
+               child_org.set_parents(male_parent, female_parent)
+               org.add_child(child_org)
+               org_mate.add_child(child_org)
+
+       act_gens = []
+       for org in p.all_orgs_in_pedigree():
+           act_gens.append(f'{org}')
+
+       consistent_per_inferrer = {}
+       possible_genotypes_per_inferrer = {}
+
+       inferrers = [ARGenotypeInferrer(p), ADGenotypeInferrer(p), XRGenotypeInferrer(p), XDGenotypeInferrer(p),
+                     YGenotypeInferrer(p)]
+       for inferrer in inferrers:
+            consistent, err_msg = inferrer.infer()
+
+            if consistent:
+                if inferrer.inferrer_type in consistent_per_inferrer:
+                    consistent_per_inferrer[inferrer.inferrer_type] += 1
+                else:
+                    consistent_per_inferrer[inferrer.inferrer_type] = 1
+            else:
+                consistent_per_inferrer[inferrer.inferrer_type] = 0
+            #     print(f'Consistent with {inferrer.inferrer_type}')
+
+            possible_genotypes_per_inferrer[inferrer.inferrer_type] = inferrer.all_possible_genotypes
+
+
+       return p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer
+
+    @staticmethod
+    def pedigree_from_text(text):
+        orgs = []
+        ids_found = {}
+
+        def convert_to_json_format(ids_found):
+            j = {}
+            for org_id, org in ids_found.items():
+                if (org['level'] == 1) and (org['sex'] == 'male'):
+                    j['adam'] = org_id
+                    break
+            orgs = []
+            for org_id, org in ids_found.items():
+                org_dict = {'id':org_id}
+                for key, attr in org.items():
+                    org_dict[key] = attr
+                orgs.append(org_dict)
+            j['orgs'] = orgs
+            return j
+
+
+
+        def register_id(org, ids_found, level=None, adding_child = False):
+            m = re.match(r'(\d+)(.*)', org)
+            id = int(m.group(1))
+            attrs = m.group(2)
+            if id not in ids_found:
+               ids_found[id] = {'sex': 'male' if attrs[0] == 'M' else 'female', 'afflicted': True if (len(attrs) == 2 and attrs[1] == 'A') else False, 'partner' : None, 'inferrable_genotypes': [], 'children':[], 'isInLaw': False, 'level': level}
+               if (not adding_child) and (level > 0):
+                  ids_found[id]['isInLaw'] = True
+            else:
+                if level is not None:
+                    ids_found[id]['level'] = level
+            return id
+
+        def parse_pedigree_text_line(line, ids_found, level):
+            m = re.match(r'(.*)/(.*):(.*)', line)
+
+            parent1 = m.group(1)
+            p1_id = register_id(parent1, ids_found, level)
+            parent2 = m.group(2)
+            p2_id = register_id(parent2, ids_found, level)
+            ids_found[p1_id]['partner'] = p2_id
+            ids_found[p2_id]['partner'] = p1_id
+
+            children = m.group(3).split(',')
+            child_ids = []
+            for child in children:
+                id = register_id(child, ids_found, ids_found[p1_id]['level'] + 1, adding_child=True)
+                child_ids.append(id)
+            ids_found[p1_id]['children'] = child_ids
+            ids_found[p2_id]['children'] = child_ids
+            return parent1, parent2, children
+
+
+        for i, line in enumerate(text.split('\n')):
+            ret = parse_pedigree_text_line(line, ids_found, i)
+
+        j = convert_to_json_format(ids_found)
+        p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer = Pedigree.pedigree_from_json(j)
+        return j, p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer
+
+    def initialise_genome(self):
+        g = Gene(AlleleSet.default_alleleset_from_symbol(self.symbol), 1000000,
+                 inheritance_pattern=self.inh_type)
+
+        gene_list = [g]
+        c = ChromosomeTemplate('PedAutoChrom', 2000000,
+                               gene_list if self.chrom_type == ChromosomeTemplate.AUTOSOMAL else [])
+        c_X = ChromosomeTemplate('PedXChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.X else [],
+                                 type=ChromosomeTemplate.X)
+        c_Y = ChromosomeTemplate('PedYChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.Y else [],
+                                 type=ChromosomeTemplate.Y)
+
+        return GenomeTemplate(ploidy=2, chromosome_templates=[c], X_chromosome_template=c_X,
+                                 Y_chromosome_template=c_Y, name='PedGT')
 
     def generate(self, hom_rec_partners = False):
 
         # if self.inh_type != Gene.INH_PATTERN_RECESSIVE:
         #     raise Exception('pedigree type not allowed: ' + self.inh_type)
 
-        g = Gene(AlleleSet.default_alleleset_from_symbol(self.symbol), 1000000,
-                 inheritance_pattern=self.inh_type)
-
-        gene_list = [g]
-        c = ChromosomeTemplate('PedAutoChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.AUTOSOMAL else [])
-        c_X = ChromosomeTemplate('PedXChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.X else [], type=ChromosomeTemplate.X)
-        c_Y = ChromosomeTemplate('PedYChrom', 2000000, gene_list if self.chrom_type == ChromosomeTemplate.Y else [], type=ChromosomeTemplate.Y)
-
-        self.gt = GenomeTemplate(ploidy=2, chromosome_templates=[c], X_chromosome_template=c_X,
-                            Y_chromosome_template=c_Y, name='PedGT')
         #print(str(self.gt))
 
         adam = self.add_organism(sex=Genome.MALE)
@@ -2552,6 +2698,8 @@ class YGenotypeInferrer(GenotypeInferrer):
 
 if __name__ == '__main__':
     debug = 0
+
+    ret = Pedigree.pedigree_from_text('1M/2F:3F,4MA\n3/5MA:6F,7MA,8F')
 
     from scipy.stats import chisquare
     # obs = [1469, 138, 5]

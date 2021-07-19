@@ -14,6 +14,29 @@ class Point {
     }
 }
 
+class Box {
+    constructor(pos, dim) {
+        this._pos = pos;
+        this._dim = dim;
+    }
+
+    get w() {
+        return this._dim.w;
+    }
+
+    get h() {
+        return this._dim.h;
+    }
+
+    get x() {
+        return this._pos.x;
+    }
+
+    get y() {
+        return this._pos.y;
+    }
+}
+
 class Cell {
    constructor(parent, pos, dim ) {
         this.parent = parent;
@@ -284,11 +307,14 @@ class OrgCell extends Cell {
             // var hApprox = this.ctx.measureText('M').width;
             // this.ctx.fillStyle =  this.org.afflicted ? 'white' : 'black';
             // this.ctx.fillText(txt,this.cellPosition.x + 1 + (this.cellSize.w / 2) - w/2, this.cellPosition.y + this.cellSize.h/2 + hApprox/2);
+            var txtColour = this.org.afflicted ? 'white' : 'black';
             if (this.showGenTexts) {
-                this.drawGenotypeText(txt);
+                //this.drawGenotypeText(txt);
+                pd.drawGenotypeText(this.ctx, txt, new Box(this.cellPosition, this.cellSize), this.showInhKey, txtColour);
             }
             else if (!(proposedTxt == null)) {
-                this.drawGenotypeText(proposedTxt);
+                //this.drawGenotypeText(proposedTxt);
+                pd.drawGenotypeText(this.ctx, proposedTxt, new Box(this.cellPosition, this.cellSize), this.showInhKey, txtColour);
                 this.drawTick();
             }
         }
@@ -450,10 +476,11 @@ OrgPairCell.PartnerSpacing = 10
  * Genotype selection cell
  */
 class GenCell extends Cell {
-    constructor(parent, pos, dim ) {
+    constructor(parent, pos, dim, isSelected=false ) {
         super(parent, pos, dim);
         this.text = 'XAXa';
         this.backgroundFillStyle = 'beige';
+        this.isSelected = isSelected;
     }
 
 
@@ -471,12 +498,20 @@ class GenCell extends Cell {
          w = this.dim.w;
          h = this.dim.h;
      }
+
+     if (this.isSelected) {
+         this.backgroundFillStyle = '#00A000';
+     }
+     else {
+          this.backgroundFillStyle = 'beige';
+     }
      this.ctx.strokeStyle = 'black';
      this.ctx.strokeRect(this.pos.x, this.pos.y, w, h);
      this.ctx.fillStyle = this.backgroundFillStyle;
      this.ctx.fillRect(this.pos.x+1,this.pos.y+1,w - 2,h-2);
      this.ctx.fillStyle = 'black';
-     this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + h - 5));
+     pd.drawGenotypeText(this.ctx, this.text, new Box(this.pos, new Dimension(w, h)), pd.inhTypeToShow, 'black', 14);
+     //this.ctx.fillText(this.text, (this.pos.x + 2), (this.pos.y + h - 5));
 
     }
 
@@ -589,13 +624,37 @@ class PedigreeDiagram {
       var yPos = 350;
       //var genTexts = ['XAXA','XAXa', 'XaXa', 'XAX-'];
       for (var i=0;i < genTexts.length;++i) {
-          var gCell = new GenCell(this, {'x': xPos, 'y': yPos},{'w': 50, 'h': 20})
+          var isSelected = (i == 0) ? true : false;
+
+          var gCell = new GenCell(this, {'x': xPos, 'y': yPos},{'w': 50, 'h': 20}, isSelected = isSelected);
           gCell.text = genTexts[i];
           this.gCells.push(gCell);
           xPos += 60;
       }
 
   }
+
+  selectGenCell(gCell) {
+      for (var i = 0;i < this.gCells.length;++i) {
+          if (this.gCells[i] == gCell) {
+              this.gCells[i].isSelected = true;
+          }
+          else {
+              this.gCells[i].isSelected = false;
+          }
+      }
+  }
+
+  get selectedGenCell() {
+      for (var i = 0;i < this.gCells.length;++i) {
+          if (this.gCells[i].isSelected) {
+              return this.gCells[i];
+
+          }
+      }
+      return null;
+  }
+
   addDraggingCell(pos, text) {
       this._draggingCell = new Cell(this, pos, {'w': 50, 'h': 20});
       this._draggingCell.text = text;
@@ -900,6 +959,75 @@ class PedigreeDiagram {
 
   }
 
+  drawGenotypeText(ctx, genotypeText, box, inhType='AR',  textFontColour='black', textFontSize=12) {
+      /**
+       * Utility to draw specified genotypeText centered in specified box, with superscripts etc
+       *
+       */
+        ctx.save();
+
+        ctx.font = textFontSize + "px Arial";
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle =  textFontColour;
+
+        if ((inhType == 'AR') || (inhType == 'AD') || (inhType == 'YR')){
+            var w = ctx.measureText(genotypeText).width;
+            //var hApprox = this.ctx.measureText('M').width;
+
+            ctx.fillText(genotypeText,box.x + 1 + (box.w / 2) - w/2, box.y + box.h/2);
+
+        }
+
+        else if ((inhType == 'XR') || (inhType == 'XD')) {
+            var textLen = 0;
+            var offsets = [0];
+            for (var i = 0; i < genotypeText.length; ++i) {
+                var genCh = genotypeText.charAt(i);
+                if ((genCh == 'X') || (genCh == '-') || (genCh == 'Y')) {
+                    ctx.font =  textFontSize + "px Arial";
+                    ctx.textBaseline = 'middle';
+                } else {
+                    ctx.font = textFontSize - 1 + "px Arial";
+                    ctx.textBaseline = 'alphabetic';
+                }
+                textLen += ctx.measureText(genCh).width;
+                offsets.push(ctx.measureText(genCh).width);
+
+
+            }
+
+            var startX  = box.x + 1 + (box.w / 2) - textLen/2;
+
+            for (var i = 0; i < genotypeText.length; ++i) {
+                var genCh = genotypeText.charAt(i);
+                startX += offsets[i];
+                if ((genCh == 'X') || (genCh == 'Y') || (genCh == '-')) {
+                    ctx.font = textFontSize + "px Arial";
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(genCh, startX, box.y + box.h/2);
+
+                } else {
+                    ctx.font = textFontSize - 1 + "px Arial";
+                    ctx.textBaseline = 'alphabetic';
+                    ctx.fillText(genCh, startX, box.y + box.h/2);
+
+                }
+
+            }
+
+
+        }
+
+        ctx.restore();
+        // var w = this.ctx.measureText(txt).width;
+        // //var hApprox = this.ctx.measureText('M').width;
+        // //this.ctx.fillStyle =  this.org.afflicted ? 'white' : 'black';
+        //
+        // this.ctx.fillText(txt,this.cellPosition.x + 1 + (this.cellSize.w / 2) - w/2, this.cellPosition.y + this.cellSize.h/2 + hApprox/2);
+
+    }
+
+
   drawAlleleLegend() {
      this.ctx.save();
      if (this.showGenotypes) {
@@ -1013,8 +1141,8 @@ class PedigreeDiagram {
           if (this.gCells.length > 0) {
               this.ctx.font = "16px Helvetica Neue"; //Arial";
               this.ctx.fillText('Genotype toolbox', this.gCells[0].pos.x, this.gCells[0].pos.y - 10);
-              this.ctx.font = "12px Helvetica Neue"; //Arial";
-              this.ctx.fillText('(drag and drop genotypes onto organisms to infer genotypes)', this.gCells[0].pos.x, this.gCells[0].pos.y + 40);
+              this.ctx.font = "14px Helvetica Neue"; //Arial";
+              this.ctx.fillText('(Select genotype from toolbox and click on organisms to infer genotypes)', this.gCells[0].pos.x, this.gCells[0].pos.y + 40);
           }
       }
 
