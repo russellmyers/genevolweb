@@ -4,9 +4,11 @@ import json
 from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm
 import random
 import math
-from getools.cross import Organism, Genome
+#from getools.cross import Organism, Genome
+from genutils.cross import Organism, Genome
 from scipy.stats import chisquare
-from getools.popdist import PopDist
+#from getools.popdist import PopDist
+from genutils.popdist import PopDist
 import numpy as np
 
 # Create your models here.

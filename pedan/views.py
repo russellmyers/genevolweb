@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from .forms import PedigreeAnalyserForm
-from getools.cross import ChromosomeTemplate, Gene, Pedigree, ARGenotypeInferrer, ADGenotypeInferrer, XRGenotypeInferrer, XDGenotypeInferrer, YGenotypeInferrer
+#from getools.cross import ChromosomeTemplate, Gene, Pedigree, ARGenotypeInferrer, ADGenotypeInferrer, XRGenotypeInferrer, XDGenotypeInferrer, YGenotypeInferrer
+from genutils.cross import ChromosomeTemplate, Gene, Pedigree, ARGenotypeInferrer, ADGenotypeInferrer, XRGenotypeInferrer, XDGenotypeInferrer, YGenotypeInferrer
+
 import random
 import math
 

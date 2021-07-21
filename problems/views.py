@@ -5,7 +5,8 @@ from scipy.stats import chisquare
 from .models import PopGrowthProblem, BreedersEquationProblem, TestCrossLinkageProblem, HardyWeinbergProblem
 import json
 from django.http import JsonResponse
-from getools.cross import Organism, Genome
+#from getools.cross import Organism, Genome
+from genutils.cross import Organism, Genome
 from common.views import get_phen_descriptions, create_genome_template
 
 
