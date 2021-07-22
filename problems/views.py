@@ -20,7 +20,7 @@ def population_growth(request):
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
-    default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
+    default_tab = 0 if tab_requested == 'solver-tab' else 1
 
     context = {}
 
