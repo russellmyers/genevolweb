@@ -57,5 +57,51 @@ class PopGrowthViewTestCase(TestCase):
                 num_nones +=1
         self.assertEqual(num_nones, 1)
 
+    def test_views_post_problem_solver(self):
+        c = Client()
+        response = c.post('/pc/pg', {'init_pop': '1000', 'growth_rate': '0.2', 'time': '10', 'final_pop': '', 'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['final_pop'], 7389)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
 
+        response = c.post('/pc/pg', {'init_pop': '1000', 'growth_rate': '0.3', 'time':'', 'final_pop': '10000', 'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['time'], 8)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/pg', {'init_pop': '', 'growth_rate': '0.3', 'time':'8', 'final_pop': '10000', 'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['init_pop'], 907)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/pg', {'init_pop': '907', 'growth_rate': '', 'time':'8', 'final_pop': '10000', 'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['growth_rate'], 0.3)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/pg', {'init_pop': '1000', 'growth_rate': '0.3', 'time':'', 'final_pop': '100', 'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Invalid parameters (would result in -ve time). Please re-enter')
+
+    def test_views_post_problem_generator(self):
+        c = Client()
+        response = c.post('/pc/pg', {'tab': 'generator-tab', 'init_pop': '5310966', 'growth_rate': '0.03', 'time': '94', 'final_pop': '89101284', 'answer_field': 'final_pop', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], True)
+        self.assertEqual(response.context['answer_rounded'], 89101284)
+
+        response = c.post('/pc/pg', {'tab': 'generator-tab', 'init_pop': '5310966', 'growth_rate': '0.03', 'time': '94', 'final_pop': '89101286', 'answer_field': 'final_pop', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], False)
+        self.assertEqual(response.context['answer_rounded'], 89101284)
+
+        response = c.post('/pc/pg', {'tab': 'generator-tab', 'init_pop': '5310966', 'growth_rate': '0.03', 'time': '94', 'final_pop': '', 'answer_field': 'final_pop', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Please enter your answer')
 

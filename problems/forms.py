@@ -13,17 +13,25 @@ class PopulationGrowthSolverForm(forms.Form):
     def clean(self):
         cleaned_data = super(PopulationGrowthSolverForm, self).clean()
         num_missing = 0
+        missing_field = None
         for form_field in cleaned_data:
             if cleaned_data[form_field] is None:
                 num_missing += 1
+                missing_field = form_field
         if cleaned_data['answer_field'] is None or cleaned_data['answer_field'] == '': #solver
             if num_missing > 1:
                raise ValidationError("Please enter 3 fields")
             if num_missing == 0:
                raise ValidationError("Please leave 1 field missing")
+            if missing_field == 'time':
+               if ((cleaned_data['final_pop'] < cleaned_data['init_pop'])  and (cleaned_data['growth_rate'] > 0)
+                  or  (cleaned_data['final_pop'] > cleaned_data['init_pop'])  and (cleaned_data['growth_rate'] < 0)):
+                   raise ValidationError('Invalid parameters (would result in -ve time). Please re-enter')
+
         else: #generator
             if num_missing > 0:
                raise ValidationError("Please enter your answer")
+
 
         return cleaned_data
 
