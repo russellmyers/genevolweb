@@ -17,8 +17,9 @@ Cross Simulator
 
 <div class = "container-fluid">
     <div class = "row">
-        <div class = "col-xs-12 col-sm-6 col-md-2 ml-4 border" id="cross-settings">
-                <form method="POST" id="type_form" action="{%  url 'cross_sim' %}">
+        <div class = "col-xs-12 col-sm-6 col-md-2 ml-4" id="cross-settings">
+          <div class = "border">
+                <form class = "m-2" method="POST" id="type_form" action="{%  url 'cross_sim' %}">
                     {% csrf_token %}
                     <p class="lead">
                         Settings
@@ -46,6 +47,7 @@ Cross Simulator
                             {% endfor %}
                         </div>
                 </form>
+          </div>
         </div>
         <div class = "col-xs-12 col-md-12 col-lg-9 ml-2">
             <div class="row">
