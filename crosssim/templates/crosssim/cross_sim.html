@@ -17,8 +17,8 @@ Cross Simulator
 
 <div class = "container-fluid">
     <div class = "row">
-        <div class = "col-xs-12 col-sm-6 col-md-2 ml-4" id="cross-settings">
-          <div class = "border">
+        <div class = "col-xs-12 col-sm-6 col-xl-2 ml-4" id="cross-settings">
+          <div class = "border" style="overflow:hidden">
                 <form class = "m-2" method="POST" id="type_form" action="{%  url 'cross_sim' %}">
                     {% csrf_token %}
                     <p class="lead">
@@ -49,9 +49,9 @@ Cross Simulator
                 </form>
           </div>
         </div>
-        <div class = "col-xs-12 col-md-12 col-lg-9 ml-2">
+        <div class = "col-xs-12 col-md-12 col-xl-9 ml-2">
             <div class="row">
-                <div class = "col-sm-4 mt-4 justify-content-center">
+                <div class = "col-lg-4 mt-4 justify-content-center">
                     <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p1 %}
@@ -67,10 +67,10 @@ Cross Simulator
                         <img src="{%  get_static_prefix %}img/cs/female_transp.png" id="gender-female-image" class="gender-image">
                     </div>
                 </div>
-                <div class="col-sm-1  mt-4 text-center">
+                <div class="col-lg-1  mt-4 text-center">
                      <button id="cross" name="cross" class="btn btn-primary btn-lg mt-3" onclick="crossButClicked(event);" type="submit">Meiosis</button>
                 </div>
-                <div class = "col-sm-4 mt-4 justify-content-center">
+                <div class = "col-lg-4 mt-4 justify-content-center">
                      <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p2 %}
@@ -88,7 +88,7 @@ Cross Simulator
                     <img src="{%  get_static_prefix %}img/cs/male_transp.png" id="gender-male-image" class="gender-image">
                  </div>
               </div>
-                <div class="col-sm-3">
+                <div class="col-lg-3">
                    <small>
                       {% for descr in phen_descriptions %}
                         {{  descr }}
@@ -99,7 +99,7 @@ Cross Simulator
             </div>
 
             <div class = "row">
-                <div class = "col-3">
+                <div class = "col-md-3">
 
                     <div id = 'cell-zoom' style="display:none;" class="border mt-4">
 
@@ -113,14 +113,14 @@ Cross Simulator
 
                     </div>
                 </div>
-                <div id="punnett-square" class="punnett-square col-6">
+                <div id="punnett-square" class="punnett-square col-md-6">
                     <canvas id="canvas">
 
                     </canvas>
 
 
                 </div>
-                <div class="col-3">
+                <div class="col-md-3">
                     <table id= "ratio-table" class="table table-hover" style="display:none;">
                       <thead>
                         <tr>
