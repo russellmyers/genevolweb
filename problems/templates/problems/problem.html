@@ -210,7 +210,12 @@ else {
     }
 }
 
-var myTabs = document.getElementsByClassName('nav-link');
+//var myTabs = document.getElementsByClassName('nav-link');
+var myTabs = [];
+var sol_tab = document.getElementById('solver-tab')
+var gen_tab = document.getElementById('generator-tab')
+myTabs.push(sol_tab);
+myTabs.push(gen_tab);
 var myPanes = document.getElementsByClassName('tab-pane');
 
 for (i = 0;i < myTabs.length;++i) {

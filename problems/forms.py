@@ -26,7 +26,7 @@ class PopulationGrowthSolverForm(forms.Form):
             if missing_field == 'time':
                if ((cleaned_data['final_pop'] < cleaned_data['init_pop'])  and (cleaned_data['growth_rate'] > 0)
                   or  (cleaned_data['final_pop'] > cleaned_data['init_pop'])  and (cleaned_data['growth_rate'] < 0)):
-                   raise ValidationError('Invalid parameters (would result in -ve time). Please re-enter')
+                   raise ValidationError('Invalid parameters (would result in negative time). Please try different parameters')
 
         else: #generator
             if num_missing > 0:

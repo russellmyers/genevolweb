@@ -32,16 +32,38 @@
 
 </head>
 <body>
-  <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3  border-bottom shadow-sm" style="background-color: #5f788a;">
-      <h5 class="my-0 mr-md-auto font-weight-normal text-light"><a href="{%  url 'index' %}"><img src = "{%  static 'img/gen_tsticon2.PNG' %}"></a>&nbsp; &nbsp; Genetics & Evolution (GenEvol)</h5>
-  <h5 class="my-0 mr-md-auto font-weight-normal text-light">{% block app_title %} Home {%  endblock %}</h5>
-  <nav class="my-2 my-md-0 mr-md-3">
-    <a class="p-2 text-light" href="{%  url 'index' %}">Home</a>
-    <a class="p-2 text-light" href="{%  url 'support' %}">Support</a>
-    <a class="p-2 text-light" href="{%  url 'about' %}">About</a>
+
+  <nav class = "navbar navbar-expand-md navbar-dark sticky-top mb-3" style="background-color: #5f788a;">
+  <div class = "container-fluid">
+      <a class = "navbar-brand" href = "{%  url 'index' %}">
+          <img src = "{%  static 'img/gen_tsticon4.PNG' %}">
+          &nbsp;
+          <span class = "text-light">Genetics & Evolution</span>
+      </a>
+      <h5 class="font-weight-normal text-light">{% block app_title %}{%  endblock %}</h5>
+      <button class = "navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive">
+          <span class = "navbar-toggler-icon"></span>
+      </button>
+      <div class = "collapse navbar-collapse" id = "navbarResponsive">
+          <ul class = "navbar-nav ml-auto">
+              <li class = "nav-item">
+                  <a class="nav-link text-light" href = "{%  url 'index' %}">Home</a>
+              </li>
+              <li class = "nav-item">
+                  <a class="nav-link text-light" href = "{%  url 'support' %}">Support</a>
+              </li>
+              <li class = "nav-item">
+                  <a class="nav-link text-light" href = "{%  url 'about' %}">About</a>
+              </li>
+
+
+          </ul>
+      </div>
+  </div>
   </nav>
-  <a class="btn btn-outline-primary" href="#">Sign In</a>
-</div>
+
+
+
 {%  block content %}
 
 {%  endblock %}

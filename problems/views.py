@@ -79,7 +79,7 @@ def breeders_equation(request):
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
-    default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
+    default_tab = 0 if tab_requested == 'solver-tab' else 1
 
     context = {}
 
@@ -112,7 +112,7 @@ def breeders_equation(request):
                 #context['answer_title'], context['answer'], context['plot_data'] = pg_calc_missing(form)
                 context['answer'], context['answer_rounded'], context['answer_title'], context['correct_flag'], context['plot_data'] = be.check_answer()
                 context['chosen_target'] = form.cleaned_data['answer_field']
-                return render(request, "common/problems/breeders_equation.html", context=context)
+                return render(request, "problems/breeders_equation.html", context=context)
             else:
                 print('generator form not valid')
 
@@ -142,7 +142,7 @@ def hardy_weinberg(request):
 
     tab_requested = request.GET.get('tab', 'solver-tab')
 
-    default_tab = 0 if tab_requested == 'solver-tab' else 'generator-tab'
+    default_tab = 0 if tab_requested == 'solver-tab' else 1
 
     context = {}
 
