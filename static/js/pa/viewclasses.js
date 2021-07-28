@@ -602,7 +602,7 @@ class PedigreeDiagram {
           // image loaded
           self.crossImg = imgCross;
       }
-      imgCross.src = this.staticPrefix + 'img/cross.png';
+      imgCross.src = this.staticPrefix + 'img/cross.PNG';
 
   }
   createOrgCells() {
