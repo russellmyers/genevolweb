@@ -146,9 +146,9 @@ def ped_an(request):
 
         ped_j = p.to_json()
 
-        test_load_ped = True
-        if test_load_ped:
-            ped_j, p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer = Pedigree.pedigree_from_text('1MA/2F:3F,4MA\n3/5MA:6F,7MA,8FA\n6/9M:10FU,11MA')
+        custom_ped = request.GET.get('ped', None)
+        if custom_ped is not None:
+            ped_j, p, act_gens, consistent_per_inferrer, possible_genotypes_per_inferrer = Pedigree.pedigree_from_text(custom_ped) #('1MA-2F:3F,4MA|3-5MA:6F,7MA,8FA|6-9M:10FU,11MA')
             ped_j = p.to_json()
 
         act_gens = []
@@ -183,8 +183,12 @@ def ped_an(request):
         ped_j['consistent'] = consistent_per_inferrer
         ped_j['actual'] = chrom_type + str(inh_type)
 
-        if test_load_ped:
-            ped_j['actual'] = 'AR'
+        if custom_ped is not None:
+            for key, val in ped_j['consistent'].items():
+                if val == 1:
+                   ped_j['actual']=key
+                   break
+
 
         #ped_j['consistent'] = {'AR':1, 'AD': 0, 'XR': 0, 'XD':0, 'YR': 0}
         #ped_j['actual'] = 'AR'
