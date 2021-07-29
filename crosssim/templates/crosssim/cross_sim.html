@@ -17,35 +17,45 @@ Cross Simulator
 
 <div class = "container-fluid">
     <div class = "row">
-        <div class = "col-xs-12 col-sm-6 col-xl-2 ml-4" id="cross-settings">
+        <div class = "col-xs-12 col-xl-2 ml-4" id="cross-settings">
           <div class = "border" style="overflow:hidden">
                 <form class = "m-2" method="POST" id="type_form" action="{%  url 'cross_sim' %}">
                     {% csrf_token %}
                     <p class="lead">
                         Settings
                     </p>
-                    <p>
-                        Cross Type: <br>{{ form.cross_type }}
-                    </p>
-                    <p>
-                        # Loci:
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                {% for radio in form.alleles %}
-                                    <div class="myradio3 btn btn-info btn-sm slim-button">
-                                        {{ radio }}
-                                    </div>
-                                {% endfor %}
-                        </div>
-                        <br>
-                    </p>
-                        Show: <br>
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            {% for radio in form.gen_phen %}
-                                <div class="myradio4 btn btn-info btn-sm slim-button">
-                                    {{ radio }}
+                    <div class = "row">
+                       <div class = "col-12 col-md-4 col-xl-12 mb-2">
+
+                                Cross Type: <br>{{ form.cross_type }}
+
+                       </div>
+                       <div class = "col-12 col-md-4 col-xl-12 mb-2">
+
+                                # Loci:
+                                <br>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                        {% for radio in form.alleles %}
+                                            <div class="myradio3 btn btn-info btn-sm slim-button">
+                                                {{ radio }}
+                                            </div>
+                                        {% endfor %}
                                 </div>
-                            {% endfor %}
+
+                       </div>
+
+                        <div class = "col-12 col-md-4 col-xl-12 mb-2">
+                                Show: <br>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    {% for radio in form.gen_phen %}
+                                        <div class="myradio4 btn btn-info btn-sm slim-button">
+                                            {{ radio }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
                         </div>
+                    </div>
                 </form>
           </div>
         </div>
