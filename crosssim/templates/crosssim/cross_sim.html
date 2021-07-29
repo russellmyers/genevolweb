@@ -61,7 +61,7 @@ Cross Simulator
         </div>
         <div class = "col-xs-12 col-md-12 col-xl-9 ml-2">
             <div class="row">
-                <div class = "col-lg-4 mt-4 justify-content-center">
+                <div class = "col-lg-3 mt-4 justify-content-center">
                     <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p1 %}
@@ -77,10 +77,10 @@ Cross Simulator
                         <img src="{%  get_static_prefix %}img/cs/female_transp.png" id="gender-female-image" class="gender-image">
                     </div>
                 </div>
-                <div class="col-lg-1  mt-4 text-center">
+                <div class="col-lg-2  mt-0 mt-lg-4 text-center">
                      <button id="cross" name="cross" class="btn btn-primary btn-lg mt-3" onclick="crossButClicked(event);" type="submit">Meiosis</button>
                 </div>
-                <div class = "col-lg-4 mt-4 justify-content-center">
+                <div class = "col-lg-3 mt-4 justify-content-center">
                      <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p2 %}
@@ -98,7 +98,7 @@ Cross Simulator
                     <img src="{%  get_static_prefix %}img/cs/male_transp.png" id="gender-male-image" class="gender-image">
                  </div>
               </div>
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                    <small>
                       {% for descr in phen_descriptions %}
                         {{  descr }}
