@@ -17,7 +17,13 @@ Cross Simulator
 
 <div class = "container-fluid">
     <div class = "row">
-        <div class = "col-xs-12 col-xl-2 ml-4" id="cross-settings">
+       <div class="mb-3 d-md-none">
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#cross-settings" aria-expanded="false" aria-controls="collapseExample">
+            Show settings&nbsp;&nbsp; <span class="fa fa-chevron-down"></span>
+          </button>
+       </div>
+
+        <div class = "col-xs-12 col-xl-2 ml-4 collapse d-md-block" id="cross-settings">
           <div class = "border" style="overflow:hidden">
                 <form class = "m-2" method="POST" id="type_form" action="{%  url 'cross_sim' %}">
                     {% csrf_token %}
@@ -61,7 +67,7 @@ Cross Simulator
         </div>
         <div class = "col-xs-12 col-md-12 col-xl-9 ml-2">
             <div class="row">
-                <div class = "col-lg-3 mt-4 justify-content-center">
+                <div class = "col-lg-3 mt-4 justify-content-center order-xs-2 order-md-1">
                     <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p1 %}
@@ -77,10 +83,10 @@ Cross Simulator
                         <img src="{%  get_static_prefix %}img/cs/female_transp.png" id="gender-female-image" class="gender-image">
                     </div>
                 </div>
-                <div class="col-lg-2  mt-0 mt-lg-4 text-center">
+                <div class="col-lg-2  mt-0 mt-lg-4 text-center order-xs-3 order-md-2">
                      <button id="cross" name="cross" class="btn btn-primary btn-lg mt-3" onclick="crossButClicked(event);" type="submit">Meiosis</button>
                 </div>
-                <div class = "col-lg-3 mt-4 justify-content-center">
+                <div class = "col-lg-3 mt-4 justify-content-center order-xs-4 order-md-3">
                      <div class="text-center">
                          <div class="btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
                             {% for radio in form.p2 %}
@@ -98,7 +104,7 @@ Cross Simulator
                     <img src="{%  get_static_prefix %}img/cs/male_transp.png" id="gender-male-image" class="gender-image">
                  </div>
               </div>
-                <div class="col-lg-4">
+                <div class="col-lg-4 order-xs-1 order-md-4">
                    <small>
                       {% for descr in phen_descriptions %}
                         {{  descr }}
