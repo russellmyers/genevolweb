@@ -15,16 +15,18 @@ Self Test Quiz
 
 {%  block content %}
    <div class="container">
-    <div class="row border border-dark" id="controlDiv">
+    <div class="row justify-content-between border border-dark" id="controlDiv">
           <div id="chooserDiv" class="col-md-3">
               <div class="form-group">
-                  <div class="form-group">
+
                       <label for="sel1">Select quiz:</label>
                       <select class="form-control" id="sel1" onchange="quizSelected()">
                         <option value="GENEV">Genetics & Evolution Quiz</option>
                         <option value="POPGN">Population Genetics Quiz</option>
                       </select>
-                  </div>
+                                  <div class="text-center mt-2">
+                                  <button class = "navBut btn btn-info btn-sm ml-1 mb-1" onclick="restartPressed(event)" type = "button">Restart Quiz</button>          
+                                  </div>                                                                                                                                
                   <!--label for chooseQuizCode>Choose Quiz Code:</label>
                   <div class="row">
                       <input type = "text" class="form-control input-sm very-narrow-select ml-2" name="chooseQuizCode" onchange="quizCodeEntered(event,true)" id = "chooseQuizCode">
@@ -36,48 +38,53 @@ Self Test Quiz
                    </div-->
               </div>
           </div>
-            <div id = "progressDiv" class="col-md-3">
+            <!--div id = "progressDiv" class="col-md-3">
                <div class="row mt-2">
-                   <div class = "progress">
-                            <progress id = "scoreProg" class="progress-bar bg-info" role="progressbar" max = "40" min = "0" value = "20"></progress>
+                   <div class = "progress progress-alt ml-2 mt-2" style="height:10px;">
+                            <progress id = "scoreProg" class="progress-bar" role="progressbar" max = "40" min = "0" value = "20"></progress>
                    </div>
 
-                    <label id = "progressLab" class="ml-2">Progress:</label>
-                    <span id = "progressEl" class="ml-2"> 7 / 30</span>
+                    <label id = "progressLab" class="ml-2 text-muted">Progress:</label>
+                    <span id = "progressEl" class="ml-2 text-muted"> 7 / 30</span>
                </div>
-
-                <!--label id = "skippedLab">Skipped: </label>
-                <span id = "skipped" class="ml-2">3</span--->
-                <!--label id = "incorrectLab">Incorrect: </label><span id = "incorrect" class="ml-2">2</span-->
-
-                <!--button class = "navBut btn btn-outline-secondary btn-sm ml-1" onclick="nextPressed(event, true)" type = "button">Next Question</button-->
                 <div class="text-center">
-                <button class = "navBut btn btn-outline-secondary btn-sm ml-1 mb-1" onclick="restartPressed(event)" type = "button">Restart Quiz</button>
+                <button class = "navBut btn btn-info btn-sm ml-1 mb-1" onclick="restartPressed(event)" type = "button">Restart Quiz</button>
                 </div>
-           </div>
-            <div id = "scoreDiv" class="col-2 m-2">
+           </div-->
+            <div id = "scoreDiv" class="col-xs-12 col-md-3 m-2">
                 <div class="row">
-                    <div class="col-9 h4">
+                    <div class="col-9 h4 mb-0">
                         <label id = "scoreLab" class = "alignLab">Score:</label>
                     </div>
-                    <div class="col-3 h4">
+                    <div class="col-3 h4 mb-0">
                         <span id = "score" class = "alignEl">10</span>
                     </div>
-                </div>
-            <div class="row">
-                    <div class="col-9">
-                        <label id = "bestLab" class = "alignLab">Best:</label>
-                    </div>
-                    <div class="col-3">
-                        <span id = "best" class = "alignEl">0</span>
-                    </div>
-                </div>
-            </div>
 
-            <div id="quizInfoDiv" class="col-3">
+                </div>
+
+                <div class="row">
+                    <div class="col-9 d-none d-md-block mb-0">
+                        <label id = "bestLab" class = "alignLab text-muted">Best:</label>
+                    </div>
+                    <div class="col-3 d-none d-md-block mb-0">
+                        <span id = "best" class = "alignEl text-muted">0</span>
+                    </div>
+                </div>
+               <div class="row mt-0">
+                   <div class = "progress ml-2 mt-2" style="height:10px;">
+                            <progress id = "scoreProg" class="progress-bar" role="progressbar" max = "40" min = "0" value = "20"></progress>                        
+                   </div>                                                                                                                                           
+                   <div>
+
+                       <label id = "progressLab" class="ml-2 text-muted">Progress:</label>                                                                         </div>
+                       <span id = "progressEl" class="ml-2 text-muted"> 7 / 30</span>
+
+                   </div>
+               </div>
+               <div id="quizInfoDiv" class="col-3 d-none d-md-block">
                 <small><span id = "quizMessage" class="float-right text-muted">Quiz code: ABCDE<br>Description: Default quiz<br>Created by: admin</span></small>
 
-            </div>
+               </div>
         </div>
     <!--hr-->
 
@@ -88,36 +95,75 @@ Self Test Quiz
             <div class="row" id="quizContents">
             <div class = "col-1"></div>
             <div class="col-10 border border-dark">
-             <div class="text-center" id="quizName">
+             <div class="text-center d-none d-md-block" id="quizName">
                  <h4>Hello there</h4>
             </div>
             <div id = "quizQuestion" class="mt-2 ml-1 lead">
                 This is a question
             </div>
             <div id = "quizChoices" class="mt-4">
-                <div class="row">
-                    <div class="col-2"></div>
-                <div class="col-8" >
+                <div class="row justify-content-center">
+                    <!--div class="d-none d-md-block col-2"></div-->
+                <div class="col-xs-12 col-md-8">
+                    <div class="row">
+                    <div class="col-1">
                     <span class="pointsAdded" id="pointsAdded1">+1</span>
-                    <img id = "correctImg1" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
-                    <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value = "1" id = "optionBut1" type = "button">A</button>
-                    <label id = "option1" class="ml-2">Option 1</label>
-                    <br>
+                    </div>
+                    <div class = "col-1">
+                    <img id = "correctImg1" class="correct" src="{% get_static_prefix %}img/tick.jpg">
+                    </div>
+                    <div class = "col-2 mr-1">
+                        <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value = "1" id = "optionBut1" type = "button">A</button>
+                    </div>
+                    <div class = "col-5 align-middle ml-4 mt-2" >
+
+                       <label id = "option1" >Option 1</label>
+                        
+                    </div>
+                    </div>
+                    <div class="row mt-4">
+                    <div class="col-1">
                     <span class="pointsAdded" id="pointsAdded2">+1</span>
-                    <img id = "correctImg2" class="correct mt-4" src="{% get_static_prefix %}img/cross.PNG">
+                    </div>
+                    <div class="col-1">
+                    <img id = "correctImg2" class="correct" src="{% get_static_prefix %}img/cross.PNG">
+                    </div>
+                    <div class="col-2 mr-1">
                     <button class ="choice-button btn btn-primary btn-lg ml-4"  onclick="quizChoicePressed(event)" value = "2" id = "optionBut2"type = "button">B</button>
-                    <label id = "option2" class="ml-2">Option 2</label>
-                    <br>
+                    </div>
+                    <div class="col-5 ml-4 mt-2">
+                        <label id = "option2">Option 2</label>
+                    </div>
+                    </div>
+                    <div class="row mt-4">
+                    <div class="col-1">
                     <span class="pointsAdded" id="pointsAdded3">+1</span>
-                    <img id = "correctImg3" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
-                    <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value="3" id = "optionBut3" type = "button">C</button>
-                    <label id = "option3" class="ml-2">Option 3</label>
-                    <br>
+                    </div>
+                    <div class="col-1">
+                    <img id = "correctImg3" class="correct" src="{% get_static_prefix %}img/tick.jpg">
+                    </div>
+                    <div class="col-2 mr-1">
+                        <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value="3" id = "optionBut3" type = "button">C</button>
+                    </div>
+                    <div class="col-5 ml-4 mt-2">
+                        <label id = "option3">Option 3</label>
+                    </div>
+                    </div>
+                    <div class="row mt-4 mb-4">
+                    <div class="col-1">
                     <span class="pointsAdded" id="pointsAdded4">+1</span>
-                    <img id = "correctImg4" class="correct mt-4" src="{% get_static_prefix %}img/tick.jpg">
+                    </div>
+                    <div class="col-1">
+                    <img id = "correctImg4" class="correct" src="{% get_static_prefix %}img/tick.jpg">
+                    </div>
+                    <div class="col-2 mr-1">
                     <button class ="choice-button btn btn-primary btn-lg ml-4" onclick="quizChoicePressed(event)" value="4" id = "optionBut4" type = "button">D</button>
-                    <label id = "option4" class="ml-2">Option 4</label>
-                    <br>
+                    </div>
+                    <div class="col-5 ml-4 mt-2">
+                    <label id = "option4">Option 4</label>
+                    </div>
+                    </div>
+                        
 
                 </div>
                 <!--div class="col-4">
@@ -126,8 +172,8 @@ Self Test Quiz
 
 
                 </div-->
-                <div class="col-2">
-                </div>
+                <!--div class="d-none col-2">
+                </div-->
                 </div>
 
             </div>
