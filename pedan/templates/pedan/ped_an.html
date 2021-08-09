@@ -45,19 +45,19 @@ Pedigree Analyzer
                  <br>
                 <label>Find a consistent inheritance pattern  <small><span id="num-exist">hh</span></small> </label>
 
-                 <div class = "row">
-                     <div class = "col-3">
+                <div class = "row">
+                     <div class = "col-10 col-sm-6 col-lg-3">
                         {{ form.inh_patterns }}
                      </div>
-                    <div class = "col-1 my-auto">
+                    <div class = "col-2 col-sm-2 col-lg-1 my-auto">
                         <img  class ="tick-img" id="tick-img" src = "{%  static 'img/tick.jpg' %}" width="20px">
                     </div>
-                     <div class = "col-3">
+                     <div class = "col-7 col-lg-3 mt-2 mt-lg-0">
                          <button type="button" id="show-but" class="btn btn-info btn-large" onclick="showGenotypeButClicked(event);">Reveal Inferrable Genotypes</button>
 
                      </div>
 
-                     <div id = "tot-found-div" class = "col-2">
+                     <div id = "tot-found-div" class = "col-5 col-lg-2 mt-2 mt-lg-0">
                          <span><span id="num-correct">12</span> / <span id = "tot-num">25</span> inferrable genotypes found</span>
                      </div>
 

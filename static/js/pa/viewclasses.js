@@ -329,26 +329,27 @@ OrgCell.defaultSize = {'w':30,'h':30};
 OrgCell.defaultOverSize = {'w':32, 'h': 32};
 
 class OrgPairCell extends Cell {
-   constructor(parent, org, partner, pos, partnerPos, orgDim ) {
+   constructor(parent, org, partner, pos, partnerPos, orgDim, availSpace ) {
         super(parent, pos, orgDim);
         //this.parent = parent;
         this.org = org;
         this.partner = partner;
         //this.pos = pos;
         this.partnerPos = partnerPos || null;
-        this.orgDim = orgDim;
-        if (this.partner == null) {
-            this.pairWidth = this.orgDim.w;
-        }
-        else {
-            this.pairWidth = this.orgDim.w * 2 + OrgPairCell.PartnerSpacing;
-        }
-        this.dim = this.orgDim || this.calcDim();
+        this._orgCells = [];
+        this.setOrgDim(orgDim);
+        // this.orgDim = orgDim;
+        // if (this.partner == null) {
+        //     this.pairWidth = this.orgDim.w;
+        // }
+        // else {
+        //     this.pairWidth = this.orgDim.w * 2 + OrgPairCell.PartnerSpacing;
+        // }
+        //this.dim = this.orgDim || this.calcDim();
+        this.availSpace = availSpace;
         //this.ctx = this.parent.ctx;
 
         this._childOrgPairCells = [];
-
-        this._orgCells = [];
 
         this.initOrgCells();
 
@@ -359,6 +360,26 @@ class OrgPairCell extends Cell {
 
     calcDim() {
        return new Dimension(this.pairWidth, this.orgDim.h)
+    }
+
+    setOrgDim(orgDim) {
+        // Set orgpaircell orgDim to new value (eg if screen resized to small) and also set dim of any contained orgcells
+         this.orgDim = orgDim;
+         for (var i = 0;i < this._orgCells.length; ++ i) {
+             this._orgCells[i].cellSize = this.orgDim;
+         }
+         if (this.partner == null) {
+            this.pairWidth = this.orgDim.w;
+        }
+        else {
+            this.pairWidth = this.orgDim.w * 2 + OrgPairCell.PartnerSpacing;
+        }
+        this.dim = this.orgDim || this.calcDim();
+
+    }
+
+    get overSize() {
+       return this.pairWidth > (this.availSpace[1] - this.availSpace[0]);
     }
 
     initOrgCells() {
@@ -398,6 +419,14 @@ class OrgPairCell extends Cell {
        this.drawPartnerLink();
 
        this.drawChildrenLinks();
+
+       var debugAvailSpace = false;
+       if (debugAvailSpace) {
+           this.ctx.strokeStyle = "black";
+           this.ctx.lineWidth = 1;
+           this.ctx.fillStyle = 'black';
+           this.ctx.strokeRect(this.availSpace[0], this.cellPosition.y, this.availSpace[1] - this.availSpace[0], this.cellSize.h);
+       }
 
       // if (this.partner == null) {
       //     this.pairWidth = this.parent.orgDim.w;
@@ -564,7 +593,7 @@ class PedigreeDiagram {
     this.pedigree = pedigree;
     this.canvasEl = canvasEl;
     this.ctx = this.canvasEl.getContext('2d');
-    this.padding = padding ||  {'t':10, 'b': 10, 'l': 10, 'r': 10}
+    this.padding = padding ||  {'t':30, 'b': 10, 'l': 10, 'r': 10}
     this.staticPrefix = staticPrefix;
     this.orgDim = new Dimension(30,30);
     this.showGenotypes = false;
@@ -762,8 +791,13 @@ class PedigreeDiagram {
       var pairs = this.pedigree.orgPairs;
 
       var rootPair = pairs[0];
-      var rootAvailXStart = 0;
-      var rootAvailXEnd = this.usableWidth;
+      var rootAvailXStart = this.padding.l;
+      var rootAvailXEnd = this.usableWidth + this.padding.l;
+      /* Other method of obtaining canvas width/height:
+        var cs     = getComputedStyle(canvas);
+        var width  = parseInt( cs.getPropertyValue('width'), 10);
+        var height = parseInt( cs.getPropertyValue('height'), 10);
+      end other method */
       var availSpace = [rootAvailXStart,rootAvailXEnd];
       this.initOrgPair(rootPair, availSpace);
       // this.addOrgPairCell(rootPair, null, null, availSpace);
@@ -849,7 +883,7 @@ class PedigreeDiagram {
              usePos = new Point(posX, posY);
 
          }
-          var orgPairCell = new OrgPairCell(this, orgPair[0], orgPair[1], usePos, null, this.orgDim);
+          var orgPairCell = new OrgPairCell(this, orgPair[0], orgPair[1], usePos, null, this.orgDim, availSpace);
           this._orgPairCells.push(orgPairCell);
 
           return orgPairCell
@@ -911,22 +945,33 @@ class PedigreeDiagram {
       }
   }
 
-  resizeOrgPairCell(orgPairCell, availSpace) {
+  resizeOrgPairCell(orgPairCell, availSpace, overrideOrgDim=null) {
+         var orgDim = this.orgDim;
+         if (overrideOrgDim) {
+             orgDim = overrideOrgDim;
+         }
          var posX = availSpace[0] + ((availSpace[1] - availSpace[0]) / 2);
          if (orgPairCell._orgCells.length == 1) {
-            posX = posX - (this.orgDim.w / 2);
+            posX = posX - (orgDim.w / 2);
          }
          else {
-             posX = posX - (this.orgDim.w + OrgPairCell.PartnerSpacing / 2);
+             posX = posX - (orgDim.w + OrgPairCell.PartnerSpacing / 2);
          }
+         orgPairCell.setOrgDim(orgDim);
+
          orgPairCell._orgCells[0].pos.x = posX;
+         orgPairCell.availSpace = availSpace;
          if (orgPairCell._orgCells.length == 1) {
 
          }
          else {
-             orgPairCell._orgCells[1].pos.x = orgPairCell._orgCells[0].pos.x + this.orgDim.w + OrgPairCell.PartnerSpacing;
+             orgPairCell._orgCells[1].pos.x = orgPairCell._orgCells[0].pos.x + orgDim.w + OrgPairCell.PartnerSpacing;
          }
 
+     var overSizedCells = 0;
+     if (orgPairCell.overSize) {
+         overSizedCells = 1;
+     }
 
      var childOrgPairCells = orgPairCell._childOrgPairCells;
 
@@ -944,18 +989,26 @@ class PedigreeDiagram {
          var availSpaceStart =  prevAvailSpaceEnd;
          var availSpaceEnd = availSpaceStart + unitSpace * (childOrgPairCell._childOrgPairCells.length + 1);
          var childAvailSpace = [availSpaceStart, availSpaceEnd];
-         this.resizeOrgPairCell(childOrgPairCell, childAvailSpace);  // addOrgPairCell(childPairs[i], null, null, availSpace);
+         var childOverSized = this.resizeOrgPairCell(childOrgPairCell, childAvailSpace, overrideOrgDim);  // addOrgPairCell(childPairs[i], null, null, availSpace);
+         overSizedCells += childOverSized;
          prevAvailSpaceEnd = availSpaceEnd;
      }
+     return overSizedCells;
 
   }
 
-  resizeOrgPairCells() {
+  resizeOrgPairCells(overrideOrgDim=null) {
       var rootOrgPairCell = this._orgPairCells[0];
-      var rootAvailXStart = 0;
-      var rootAvailXEnd = this.usableWidth;
+      //var rootAvailXStart = 0;
+      //var rootAvailXEnd = this.usableWidth;
+      var rootAvailXStart = this.padding.l;
+      var rootAvailXEnd = this.usableWidth + this.padding.l;
       var availSpace = [rootAvailXStart,rootAvailXEnd];
-      this.resizeOrgPairCell(rootOrgPairCell,availSpace);
+      var overSizedCells = this.resizeOrgPairCell(rootOrgPairCell,availSpace,overrideOrgDim);
+      // if (overSizedCells > 0) {
+      //     alert('Ahha. Still oversized' + overSizedCells)
+      // }
+      return overSizedCells;
 
   }
 
@@ -1079,11 +1132,11 @@ class PedigreeDiagram {
      this.ctx.font = "12px Helvetica Neue"; //Arial";
      this.ctx.fillText('Male ',10,45);
      this.ctx.font = "30px Helvetica Neue"; //Arial";
-     this.ctx.fillText('\u{25A1}',40,45);
+     this.ctx.fillText('\u{25A1}',48,45);
      this.ctx.font = "12px Helvetica Neue"; //Arial";
-     this.ctx.fillText('Female ',75,45);
+     this.ctx.fillText('Female ',10,65);
      this.ctx.font = "30px Helvetica Neue"; //Arial";
-     this.ctx.fillText('\u{25CB}',115,48);
+     this.ctx.fillText('\u{25CB}',48,68);
 
      //this.ctx.scale(1, 1)
 
@@ -1117,12 +1170,29 @@ class PedigreeDiagram {
       this.canvasEl.width+=0; //trick to refresh if above doesn't work
 
 
-      // this.ctx.beginPath();
-      // this.ctx.rect(this.padding.l, this.padding.t, this.usableWidth, this.usableHeight);
-      // this.ctx.stroke();
-      if (resize) {
-          this.resizeOrgPairCells();
+      var debugUsableSpace = false;
+      if (debugUsableSpace) {
+          this.ctx.beginPath();
+          this.ctx.strokeStyle = 'green';
+          this.ctx.rect(this.padding.l, this.padding.t, this.usableWidth, this.usableHeight);
+          this.ctx.stroke();
       }
+
+      var numOver = this.resizeOrgPairCells(); //rbm always resize, to check if any overlaps
+      if (numOver > 0) {
+        var numOver = this.resizeOrgPairCells(new Dimension(20,20));
+        if (numOver > 0) {
+            var numOver = this.resizeOrgPairCells(new Dimension(12,12));
+            if (numOver > 0) {
+               console.log('still oversize after second shrink. Orgsize: 12. Num over: ' + numOver);
+            }
+        }
+
+      }
+
+      // if (resize) {
+      //     this.resizeOrgPairCells();
+      // }
 
 
       this.drawAlleleLegend();

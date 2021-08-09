@@ -21,84 +21,115 @@ Allele Freak
          {% csrf_token %}
   <div class="row form-group">
 
-      <div class="col-md-1">
+      <div class="mb-3 d-lg-none">
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#af-settings" aria-expanded="false" aria-controls="collapseExample">
+            Show settings&nbsp;&nbsp; <span class="fa fa-chevron-down"></span>
+          </button>
+      </div>
+
+      <div class="col-lg-10  collapse d-lg-block" id="af-settings" >
+      <!--div class = "row ml-4 collapse d-lg-block" id="af-settings"-->
+        <div class = "row form-group">
+
+          <div class="col-xs-0 col-lg-2">
+
+          </div>
+          <div class="col-xs-2 col-lg-1">
+            <b>{{ form.init_freq_a.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.init_freq_a }}
+          </div>
+              <div class="col-xs-2 col-lg-1">
+            <b>{{ form.fitness_AA.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.fitness_AA }}
+          </div>
+         <div class="col-xs-2 col-lg-1">
+            <b>{{ form.fitness_Aa.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.fitness_Aa }}
+          </div>
+          <div class="col-xs-2 col-lg-1">
+            <b>{{ form.fitness_aa.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.fitness_aa }}
+          </div>
+
+
+
+
+
+
 
       </div>
-      <div class="col-md-1">
-        <b>{{ form.init_freq_a.label_tag }}</b>
+      <div class="row form-group">
+              <div class="col-xs-0 col-lg-2">
+
+              </div>
+
+       <div class="col-xs-2 col-lg-1">
+            <b>{{ form.pop_size.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.pop_size }}
+          </div>
+        <div class="col-xs-2 col-lg-1">
+            <b>{{ form.num_gens.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.num_gens }}
+          </div>
+
+          <div class="col-cs-2 col-lg-1">
+            <b>{{ form.inbreeding_coefficient.label_tag }}</b>
+          </div>
+          <div class = "col-xs-2 col-lg-1">
+              {{ form.inbreeding_coefficient }}
+          </div>
+          <div class="col-xs-4 col-lg-2">
+                  Show allele: &nbsp;
+                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {% for radio in form.show_allele %}
+                            <div class="showallele btn btn-info btn-sm">
+                                {{ radio }}
+                            </div>
+                        {% endfor %}
+                     </div>
+
+          </div>
       </div>
-      <div class = "col-md-1">
-          {{ form.init_freq_a }}
-      </div>
-          <div class="col-md-1">
-        <b>{{ form.fitness_AA.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.fitness_AA }}
-      </div>
-     <div class="col-md-1">
-        <b>{{ form.fitness_Aa.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.fitness_Aa }}
-      </div>
-      <div class="col-md-1">
-        <b>{{ form.fitness_aa.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.fitness_aa }}
-      </div>
+
+
 
 
 
   </div>
-  <div class="row form-group">
-          <div class="col-md-1">
+            <div class = "col-lg-2">
+             <div class="row">
+              <div class = "btn-group col-sm-4 col-lg-12 pr-4">
+                <input class="btn btn-primary" name="submitform" type="submit" value="Run">
+                &nbsp;&nbsp;
+                <input class="btn btn-secondary" name="clear"  type="submit" value="Clear">
 
-      </div>
+              </div>
+             </div>
+             <div class = "row">
+              <div class = "col-sm-2 col-lg-6">
+              <b>{{ form.auto_clear.label_tag }}</b>
+              </div>
+              <div class = "col-sm-2 col-lg-6">
+              {{ form.auto_clear }}
+              </div>
+             </div>
 
-   <div class="col-md-1">
-        <b>{{ form.pop_size.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.pop_size }}
-      </div>
-    <div class="col-md-1">
-        <b>{{ form.num_gens.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.num_gens }}
-      </div>
-
-      <div class="col-md-1">
-        <b>{{ form.inbreeding_coefficient.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.inbreeding_coefficient }}
-      </div>
-
-      <div class = "col-md-2">
-          <div class = "btn-group">
-            <input class="btn btn-primary" name="submitform" type="submit" value="Submit">
-            &nbsp;&nbsp;
-            <input class="btn btn-secondary" name="clear"  type="submit" value="Clear">
 
           </div>
 
-      </div>
-      <div class = "col-md-1">
-          <b>{{ form.auto_clear.label_tag }}</b>
-      </div>
-      <div class = "col-md-1">
-          {{ form.auto_clear }}
-      </div>
-
-
-
-
-
   </div>
-
 
 
 <div class = "container">
@@ -106,17 +137,7 @@ Allele Freak
     <div class="col-10">
         <div id="plotDiv" style="width:100%;height:400px;"></div>
     </div>
-    <div class="col-2">
-              Show allele: &nbsp;
-                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    {% for radio in form.show_allele %}
-                        <div class="showallele btn btn-info btn-sm">
-                            {{ radio }}
-                        </div>
-                    {% endfor %}
-                 </div>
 
-    </div>
  </div>
 
 </div>
