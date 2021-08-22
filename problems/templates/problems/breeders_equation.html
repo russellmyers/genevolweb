@@ -30,8 +30,8 @@ Breeders Equation
                           </div>
 
                           {{ form.as_p }}
-                           <input class="btn btn-primary" name="solverSubmit" type="submit" value="Calculate">
-                           <input class="btn btn-secondary" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
+                           <input class="btn btn-primary mt-2" name="solverSubmit" type="submit" value="Calculate">
+                           <input class="btn btn-secondary mt-2" name="clearButton" type="button" value="Clear" onclick="clearSolverForm()">
                       </div>
             </form>
 {%  endblock problem_solver_form %}
@@ -104,8 +104,8 @@ Breeders Equation
 
                     {%  endfor %}
 
-                    <input class="btn btn-primary" name="generatorSubmit" type="submit" value="Check Answer">
-                    <input class="btn btn-secondary" name="anotherButton" type="button" value="New" onclick="getAnother()">
+                    <input class="btn btn-primary mt-2" name="generatorSubmit" type="submit" value="Check Answer">
+                    <input class="btn btn-secondary mt-2" name="anotherButton" type="button" value="New" onclick="getAnother()">
             </form>
 {%  endblock problem_generator_form %}
 
@@ -209,3 +209,35 @@ Breeders Equation
         url +='&av_response_phen=' + document.getElementById('id_av_response_phen').value;
         url +='&broad_heritability=' + document.getElementById('id_broad_heritability').value;
 {%  endblock handle_tab_click_url %}
+
+{%  block problem_solver_info %}
+    <p>The Breeder's Equation problem solver uses the Breeder's equation to solve for either heritability or one of the parameters used for obtaining a <i>given</i> heritability.</p>
+    <p>
+        Parameters available are:
+        <ul>
+        <li> Average Starting Phenotype</li>
+        <li> Average Selected Phenotype</li>
+        <li> Average Response Phenotype</li>
+        <li> Broad Heritability</li>
+        </ul>
+
+    </p>
+   <p>
+    Any 3 of the 4 parameters above can be entered to calculate the 4th.
+    </p>
+   <p>For example: if Average Starting Phenotype, Average Selected Phenotype and Average Response Phenotype are entered, the problem solver will calculate the Broad Heritability</p>
+
+    <p>More information on Heritability and the Breeder's Equation can be found <a href="http://www.ncbi.nlm.nih.gov/books/NBK22001/">here</a>, <a href="http://www.ncbi.nlm.nih.gov/books/NBK21866/">here</a> and <a href="http://www.ncbi.nlm.nih.gov/books/NBK21832/">here</a></p>
+
+{%  endblock problem_solver_info %}
+
+{%  block problem_generator_info %}
+
+    <p>Random values for any 3 of the breeder's equation parameters are generated and presented.
+        </p>
+    <p>Your aim is to correctly calculate the 4th parameter</p>
+    <p class = "lead mt-4 ml-2">
+        <i>Breeder's Equation formula:</i> (tba)
+      </p><img src ="{%  static 'img/sample_breeders_equation.PNG' %}" width="400px">
+
+{%  endblock problem_generator_info %}

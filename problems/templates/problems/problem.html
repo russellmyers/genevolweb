@@ -17,7 +17,9 @@ Problem Central
   <li class="nav-item">
     <a class="nav-link" id="generator-tab" data-toggle="tab" href="#generator" role="tab" aria-controls="generator" aria-selected="false">Test  yourself</a>
   </li>
-
+  <li class="nav-item">
+    <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false"><img  src = "{%  static 'img/information-160885_1280.png' %}" width="20px"> &nbsp;Info</a>
+  </li>
 </ul>
 <div class="tab-content" id="myTabContent">
   <div class="tab-pane fade show active" id="solver" role="tabpanel" aria-labelledby="solver-tab">
@@ -77,6 +79,37 @@ Problem Central
             </div>
       </div>
   </div>
+
+  <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+    <div class = "container">
+         <div class = "row mt-4">
+             <div class = "col-xs-12 col-md-6">
+
+                 <h1>Problem Solver</h1>
+                 <h2 class="mb-4"><small><span class = "text-muted mr-2">(calculator)</span><span class="fa fa-calculator"></span></small></h2>
+                          {% block problem_solver_info %}
+                          {%  endblock problem_solver_info %}
+
+
+
+
+             </div>
+             <div class = "col-xs-12 col-md-6">
+                 <h1>Test Yourself </h1>
+                 <h2 class="mb-4"><small><span class = "text-muted mr-2">(problem generator)</span><span class="fa fa-magic"></span></small></h2>
+                          {% block problem_generator_info %}
+                          {%  endblock problem_generator_info %}
+
+
+             </div>
+
+
+         </div>
+    </div>
+
+
+  </div>
+
 </div>
 
 {% block answer_below %}
