@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import random
 #from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
-from genutils.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
+from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
 from .forms import CrossSimForm
 from common.views import get_phen_descriptions, create_genome_template
 

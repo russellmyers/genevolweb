@@ -1,6 +1,6 @@
 from django.shortcuts import render
 #from getools.popdist import PopDist
-from genutils.popdist import PopDist
+from getools.popdist import PopDist
 import plotly.graph_objs as go
 import plotly
 #from .forms import AlleleFreakForm

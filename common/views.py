@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import random
 #from getools.cross import Gene, ChromosomeTemplate, GenomeTemplate, AlleleSet
-from genutils.cross import Gene, ChromosomeTemplate, GenomeTemplate, AlleleSet
+from getools.cross import Gene, ChromosomeTemplate, GenomeTemplate, AlleleSet
 
 
 import logging
