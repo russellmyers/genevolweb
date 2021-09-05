@@ -68,6 +68,10 @@
 
                   </div>
                 </li>
+             <li class = "nav-item px-2">
+                  <a class="nav-link text-light" href = "#info-section"><i class="fas fa-info-circle fa-lg"></i></a>
+              </li>
+
               <li class = "nav-item px-2">
                   <a class="nav-link text-light" href = "{%  url 'support' %}">Contact</a>
               </li>
@@ -122,7 +126,7 @@
 
           <div class="col-5 col-md-3">
             <!--img class="mb-2" src="/docs/4.2/assets/brand/bootstrap-solid.svg" alt="" width="24" height="24"-->
-            <small class="d-block text-muted">&copy; 2021 Russell B Myers v0.0.20e</small>
+            <small class="d-block text-muted">&copy; 2021 Russell B Myers v0.0.20g</small>
               Supported by: <a href="http://nsf.gov"><img src="{% static 'img/NSF_logo.png' %}" width="60px" alt="National Science Foundation"></a>
 
           </div>
@@ -131,13 +135,16 @@
       </footer>
 </div>
 
-{%  block script %}
-{%  endblock %}
+
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+{%  block script %}
+{%  endblock %}
+
 </body>
 </html>

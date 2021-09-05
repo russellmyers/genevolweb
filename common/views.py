@@ -2,6 +2,7 @@ from django.shortcuts import render
 import random
 #from getools.cross import Gene, ChromosomeTemplate, GenomeTemplate, AlleleSet
 from getools.cross import Gene, ChromosomeTemplate, GenomeTemplate, AlleleSet
+from django.http import HttpResponse
 
 
 import logging
@@ -22,6 +23,16 @@ def about(request):
 
     return render(request, "common/about.html")
 
+def set_session_var(request):
+    session_var = request.GET.get('var', None)
+    if session_var is not None:
+       try:
+         session_var_name, session_var_value = session_var.split(':')
+         request.session[session_var_name] = session_var_value
+       except Exception  as e:
+         logger.error(f'Invalid session var query parameter setting. Error: {e}')
+         return HttpResponse("<p>Did not set session var</p>")
+    return HttpResponse("<p>Set session var ok</p>")
 
 def get_phen_descriptions(genome_name):
     if genome_name == 'dog':

@@ -70,7 +70,7 @@ def plot_graph_as_div(data_in, show_allele = 1):
 
     return plot_div
 
-def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_clear=False):
+def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_clear=False, dont_show_info=False):
 
     saved_pop_dists = request.session.get('saved_pop_dists', [])
 
@@ -100,6 +100,7 @@ def show_graph(request,form,add_new_plot_from_form=False, show_allele=1, auto_cl
     context['auto_clear'] = auto_clear
     context['plot_data'] = plot_data
     context['show_allele'] = show_allele
+    context['dont_show_info'] = dont_show_info
 
     return render(request, "allelefreak/allele_freak.html", context=context)
 
@@ -112,6 +113,10 @@ def allele_freak(request):
     show_allele_choice = default_allele_choice
     auto_clear_choice = False
 
+    try:
+        dont_show_info_popup_flag = request.session['af_dontshowinfopopup']
+    except:
+        dont_show_info_popup_flag = 'N'
 
     if request.method == 'POST':
 
@@ -129,18 +134,18 @@ def allele_freak(request):
         if 'clear' in request.POST:
             print('clear pressed')
             request.session['saved_pop_dists'] = []
-            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
+            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice, dont_show_info=dont_show_info_popup_flag)
         elif auto_clear_choice:
             print('clearing')
             request.session['saved_pop_dists'] = []
-            return show_graph(request, form, add_new_plot_from_form=True, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
+            return show_graph(request, form, add_new_plot_from_form=True, show_allele = show_allele_choice, auto_clear = auto_clear_choice, dont_show_info=dont_show_info_popup_flag)
         elif 'submitform' in request.POST:
            if form.is_valid():
-                return show_graph(request,form,add_new_plot_from_form=True, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
+                return show_graph(request,form,add_new_plot_from_form=True, show_allele = show_allele_choice, auto_clear = auto_clear_choice, dont_show_info=dont_show_info_popup_flag)
         else:
-            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
+            return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice, dont_show_info=dont_show_info_popup_flag)
     else:
         form = AlleleFreakForm(initial={'show_allele':str(show_allele_choice + 1)})
 
-    return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice)
+    return show_graph(request, form, add_new_plot_from_form=False, show_allele = show_allele_choice, auto_clear = auto_clear_choice, dont_show_info=dont_show_info_popup_flag)
     #return render(request, "common/allele_freak.html", {'form':form})

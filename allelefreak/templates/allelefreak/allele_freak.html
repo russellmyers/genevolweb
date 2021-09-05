@@ -16,12 +16,43 @@ Allele Freak
 
 </div-->
 
+    <!-- Button trigger modal -->
+<!--button type="button" class="btn btn-primary ml-4" data-toggle="modal" data-target="#exampleModalCenter">
+  <i class="fas fa-info-circle"></i>
+</button-->
+    <!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="exampleModalLongTitle">Allele Freak</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>Track and graph the fate of alleles over multiple generations based on relative fitness, genetic drift etc.</p>
+      <br> Simply
+          <ul>
+              <li>Select the initial frequency of the "a" allele</li>
+              <li>Select the relative genotype fitnesses (AA, Aa, aa)</li>
+              <li>Select the population size (enter "-1" for infinite)</li>
+              <li>Press "Run!"</li>
+          </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="ajaxDontShow();" data-dismiss="modal">Don't show again</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <form id="allelefreakform" action="" method="post" >
          {% csrf_token %}
   <div class="row form-group">
 
-      <div class="mb-3 d-lg-none">
+      <div class="mb-3 ml-4 d-lg-none">
           <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#af-settings" aria-expanded="false" aria-controls="collapseExample">
             Show settings&nbsp;&nbsp; <span class="fa fa-chevron-down"></span>
           </button>
@@ -29,7 +60,7 @@ Allele Freak
 
       <div class="col-lg-10  collapse d-lg-block" id="af-settings" >
       <!--div class = "row ml-4 collapse d-lg-block" id="af-settings"-->
-        <div class = "row form-group">
+        <div class = "row form-group mx-4 mx-lg-0">
 
           <div class="col-xs-0 col-lg-2">
 
@@ -66,7 +97,7 @@ Allele Freak
 
 
       </div>
-      <div class="row form-group">
+      <div class="row form-group mx-4 mx-lg-0">
               <div class="col-xs-0 col-lg-2">
 
               </div>
@@ -90,7 +121,7 @@ Allele Freak
           <div class = "col-xs-2 col-lg-1">
               {{ form.inbreeding_coefficient }}
           </div>
-          <div class="col-xs-4 col-lg-2">
+          <div class="col-xs-4 mt-2 mt-lg-0 col-lg-2">
                   Show allele: &nbsp;
                      <div class="btn-group btn-group-toggle" data-toggle="buttons">
                         {% for radio in form.show_allele %}
@@ -108,7 +139,7 @@ Allele Freak
 
 
   </div>
-            <div class = "col-lg-2">
+            <div class = "col-lg-2 ml-4 ml-lg-0">
              <div class="row">
               <div class = "btn-group col-sm-4 col-lg-12 pr-4">
                 <input class="btn btn-primary" name="submitform" type="submit" value="Run">
@@ -118,10 +149,10 @@ Allele Freak
               </div>
              </div>
              <div class = "row">
-              <div class = "col-sm-2 col-lg-6">
+              <div class = "col-xs-5 col-sm-2 col-lg-6">
               <b>{{ form.auto_clear.label_tag }}</b>
               </div>
-              <div class = "col-sm-2 col-lg-6">
+              <div class = "col-xs-5 col-sm-2 col-lg-6">
               {{ form.auto_clear }}
               </div>
              </div>
@@ -134,7 +165,7 @@ Allele Freak
 
 <div class = "container">
  <div class ="row">
-    <div class="col-10">
+    <div class="col-12">
         <div id="plotDiv" style="width:100%;height:400px;"></div>
     </div>
 
@@ -142,18 +173,40 @@ Allele Freak
 
 </div>
 </form>
+
+
+<div class = "container" id="info-section">
+<hr>
+    <div class="jumbotron">
+                <h1>Info</h1>
+    </div>
+
+          <p>Track and graph the fate of alleles over multiple generations based on relative fitness, genetic drift etc.</p>
+      <br> Simply
+          <ul>
+              <li>Select the initial frequency of the "a" allele</li>
+              <li>Select the relative genotype fitnesses (AA, Aa, aa)</li>
+              <li>Select the population size (enter "-1" for infinite)</li>
+              <li>Press "Run!"</li>
+          </ul>
+
+</div>
+
+
 {%  endblock %}
 
 {%  block script %}
 
 {{ plot_data | json_script:"jPlotData" }}
 {{ show_allele | json_script:"jShowAllele" }}
+{{ dont_show_info | json_script:"jDontShowInfo" }}
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <script>
 var plotData = JSON.parse(document.getElementById('jPlotData').textContent);
 var showAllele = JSON.parse(document.getElementById('jShowAllele').textContent);
+var dontShowInfoPopup = JSON.parse(document.getElementById('jDontShowInfo').textContent);
 
 
 function showChange(e) {
@@ -235,6 +288,27 @@ function showGraph(pDiv) {
 
     Plotly.newPlot(pDiv, dataList, layout);
 
+}
+
+window.onresize = function(){ location.reload(); }
+
+
+$(document).ready(function(){
+        if (dontShowInfoPopup == 'Y') {
+
+        }
+        else {
+            $("#exampleModalCenter").modal('show');
+        }
+});
+
+function ajaxDontShow() {
+    $.ajax("{%url 'setsessionvar' %}?var=af_dontshowinfopopup:Y",   // request url
+    {
+        success: function (data, status, xhr) {// success callback function
+            //alert('Done ajax');
+    }
+});
 }
 
 showGraph('plotDiv');
