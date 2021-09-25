@@ -91,7 +91,7 @@ class PopGrowthViewTestCase(TestCase):
                                      'answer_field': '', 'solverSubmit': 'Calculate'})
         form = response.context['form']
         self.assertEqual(len(form.errors), 1)
-        self.assertEqual(form.errors['__all__'][0], 'Invalid parameters (would result in -ve time). Please re-enter')
+        self.assertEqual(form.errors['__all__'][0], 'Invalid parameters (would result in negative time). Please try different parameters')
 
     def test_views_post_problem_generator(self):
         c = Client()
