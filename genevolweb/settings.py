@@ -55,16 +55,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
-
-
 ROOT_URLCONF = 'genevolweb.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -171,11 +167,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} - {asctime} - {module} - {process:d} - {thread:d} - {message}',
+            'format': '{levelname} - {asctime} - {name} - {process:d} - {thread:d} - {message}',
             'style': '{',
         },
         'simple': {
-            'format': '{levelname} - {asctime} - {module} - {message}',
+            'format': '{levelname} - {asctime} - {name} - {message}',
             'style': '{',
         },
     },

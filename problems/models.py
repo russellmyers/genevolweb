@@ -1,29 +1,25 @@
-from django.db import models
-
 import json
 from .forms import PopulationGrowthSolverForm, BreedersEquationSolverForm, GCMSolverForm, HardyWeinbergSolverForm
 import random
 import math
-#from getools.cross import Organism, Genome
+# from getools.cross import Organism, Genome
 from getools.cross import Organism, Genome
 from scipy.stats import chisquare
-#from getools.popdist import PopDist
+# from getools.popdist import PopDist
 from getools.popdist import PopDist
 import numpy as np
 
 # Create your models here.
 
 
-class Problem():
-    def __init__(self, title, solver_form, ranges = {}):
+class Problem:
+    def __init__(self, title, solver_form, ranges={}):
         self.title = title
         self.solver_form = solver_form
         self.ranges = ranges
 
-
     def solve(self):
         pass
-
 
     def generate(self):
         pass
@@ -32,9 +28,9 @@ class Problem():
         pass
 
     def pick_field(self):
-        '''
+        """
         Used for problems where 1 field is chosen as target
-        '''
+        """
         pass
 
     def missing_field(self):
@@ -46,7 +42,7 @@ class Problem():
     def set_missing_field_in_form(self, missing_field, ans):
         self.solver_form.data = self.solver_form.data.copy()
 
-        if isinstance(self.ranges[missing_field][0],int):
+        if isinstance(self.ranges[missing_field][0], int):
             self.solver_form.data[missing_field] = int(round(ans))
         else:
             self.solver_form.data[missing_field] = round(ans, 3)
@@ -56,13 +52,12 @@ class Problem():
         return None
 
 
-
 class PopGrowthProblem(Problem):
 
     def __init__(self, solver_form):
 
-        ranges =  {'init_pop': [100, 10000000], 'final_pop': [10000000, 100000000],
-                      'growth_rate': [0.001, 0.2], 'time': [25, 100]}
+        ranges = {'init_pop': [100, 10000000], 'final_pop': [10000000, 100000000],
+                  'growth_rate': [0.001, 0.2], 'time': [25, 100]}
 
         super().__init__('Population Growth', solver_form, ranges=ranges)
 
@@ -72,6 +67,7 @@ class PopGrowthProblem(Problem):
     def generate(self):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def calc_final_pop(self, values):
         n0 = values['init_pop']
         r = values['growth_rate']
@@ -80,6 +76,7 @@ class PopGrowthProblem(Problem):
         nt = n0 * math.exp(r * t)
         return nt
 
+    # noinspection PyMethodMayBeStatic
     def calc_init_pop(self, values):
         nt = values['final_pop']
         r = values['growth_rate']
@@ -88,6 +85,7 @@ class PopGrowthProblem(Problem):
         n0 = nt / (math.exp(r * t))
         return n0
 
+    # noinspection PyMethodMayBeStatic
     def calc_time(self, values):
         n0 = values['init_pop']
         nt = values['final_pop']
@@ -96,6 +94,7 @@ class PopGrowthProblem(Problem):
         t = math.log(nt / n0) / r
         return t
 
+    # noinspection PyMethodMayBeStatic
     def calc_r(self, values):
         n0 = values['init_pop']
         nt = values['final_pop']
@@ -122,11 +121,9 @@ class PopGrowthProblem(Problem):
 
     def calc_missing(self):
         values = {}
-        for range in self.ranges:
-            values[range] = self.solver_form.cleaned_data[range]
+        for rng in self.ranges:
+            values[rng] = self.solver_form.cleaned_data[rng]
         return self.calc(values)
-
-
 
     def pick_field(self):
         num_fields = len(self.ranges)
@@ -155,13 +152,12 @@ class PopGrowthProblem(Problem):
                 satisfactory = True
         return picked_field, values
 
-
     def check_answer(self):
-        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
-        form  = self.solver_form
+        # fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form = self.solver_form
         values = {}
         for field in self.ranges:
-            values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+            values[field] = None if form.cleaned_data['answer_field'] == field else form.cleaned_data[field]
         correct_answer_title = ''
         for field in self.ranges:
             if field == form.cleaned_data['answer_field']:
@@ -170,7 +166,9 @@ class PopGrowthProblem(Problem):
                 form.fields[field].widget.attrs.update({'readonly': 'readonly'})
 
         correct_answer = self.calc(values)
-        correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+        correct_answer_rounded = round(correct_answer, 2)\
+            if isinstance(self.ranges[form.cleaned_data['answer_field']][0], float)\
+            else round(correct_answer)  # form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
 
         supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
 
@@ -190,12 +188,13 @@ class PopGrowthProblem(Problem):
 
         values = {}
         for field in self.ranges:
-            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field else  self.solver_form.cleaned_data[field]
+            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field\
+                else self.solver_form.cleaned_data[field]
 
         t = correct_answer if values['time'] is None else values['time']
         r = correct_answer if values['growth_rate'] is None else values['growth_rate']
         n0 = correct_answer if values['init_pop'] is None else values['init_pop']
-        plot_calc_values = {'init_pop':n0,'growth_rate':r, 'time':1}
+        plot_calc_values = {'init_pop': n0, 'growth_rate': r, 'time': 1}
 
         x_data = []
         y_data = []
@@ -221,15 +220,16 @@ class PopGrowthProblem(Problem):
             form = PopulationGrowthSolverForm()
             for param in request.GET:
                 if param in form.fields:
-                   form.fields[param].initial = request.GET.get(param,None)
+                    form.fields[param].initial = request.GET.get(param, None)
         return form
+
 
 class BreedersEquationProblem(Problem):
 
     def __init__(self, solver_form):
 
-        ranges =  {'av_starting_phen': [20.0,100.0], 'av_selected_phen': [0.1, 100.0],
-                      'av_response_phen': [0.1, 100.0], 'broad_heritability': [0.0, 1.0]}
+        ranges = {'av_starting_phen': [20.0, 100.0], 'av_selected_phen': [0.1, 100.0],
+                  'av_response_phen': [0.1, 100.0], 'broad_heritability': [0.0, 1.0]}
 
         super().__init__('Breeders Equation', solver_form, ranges=ranges)
 
@@ -239,6 +239,7 @@ class BreedersEquationProblem(Problem):
     def generate(self):
         pass
 
+    # noinspection PyMethodMayBeStatic
     def calc_broad_heritability(self, values):
         st_p = values['av_starting_phen']
         se_p = values['av_selected_phen']
@@ -247,30 +248,32 @@ class BreedersEquationProblem(Problem):
         bh = (re_p - st_p) / (se_p - st_p)
         return bh
 
+    # noinspection PyMethodMayBeStatic
     def calc_response(self, values):
         st_p = values['av_starting_phen']
         se_p = values['av_selected_phen']
         bh = values['broad_heritability']
 
-        re_p  = bh * (se_p - st_p) + st_p
+        re_p = bh * (se_p - st_p) + st_p
         return re_p
 
+    # noinspection PyMethodMayBeStatic
     def calc_start(self, values):
         se_p = values['av_selected_phen']
         re_p = values['av_response_phen']
         bh = values['broad_heritability']
 
-        st_p = (re_p  - (bh * se_p)) / (1 - bh)
+        st_p = (re_p - (bh * se_p)) / (1 - bh)
         return st_p
 
+    # noinspection PyMethodMayBeStatic
     def calc_selected(self, values):
         st_p = values['av_starting_phen']
         re_p = values['av_response_phen']
         bh = values['broad_heritability']
 
-        se_p = (re_p  - ((1-bh) * st_p)) / bh
+        se_p = (re_p - ((1-bh) * st_p)) / bh
         return se_p
-
 
     def calc(self, values):
         if values['broad_heritability'] is None:
@@ -290,11 +293,9 @@ class BreedersEquationProblem(Problem):
 
     def calc_missing(self):
         values = {}
-        for range in self.ranges:
-            values[range] = self.solver_form.cleaned_data[range]
+        for rng in self.ranges:
+            values[rng] = self.solver_form.cleaned_data[rng]
         return self.calc(values)
-
-
 
     def pick_field(self):
         num_fields = len(self.ranges)
@@ -323,13 +324,12 @@ class BreedersEquationProblem(Problem):
                 satisfactory = True
         return picked_field, values
 
-
     def check_answer(self):
-        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
-        form  = self.solver_form
+        # fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form = self.solver_form
         values = {}
         for field in self.ranges:
-            values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+            values[field] = None if form.cleaned_data['answer_field'] == field else form.cleaned_data[field]
 
         correct_answer_title = ''
         for field in self.ranges:
@@ -339,13 +339,15 @@ class BreedersEquationProblem(Problem):
                 form.fields[field].widget.attrs.update({'readonly': 'readonly'})
 
         correct_answer = self.calc(values)
-        correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+        correct_answer_rounded = round(correct_answer, 2)\
+            if isinstance(self.ranges[form.cleaned_data['answer_field']][0], float)\
+            else round(correct_answer)  # form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
 
         supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
 
         correct_flag = False
-        #if form.cleaned_data['answer_field'] == 'growth_rate':
-        if (isinstance(self.ranges[form.cleaned_data['answer_field']][0], float)):
+        # if form.cleaned_data['answer_field'] == 'growth_rate':
+        if isinstance(self.ranges[form.cleaned_data['answer_field']][0], float):
             if abs(correct_answer - supplied_answer) < 0.01:
                 correct_flag = True
         else:
@@ -358,18 +360,17 @@ class BreedersEquationProblem(Problem):
 
     def generate_plot_data(self, correct_answer=None):
 
-
         values = {}
         for field in self.ranges:
-            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field else self.solver_form.cleaned_data[field]
+            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field\
+                else self.solver_form.cleaned_data[field]
 
         st_p = correct_answer if values['av_starting_phen'] is None else values['av_starting_phen']
         se_p = correct_answer if values['av_selected_phen'] is None else values['av_selected_phen']
         re_p = correct_answer if values['av_response_phen'] is None else values['av_response_phen']
-        bh = correct_answer if values['broad_heritability'] is None else values['broad_heritability']
+        # bh = correct_answer if values['broad_heritability'] is None else values['broad_heritability']
 
-
-        plot_data = [{'x_data': [st_p, se_p, re_p], 'y_data': [0,0,0]}]
+        plot_data = [{'x_data': [st_p, se_p, re_p], 'y_data': [0, 0, 0]}]
 
         return plot_data
 
@@ -381,8 +382,9 @@ class BreedersEquationProblem(Problem):
             form = BreedersEquationSolverForm()
             for param in request.GET:
                 if param in form.fields:
-                   form.fields[param].initial = request.GET.get(param,None)
+                    form.fields[param].initial = request.GET.get(param, None)
         return form
+
 
 class TestCrossLinkageProblem(Problem):
 
@@ -398,7 +400,6 @@ class TestCrossLinkageProblem(Problem):
 
     def generate(self):
         pass
-
 
     def calc(self, values):
 
@@ -432,18 +433,17 @@ class TestCrossLinkageProblem(Problem):
                 self.solver_form.fields[field].initial = r
                 # form.fields[field].disabled = True
                 self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
-            answer = self.calc(values)
-            if (1 == 1):
+            _ = self.calc(values)
+            if 1 == 1:
                 satisfactory = True
         return picked_field, values
 
-
     def check_answer(self):
-        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
-        form  = self.solver_form
+        # fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form = self.solver_form
         values = {}
         for field in self.ranges:
-            values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+            values[field] = None if form.cleaned_data['answer_field'] == field else form.cleaned_data[field]
         correct_answer_title = ''
         for field in self.ranges:
             if field == form.cleaned_data['answer_field']:
@@ -452,7 +452,9 @@ class TestCrossLinkageProblem(Problem):
                 form.fields[field].widget.attrs.update({'readonly': 'readonly'})
 
         correct_answer = self.calc(values)
-        correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+        correct_answer_rounded = round(correct_answer, 2)\
+            if isinstance(self.ranges[form.cleaned_data['answer_field']][0], float) \
+            else round(correct_answer)  # form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
 
         supplied_answer = form.cleaned_data[form.cleaned_data['answer_field']]
 
@@ -468,6 +470,7 @@ class TestCrossLinkageProblem(Problem):
 
         return correct_answer, correct_answer_rounded, correct_answer_title, correct_flag, plot_data
 
+    # noinspection PyMethodMayBeStatic
     def generate_plot_data(self, correct_answer=None):
 
         plot_data = []
@@ -490,10 +493,12 @@ class TestCrossLinkageProblem(Problem):
 
             for param in request.GET:
                 if param in form.fields:
-                   form.fields[param].initial = request.GET.get(param,None)
+                    form.fields[param].initial = request.GET.get(param, None)
 
-            form.fields['answer_field'].initial = json.dumps({'phenotypes': Genome.test_cross_het_gametes_to_phenotypes()})
+            form.fields['answer_field'].initial = json.dumps(
+                {'phenotypes': Genome.test_cross_het_gametes_to_phenotypes()})
         return form
+
 
 class HardyWeinbergProblem(Problem):
 
@@ -514,7 +519,7 @@ class HardyWeinbergProblem(Problem):
 
         self.solver_form.data[missing_field] = json.dumps(ans)
 
-
+    # noinspection PyMethodMayBeStatic
     def calc_allele_frequencies(self, observed):
         A_count = observed[0]*2 + observed[1]
         tot_allele_count = sum(observed) *2
@@ -522,19 +527,21 @@ class HardyWeinbergProblem(Problem):
         q = 1- p
         return p, q
 
+    # noinspection PyMethodMayBeStatic
     def calc_expected_genotype_counts(self, observed, p, q):
         exp_AA = math.pow(p, 2) * sum(observed)
         exp_Aa = 2 * p * q * sum(observed)
         exp_aa = sum(observed) - exp_AA - exp_Aa
         return [exp_AA, exp_Aa, exp_aa]
 
+    # noinspection PyMethodMayBeStatic
     def calc_F(self, observed, expected):
         obs_Aa_freq = observed[1] / sum(observed)
         exp_Aa_freq = expected[1] / sum(expected)
         return 1 - (obs_Aa_freq / exp_Aa_freq)
 
     def calc(self, values):
-        observed = [values['obs_AA'],values['obs_Aa'], values['obs_aa']]
+        observed = [values['obs_AA'], values['obs_Aa'], values['obs_aa']]
         p, q = self.calc_allele_frequencies(observed)
         expected = self.calc_expected_genotype_counts(observed, p, q)
         chisq, p_val = chisquare(observed, expected, ddof=1)
@@ -544,12 +551,13 @@ class HardyWeinbergProblem(Problem):
         expected = [round(exp) for exp in expected]
         F = round(F, 3)
 
-        return {'exp_AA': expected[0], 'exp_Aa': expected[1], 'exp_aa': expected[2], 'F': F, 'p': round(p,3), 'q': round(q,3), 'pop':pop}
+        return {'exp_AA': expected[0], 'exp_Aa': expected[1], 'exp_aa': expected[2], 'F': F, 'p': round(p, 3),
+                'q': round(q, 3), 'pop': pop}
 
     def calc_missing(self):
         values = {}
-        for range in self.ranges:
-            values[range] = self.solver_form.cleaned_data[range]
+        for rng in self.ranges:
+            values[rng] = self.solver_form.cleaned_data[rng]
         return self.calc(values)
 
     def pick_field(self):
@@ -558,7 +566,7 @@ class HardyWeinbergProblem(Problem):
         while not satisfactory:
             p = random.uniform(0.01, 0.99)
 
-            r = random.randint(0,1)
+            r = random.randint(0, 1)
             if r == 0:
                 F = 0.01
             else:
@@ -566,12 +574,12 @@ class HardyWeinbergProblem(Problem):
 
             pop_sizes = [1000, 1200, 1400, 1600, 2000]
             r = random.randint(0, len(pop_sizes)-1)
-            pd = PopDist(p, pop=pop_sizes[r], F = F, verbose=1)
+            pd = PopDist(p, pop=pop_sizes[r], F=F, verbose=1)
             pd.sim_generations(1)
             print(pd.gens[-1].survived_genotypes)
             num_fields = len(self.ranges)
             r = random.randint(0, num_fields - 1)
-            picked_field = 'exp_AA' #list(self.ranges.keys())[r]
+            picked_field = 'exp_AA'  # list(self.ranges.keys())[r]
             values = {}
 
             values['obs_AA'] = pd.gens[-1].survived_genotypes[0]
@@ -579,14 +587,13 @@ class HardyWeinbergProblem(Problem):
             values['obs_aa'] = pd.gens[-1].survived_genotypes[2]
 
             answer = self.calc(values)
-            if (answer['F'] >= 0):
-               satisfactory = True
-               for field in self.ranges:
+            if answer['F'] >= 0:
+                satisfactory = True
+                for field in self.ranges:
                     self.solver_form.fields[field].initial = values[field]
                     self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
         #         # form.fields[field].disabled = True
         #         self.solver_form.fields[field].widget.attrs.update({'readonly': 'readonly'})
-
 
         # satisfactory = False
         # while not satisfactory:
@@ -606,13 +613,12 @@ class HardyWeinbergProblem(Problem):
         #         satisfactory = True
         return picked_field, values
 
-
     def check_answer(self):
-        #fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
-        form  = self.solver_form
+        # fields = ['init_pop_generator', 'final_pop_generator', 'growth_rate_generator', 'time_generator']
+        form = self.solver_form
         values = {}
         for field in self.ranges:
-            #values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
+            # values[field] = None if form.cleaned_data['answer_field'] == field else  form.cleaned_data[field]
             values[field] = form.cleaned_data[field]
         correct_answer_title = 'dummy'
         for field in self.ranges:
@@ -622,21 +628,21 @@ class HardyWeinbergProblem(Problem):
                 form.fields[field].widget.attrs.update({'readonly': 'readonly'})
 
         correct_answer = self.calc(values)
-        #correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
+        # correct_answer_rounded = round(correct_answer, 2) if  isinstance(self.ranges[form.cleaned_data['answer_field']][0],float) else  round(correct_answer)#form.cleaned_data['answer_field'] == 'growth_rate' else round(correct_answer)
 
         correct_flag = {}
-        #correct_flag = False
+        # correct_flag = False
 
         for ans_key, ans_val in correct_answer.items():
             if ans_key == 'pop':
-               #ignore
-               continue
+                # ignore
+                continue
             if form.cleaned_data[ans_key] is None:
                 correct_flag[ans_key] = False
             else:
                 if ans_key == 'F' or ans_key == 'p' or ans_key == 'q':
                     if abs(ans_val - form.cleaned_data[ans_key]) < 0.01:
-                        correct_flag[ans_key]= True
+                        correct_flag[ans_key] = True
                     else:
                         correct_flag[ans_key] = False
                 else:
@@ -656,16 +662,23 @@ class HardyWeinbergProblem(Problem):
 
         values = {}
         for field in self.ranges:
-            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field else  self.solver_form.cleaned_data[field]
+            values[field] = None if self.solver_form.cleaned_data['answer_field'] == field\
+                else self.solver_form.cleaned_data[field]
 
         plot_data = []
 
         p_values = [x for x in np.arange(0, 1.01, 0.01)]
 
-        exp_AA_values = [p*p*correct_answer['pop'] for p in  p_values]
+        exp_AA_values = [p*p*correct_answer['pop'] for p in p_values]
         exp_aa_values = [(1-p)*(1-p)*correct_answer['pop'] for p in p_values]
         exp_Aa_values = [2*p*(1-p)*correct_answer['pop'] for p in p_values]
-        plot_data = [{'x_data': p_values, 'y_data': exp_AA_values, 'vert_line': correct_answer['p'], 'annotations': [{'x':correct_answer['p'], 'y': values['obs_AA'], 'title':'  Observed AA count'},{'x':correct_answer['p'], 'y': values['obs_Aa'], 'title':'  Obs Aa'},{'x':correct_answer['p'], 'y': correct_answer['exp_Aa'], 'title':'  Exp Aa'}, {'x':correct_answer['p'], 'y': values['obs_aa'], 'title':'  Observed aa count'} ]},{'x_data': p_values, 'y_data': exp_Aa_values}, {'x_data': p_values, 'y_data': exp_aa_values} ]
+        plot_data = [{'x_data': p_values, 'y_data': exp_AA_values, 'vert_line': correct_answer['p'],
+                      'annotations': [{'x': correct_answer['p'], 'y': values['obs_AA'], 'title':'  Observed AA count'},
+                                      {'x': correct_answer['p'], 'y': values['obs_Aa'], 'title':'  Obs Aa'},
+                                      {'x': correct_answer['p'], 'y': correct_answer['exp_Aa'], 'title':'  Exp Aa'},
+                                      {'x': correct_answer['p'], 'y': values['obs_aa'],
+                                       'title':'  Observed aa count'}]}, {'x_data': p_values, 'y_data': exp_Aa_values},
+                     {'x_data': p_values, 'y_data': exp_aa_values}]
 
         return plot_data
 
@@ -686,7 +699,7 @@ class HardyWeinbergProblem(Problem):
 
             for param in request.GET:
                 if param in form.fields:
-                   form.fields[param].initial = request.GET.get(param,None)
+                    form.fields[param].initial = request.GET.get(param, None)
 
             form.fields['answer_field'].initial = None
         return form

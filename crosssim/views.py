@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import random
-#from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
-from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
+# from getools.cross import Organism, GenomeTemplate, ChromosomeTemplate, Gene, AlleleSet
+from getools.cross import Organism
 from .forms import CrossSimForm
 from common.views import get_phen_descriptions, create_genome_template
 
@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 
-
 def cross_type_for_orgs(orgs):
     if orgs[0] == 0 and orgs[1] == 2:
         return '1'
-    elif  orgs[0] == 1 and orgs[1] == 2:
+    elif orgs[0] == 1 and orgs[1] == 2:
         return '2'
-    elif  orgs[0] == 1 and orgs[1] == 1:
+    elif orgs[0] == 1 and orgs[1] == 1:
         return '3'
     else:
         return '4'
+
 
 def orgs_for_cross_type(cross_type):
     if cross_type == '1':
@@ -30,8 +30,7 @@ def orgs_for_cross_type(cross_type):
     elif cross_type == '3':
         return 1, 1
     else:
-        return 1,1
-
+        return 1, 1
 
 
 def cross_sim(request):
@@ -68,7 +67,8 @@ def cross_sim(request):
             default_cross_type = '3'
 
         sel_p1, sel_p2 = orgs_for_cross_type(default_cross_type)
-        form = CrossSimForm(initial={'p1': str(sel_p1+1),'p2': str(sel_p2+1), 'alleles': str(default_num_traits), 'cross_type': default_cross_type, 'gen_phen':default_gen_phen})
+        form = CrossSimForm(initial={'p1': str(sel_p1+1), 'p2': str(sel_p2+1), 'alleles': str(default_num_traits),
+                                     'cross_type': default_cross_type, 'gen_phen': default_gen_phen})
 
         organisms = []
         for num_traits in range(1, max_traits+1):
@@ -76,10 +76,9 @@ def cross_sim(request):
             gt = create_genome_template(request, positions_in=positions_in, num_traits=num_traits)
 
             organism_set = [Organism.organism_with_hom_dominant_genotype(gt),
-                         Organism.organism_with_het_genotype(gt, rand_phase=True),
-                         Organism.organism_with_hom_recessive_genotype(gt)]
+                            Organism.organism_with_het_genotype(gt, rand_phase=True),
+                            Organism.organism_with_hom_recessive_genotype(gt)]
             organisms.append(organism_set)
-
 
         request.session['cs_organisms'] = [[org._to_attr_dict() for org in organism_set] for organism_set in organisms]
 
@@ -88,9 +87,14 @@ def cross_sim(request):
         poss_gametes_rolled_up = [[org.genome.possible_gametes_formatted(dec_places=3, suppress_combine_same=False) for org in organism_set] for organism_set in organisms]
 
         num_traits_ind = default_num_traits - 1
-        parents = [org_gen_phens[num_traits_ind][sel_p1],org_gen_phens[num_traits_ind][sel_p2]]
-        parent_poss_gametes = [poss_gametes[num_traits_ind][sel_p1],poss_gametes[num_traits_ind][sel_p2]]
+        parents = [org_gen_phens[num_traits_ind][sel_p1], org_gen_phens[num_traits_ind][sel_p2]]
+        parent_poss_gametes = [poss_gametes[num_traits_ind][sel_p1], poss_gametes[num_traits_ind][sel_p2]]
 
         return render(request, "crosssim/cross_sim.html",
-                      context={'form':form,'gen_phen': default_gen_phen, 'num_traits': default_num_traits,'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1':organisms[num_traits_ind][sel_p1],'p2': organisms[num_traits_ind][sel_p2], 'parents':parents, 'parent_poss_gametes': parent_poss_gametes,'genome_name': genome_name, 'phen_descriptions': phen_descriptions, 'org1_phen':'a+b+c+','organims':organisms, 'orgs':org_gen_phens,'poss_gametes':poss_gametes, 'poss_gametes_rolled_up': poss_gametes_rolled_up})
-
+                      context={'form': form, 'gen_phen': default_gen_phen, 'num_traits': default_num_traits,
+                               'p1_ind': sel_p1, 'p2_ind': sel_p2, 'p1': organisms[num_traits_ind][sel_p1],
+                               'p2': organisms[num_traits_ind][sel_p2], 'parents': parents,
+                               'parent_poss_gametes': parent_poss_gametes, 'genome_name': genome_name,
+                               'phen_descriptions': phen_descriptions, 'org1_phen': 'a+b+c+', 'organims': organisms,
+                               'orgs': org_gen_phens, 'poss_gametes': poss_gametes,
+                               'poss_gametes_rolled_up': poss_gametes_rolled_up})
