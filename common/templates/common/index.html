@@ -4,6 +4,8 @@
 GenEvol Home
 {% endblock %}
 
+{% block genevol_title_text %}<span class = "text-light">Genetics & Evolution</span>{%  endblock genevol_title_text %}
+
 {%  block content %}
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
       <h1 class="display-4">Genetics & Evolution Web Tools</h1>
@@ -14,9 +16,10 @@ GenEvol Home
 
     <div class="container">
 
-
-
-        <div class="row justify-content-center">
+       <div class="text-center">
+           <p class="display-4">Apps</p>
+       </div>
+       <div class="row justify-content-center">
               <div class="col-auto mb-4">
                 <div class="card h-100 card-ge">
                  <div class="card-header">
@@ -82,8 +85,35 @@ GenEvol Home
                 </div>
               </div>
 
-
               <div class="col-auto mb-4">
+                <div class="card h-100 card-ge">
+                  <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Self Test<br> Quiz</h4>
+                  </div>
+                  <div class="embed-responsive embed-responsive-16by9">
+                      <a href="{%  url 'quiz' %}"><img class="card-img-top  embed-responsive-item" src="{%  static 'img/gen_quiz_pic.PNG' %}" alt="Card image cap"></a>
+                  </div>
+                  <div class="card-body">
+                      <p>
+                          Test yourself on genetics  and evolution topics
+
+                          <br>
+                      </p>
+                      <div class="text-center">
+                         <a class="btn btn-primary" href="{%  url 'quiz' %}" role="button">Run</a>
+                      </div>
+                   </div>
+                </div>
+              </div>
+       </div>
+
+
+       <div class="text-center mt-4">
+           <p class="display-4">Problem Central</p>
+       </div>
+        <div class="row justify-content-center">
+
+            <div class="col-auto mb-4">
                 <div class="card h-100 card-ge">
                   <div class="card-header">
                      <h4 class="my-0 font-weight-normal">Test Cross Linkage</h4>
@@ -170,28 +200,12 @@ GenEvol Home
               </div>
 
 
+    </div>
 
-
-              <div class="col-auto mb-4">
-                <div class="card h-100 card-ge">
-                  <div class="card-header">
-                    <h4 class="my-0 font-weight-normal">Self Test<br> Quiz</h4>
-                  </div>
-                  <div class="embed-responsive embed-responsive-16by9">
-                      <a href="{%  url 'quiz' %}"><img class="card-img-top  embed-responsive-item" src="{%  static 'img/gen_quiz_pic.PNG' %}" alt="Card image cap"></a>
-                  </div>
-                  <div class="card-body">
-                      <p>
-                          Test yourself on genetics  and evolution topics
-
-                          <br>
-                      </p>
-                      <div class="text-center">
-                         <a class="btn btn-primary" href="{%  url 'quiz' %}" role="button">Run</a>
-                      </div>
-                   </div>
-                </div>
-              </div>
+        <div class="text-center mt-4">
+           <p class="display-4">More</p>
+       </div>
+       <div class="row justify-content-center">
 
 
               <div class="col-auto mb-4">

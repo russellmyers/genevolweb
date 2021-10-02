@@ -39,7 +39,7 @@
       <a class = "navbar-brand" href = "{%  url 'index' %}">
           <img src = "{%  static 'img/gen_tsticon4.PNG' %}">
           &nbsp;
-          <span class = "text-light">Genetics & Evolution</span>
+          {% block genevol_title_text %}{%  endblock genevol_title_text %}
       </a>
       <h5 class="font-weight-normal text-light">{% block app_title %}{%  endblock %}</h5>
       <button class = "navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive">
@@ -55,12 +55,15 @@
                     Tools
                   </a>
                   <div class="dropdown-menu">
+                    <h6 class="dropdown-header"><b>Apps</b></h6>
+                    <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{%  url 'ped_an' %}">Pedigree Analyzer</a>
                     <a class="dropdown-item" href="{%  url 'cross_sim' %}">Cross Simulator</a>
                     <a class="dropdown-item" href="{%url 'allele_freak' %}">Allele Freak</a>
                     <a class="dropdown-item" href="{%  url 'quiz' %}">Self Test Quiz</a>
                     <div class="dropdown-divider"></div>
-                    <h6 class="dropdown-header">Problem Central</h6>
+                      <h6 class="dropdown-header"><b>Problem Central</b></h6>
+                      <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{%url 'cross_map' %}">Test Cross Linkage</a>
                     <a class="dropdown-item" href="{%url 'population_growth' %}">Population Growth</a>
                     <a class="dropdown-item" href="{%url 'hardy_weinberg' %}">Hardy Weinberg</a>
@@ -68,16 +71,16 @@
 
                   </div>
                 </li>
-             <li class = "nav-item px-2">
-                  <a class="nav-link text-light" href = "#info-section"><i class="fas fa-info-circle fa-lg"></i></a>
-              </li>
-
               <li class = "nav-item px-2">
                   <a class="nav-link text-light" href = "{%  url 'support' %}">Contact</a>
               </li>
               <li class = "nav-item px-2">
                   <a class="nav-link text-light" href = "{%  url 'about' %}">About</a>
               </li>
+             <li class = "nav-item px-2">
+                  <a class="nav-link text-light" href = "#info-section"><i class="fas fa-info-circle fa-lg"></i></a>
+              </li>
+
 
 
           </ul>

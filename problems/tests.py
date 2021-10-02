@@ -115,3 +115,194 @@ class PopGrowthViewTestCase(TestCase):
         form = response.context['form']
         self.assertEqual(len(form.errors), 1)
         self.assertEqual(form.errors['__all__'][0], 'Please enter your answer')
+
+class BreedersEquationViewTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def test_views_health_check(self):
+        c = Client()
+        response = c.get('/pc/be')
+        self.assertEqual(response.status_code, 200)
+
+    def test_views_screen(self):
+        c = Client()
+        response = c.get('/pc/be')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 0)
+        response = c.get('/pc/be', {'tab': 'generator-tab'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 1)
+        num_nones = 0
+        for key, val in response.context['other_values'].items():
+            if val is None:
+                num_nones += 1
+        self.assertEqual(num_nones, 1)
+
+    def test_views_post_problem_solver(self):
+        c = Client()
+        response = c.post('/pc/be', {'av_starting_phen': '1000', 'av_selected_phen': '1200', 'av_response_phen': '1100', 'broad_heritability': '',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['broad_heritability'], 0.5)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/be', {'av_starting_phen': '1000', 'av_selected_phen': '1200', 'av_response_phen': '', 'broad_heritability': '0.5',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['av_response_phen'], 1100)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/be', {'av_starting_phen': '1000', 'av_selected_phen': '', 'av_response_phen': '1100', 'broad_heritability': '0.5',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['av_selected_phen'], 1200)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/be', {'av_starting_phen': '', 'av_selected_phen': '1200', 'av_response_phen': '1100', 'broad_heritability': '0.5',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['av_starting_phen'], 1000)
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+
+
+        response = c.post('/pc/be', {'av_starting_phen': '1000', 'av_selected_phen': '1200', 'av_response_phen': '1100',
+                                     'broad_heritability': '0.5',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+
+        form = response.context['form']
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Please leave 1 field missing')
+
+
+        response = c.post('/pc/be', {'av_starting_phen': '1000', 'av_selected_phen': '1200', 'av_response_phen': '1300',
+                                     'broad_heritability': '',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+
+        form = response.context['form']
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Average Response Phenotype must be between Average Starting Phenotype and Average Selected Phenotype')
+
+    def test_views_post_problem_generator(self):
+        c = Client()
+        response = c.post('/pc/be', {'tab': 'generator-tab', 'av_starting_phen': '1000', 'av_selected_phen': '1200',
+                                     'av_response_phen': '1100', 'broad_heritability': '0.5',
+                                     'answer_field': 'broad_heritability', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], True)
+        self.assertEqual(response.context['answer_rounded'], 0.5)
+
+        response = c.post('/pc/be', {'tab': 'generator-tab', 'av_starting_phen': '1000', 'av_selected_phen': '1200',
+                                     'av_response_phen': '1100', 'broad_heritability': '0.4',
+                                     'answer_field': 'broad_heritability', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], False)
+        self.assertEqual(response.context['answer_rounded'], 0.5)
+
+        response = c.post('/pc/be', {'tab': 'generator-tab', 'av_starting_phen': '1000', 'av_selected_phen': '1200',
+                                     'av_response_phen': '1100', 'broad_heritability': '',
+                                     'answer_field': 'broad_heritability', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Please enter your answer')
+
+
+class HardyWeinBergViewTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def test_views_health_check(self):
+        c = Client()
+        response = c.get('/pc/hw')
+        self.assertEqual(response.status_code, 200)
+
+    def test_views_screen(self):
+        c = Client()
+        response = c.get('/pc/hw')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 0)
+        response = c.get('/pc/hw', {'tab': 'generator-tab'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 1)
+        num_nones = 0
+        for key, val in response.context['other_values'].items():
+            if val is None:
+                num_nones += 1
+        self.assertEqual(num_nones, 0)
+
+    def test_views_post_problem_solver(self):
+        c = Client()
+        response = c.post('/pc/hw', {'obs_AA': '25', 'obs_Aa': '50', 'obs_aa': '25',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        ans = response.context['answer']
+        form = response.context['form']
+        self.assertEqual(ans, {'exp_AA': 25, 'exp_Aa': 50, 'exp_aa': 25, 'F': 0.0, 'p': 0.5, 'q': 0.5, 'pop': 100})
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+        response = c.post('/pc/hw', {'obs_AA': '0', 'obs_Aa': '0', 'obs_aa': '0',
+                                     'answer_field': '', 'solverSubmit': 'Calculate'})
+        form = response.context['form']
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 1)
+        self.assertEqual(form.errors['__all__'][0], 'Please enter data')
+
+    def test_views_post_problem_generator(self):
+        c = Client()
+        response = c.post('/pc/hw', {'tab': 'generator-tab', 'obs_AA': '25', 'obs_Aa': '50', 'obs_aa': '25',
+                                     'p': '0.5', 'q': '0.5', 'exp_AA': '25', 'exp_Aa': '50', 'exp_aa': '25', 'F': '0.0',
+                                     'answer_field': 'answer', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], {'exp_AA': True, 'exp_Aa': True, 'exp_aa': True, 'F': True,
+                                                            'p': True, 'q': True})
+
+        response = c.post('/pc/hw', {'tab': 'generator-tab', 'obs_AA': '50', 'obs_Aa': '50', 'obs_aa': '50',
+                                     'p': '0.5', 'q': '0.5', 'exp_AA': '25', 'exp_Aa': '50', 'exp_aa': '25', 'F': '0.0',
+                                     'answer_field': 'answer', 'generatorSubmit': 'Check Answer'})
+        form = response.context['form']
+        self.assertEqual(response.context['correct_flag'], {'exp_AA': False, 'exp_Aa': False, 'exp_aa': False,
+                                                            'F': False, 'p': True, 'q': True})
+
+
+class TestCrossLinkageViewTestCase(TestCase):
+    def setUp(self):
+        pass
+
+    def test_views_health_check(self):
+        c = Client()
+        response = c.get('/pc/cross_map')
+        self.assertEqual(response.status_code, 200)
+
+    def test_views_screen(self):
+        c = Client()
+        response = c.get('/pc/cross_map')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 0)
+        response = c.get('/pc/cross_map', {'tab': 'generator-tab'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['default_tab'], 1)
+        num_nones = 0
+
+
+    def test_views_post_problem_solver(self):
+        c = Client()
+        response = c.post('/pc/cross_map', {'ABC': '100', 'ABc': '100', 'AbC': '100', 'Abc': '100',
+                                            'aBC': '100', 'aBc': '100', 'abC': '100', 'abc': '100',
+                                            'answer_field': '{"phenotypes": {"ABC": "A+B+C+", "ABc": "A+B+c-", "AbC": "A+b-C+", "Abc": "A+b-c-", "aBC": "a-B+C+", "aBc": "a-B+c-", "abC": "a-b-C+", "abc": "a-b-c-"}}', 'solverSubmit': 'Calculate'})
+        ans = response.context['answer']
+        form = response.context['form']
+        self.assertEqual(ans, '{"order": "ABC", "rd1": 0.5, "rd2": 0.5, "rd3": 0.5, '
+                              '"linkage": "UU", "phenotypes": {"ABC": "A+B+C+", "ABc": "A+B+c-",'
+                              ' "AbC": "A+b-C+", "Abc": "A+b-c-", "aBC": "a-B+C+", "aBc": "a-B+c-",'
+                              ' "abC": "a-b-C+", "abc": "a-b-c-"}}')
+        self.assertEqual(form.data['solverSubmit'], 'Calculate')
+        self.assertEqual(len(form.errors), 0)
+
+
+    def test_views_post_problem_generator(self):
+        c = Client()
