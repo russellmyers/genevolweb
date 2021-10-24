@@ -13,6 +13,11 @@ Pedigree Analyzer
     <link href="{%  static "css/ped_an/ped_an.css" %}" rel="stylesheet">
 {%  endblock custom_css %}
 
+{% block info-button %}
+    <button class="btn btn-outline-info shadow-none" data-toggle="modal" data-target="#paModalCenter" ><span class="fas fa-info-circle fa-lg"></span></button>
+{%  endblock %}
+
+
 {%  block content %}
 
 
@@ -28,6 +33,48 @@ Pedigree Analyzer
   <source src="{% static 'audio/success-low.wav' %}" type="audio/wav">
   Your browser does not support the audio element.
 </audio>
+
+<div class="modal fade" id="paModalCenter" tabindex="-1" role="dialog" aria-labelledby="paModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+            <h3 class="modal-title" id="paModalCenterTitle">Pedigree Analyzer</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+      </div>
+      <div class="modal-body">
+          <p class = "lead">Track and graph the fate of alleles over multiple generations based on relative fitness, genetic drift etc.</p>
+          <hr class ="my4">
+
+            <p>Pedigree Analyzer generates pedigrees and allows users to test themselves on which inheritance pattern(s) are consistent with each pedigree.
+                <br>For each inheritance pattern, the user can also test themselves on the genotypes which are inferrable for each individual in the pedigree.
+            </p>
+
+            <p>Instructions:</p>
+            <ul>
+            <li>Generate a Pedigree (Tap New Pedigree button)</li>
+            <li>Select consistent inheritance pattern(s) associated with the Pedigree shown</li>
+            <li>For each consistent inheritance pattern for a Pedigree, select genotypes for those individuals whose genotypes can be inferred</li>
+            </ul>
+            Inheritance patterns included:
+            <ul>
+            <li>Autosomal Recessive</li>
+            <li>Autosomal Dominant</li>
+            <li>X-Linked Recessive</li>
+            <li>X-Linked Dominant</li>
+            <li>Y-Linked</li>
+            </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="ajaxDontShow();" data-dismiss="modal">Don't show again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 <div class = "container-fluid">
     <div class = "row">

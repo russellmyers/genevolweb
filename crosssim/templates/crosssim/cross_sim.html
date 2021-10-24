@@ -13,7 +13,53 @@ Cross Simulator
     <link href="{%  static "css/cross_sim/cross_sim.css" %}" rel="stylesheet">
 {%  endblock custom_css %}
 
+{% block info-button %}
+    <button class="btn btn-outline-info shadow-none" data-toggle="modal" data-target="#csModalCenter" ><span class="fas fa-info-circle fa-lg"></span></button>
+{%  endblock %}
+
+
 {%  block content %}
+
+<div class="modal fade" id="csModalCenter" tabindex="-1" role="dialog" aria-labelledby="csModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+            <h3 class="modal-title" id="csModalCenterTitle">Cross Simulator</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+      </div>
+      <div class="modal-body">
+        <p class="lead"> Simulate crosses between male and female diploid organisms and examine expected gentoype and phenotype ratios of offspring produced</p>
+        <hr class="my-4">
+            <p>For x-linked inheritance, individual male and female expected ratios are also shown.</p>
+            <p>Results are displayed in Punnett Square format</p>
+
+            <p>Instructions:</p>
+            <ul>
+            <li>Configure using the settings sidebar, including:</li>
+            <ul>
+            <li>Cross type (pure breeding-line cross, (mono/di)hybrid cross, test cross, custom cross</li>
+            <li>Number of traits under examination (1, 2 or 3)</li>
+            <li>Inheritance type (automomal or x-linked)
+
+            </ul>
+            <li>Press Meiosis button to produce gametes</li>
+            <li>Press Fertilize button to produce progency</li>
+            <li>Examine individual offspring by hovering over or tapping on an offspring</li>
+            <li>Tap the "Phenotype/Genotype" button to toggle between Genotype and Phenotype ratio display</li>
+
+
+            </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="ajaxDontShow();" data-dismiss="modal">Don't show again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class = "container-fluid">
     <div class = "row">
