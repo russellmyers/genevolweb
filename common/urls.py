@@ -15,5 +15,6 @@ urlpatterns = [
     # path('quiz', views.quiz, name ='quiz'),
     path('support', views.support, name='support'),
     path('about', views.about, name='about'),
+    path('show-request-meta', views.show_request_meta, name='show_request_meta'),
     path('set-session-var', views.set_session_var, name='setsessionvar')
 ]

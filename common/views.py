@@ -25,6 +25,20 @@ def about(request):
     return render(request, "common/about.html")
 
 
+def show_request_meta(request):
+    # For diagnostic purposes only
+    var = request.GET.get('var', None)
+    val = ''
+    if var is None:
+        for key, item in request.META.items():
+            val += f'{str(key)}: {str(item)}<br>'
+        return HttpResponse(val)
+    val = request.META.get(var, 'Not found')
+    return HttpResponse(f'{var}: {val}')
+
+
+    x = 1
+
 def set_session_var(request):
     session_var = request.GET.get('var', None)
     if session_var is not None:
