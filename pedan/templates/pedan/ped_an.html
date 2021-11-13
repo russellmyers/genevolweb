@@ -33,7 +33,6 @@ Pedigree Analyzer
   <source src="{% static 'audio/success-low.wav' %}" type="audio/wav">
   Your browser does not support the audio element.
 </audio>
-
 <div class="modal fade" id="paModalCenter" tabindex="-1" role="dialog" aria-labelledby="paModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -75,8 +74,8 @@ Pedigree Analyzer
 </div>
 
 
-
-<div class = "container-fluid">
+{% include 'common/small_screen_message.html' %}
+<div class = "container-fluid d-none d-md-block">
     <div class = "row">
 
 

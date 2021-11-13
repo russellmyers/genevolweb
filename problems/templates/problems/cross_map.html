@@ -10,7 +10,9 @@ Test Cross Linkage
 {% endblock  %}
 
 {%  block problem_solver_leader %}
-
+  <p></p>
+  {%  include 'common/small_screen_message.html' %}
+  <div class="d-none d-md-block">
        <div class="container mt-2">
                     <div class="row">
                                   <div class="col-sm-3">
@@ -62,10 +64,13 @@ Test Cross Linkage
                 </div>
 
       </div>
+  </div>
 
 {%  endblock problem_solver_leader %}
 
 {%  block problem_solver_header %}
+    <div class="d-none d-md-block">
+
         <p class="lead mt-4" id="solverHeader">
            {% if cross_type == 'p' %}
                <b>Enter number of offspring observed from cross:</b>
@@ -75,6 +80,8 @@ Test Cross Linkage
 
 
         </p>
+    </div>
+
 {%  endblock problem_solver_header %}
 
 {%  block problem_solver_column_size %}
@@ -86,6 +93,7 @@ Test Cross Linkage
 
 
 {%  block problem_solver_form %}
+     <div class="d-none d-md-block">
         <form id="crossmapsolverform" action="" method="post">
                  {% csrf_token %}
                    <div class="form-group">
@@ -205,6 +213,7 @@ Test Cross Linkage
 
                 {{ form.answer_field }}
         </form>
+     </div>
 {% endblock problem_solver_form %}
 
 {%  block problem_solver_answer %}
@@ -225,6 +234,9 @@ Test Cross Linkage
 {%  endblock problem_generator_answer_column_size %}
 
 {%  block problem_generator_leader %}
+    <p></p>
+    {%  include 'common/small_screen_message.html' %}
+    <div class="d-none d-md-block">
 
        <div class="container mt-2">
                     <div class="row">
@@ -281,10 +293,11 @@ Test Cross Linkage
                 </div>
 
       </div>
-
+    </div>
 {%  endblock problem_generator_leader %}
 
 {% block problem_generator_form %}
+    <div class="d-none d-md-block">
 
       <form id="crossmapgeneratorform" action="" method="post" >
                  {% csrf_token %}
@@ -402,6 +415,7 @@ Test Cross Linkage
         </div>
 
     </form>
+  </div>
 {% endblock problem_generator_form %}
 
 {%  block problem_generator_answer %}
@@ -421,6 +435,7 @@ Test Cross Linkage
 
 
 {%  block answer_below %}
+   <div class="d-none d-md-block">
 
     {%  if show_answer_div_below %}
         <div class = "container" id="answerDivBelow">
@@ -519,6 +534,7 @@ Test Cross Linkage
 
         </div>
     {%  endif %}
+   </div>
 {%  endblock answer_below %}
 
 
