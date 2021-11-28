@@ -118,6 +118,7 @@ window.onload = function(){
 
     pd.drawStuff();
 
+    window.dispatchEvent(new Event('resize'));
 
 }
 
