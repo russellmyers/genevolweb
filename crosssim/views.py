@@ -36,6 +36,11 @@ def orgs_for_cross_type(cross_type):
 def cross_sim(request):
     logger.info('Cross Sim Test')
 
+    try:
+        dont_show_info_popup_flag = request.session['cs_dontshowinfopopup']
+    except Exception:
+        dont_show_info_popup_flag = 'N'
+
     genome_name_requested = request.GET.get('genome-name', None)
     genome_names = ['dog', 'fish', 'pea']
 
@@ -97,4 +102,6 @@ def cross_sim(request):
                                'parent_poss_gametes': parent_poss_gametes, 'genome_name': genome_name,
                                'phen_descriptions': phen_descriptions, 'org1_phen': 'a+b+c+', 'organims': organisms,
                                'orgs': org_gen_phens, 'poss_gametes': poss_gametes,
-                               'poss_gametes_rolled_up': poss_gametes_rolled_up})
+                               'poss_gametes_rolled_up': poss_gametes_rolled_up,
+                               'dont_show_info': dont_show_info_popup_flag
+                               })

@@ -31,6 +31,11 @@ def ped_an(request):
 
     logger.info('Pedigree Analyser')
 
+    try:
+        dont_show_info_popup_flag = request.session['pa_dontshowinfopopup']
+    except Exception:
+        dont_show_info_popup_flag = 'N'
+
     inh_pattern_requested = request.GET.get('inh_pattern', None)
     if inh_pattern_requested is None:
         chrom_type_requested = None
@@ -192,4 +197,5 @@ def ped_an(request):
         return render(request, "pedan/ped_an.html",
                       context={'form': form, 'ped_j': ped_j, 'act_gens': act_gens,
                                'cons_per_inferrer': consistent_per_inferrer,
-                               'poss_gens_per_inferrer': possible_genotypes_per_inferrer, 'debug': debug})
+                               'poss_gens_per_inferrer': possible_genotypes_per_inferrer,
+                               'dont_show_info': dont_show_info_popup_flag, 'debug': debug})

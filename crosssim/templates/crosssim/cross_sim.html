@@ -54,7 +54,7 @@ Cross Simulator
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="ajaxDontShow();" data-dismiss="modal">Don't show again</button>
+        <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
       </div>
     </div>
   </div>
@@ -231,6 +231,7 @@ Cross Simulator
 {{  phen_descriptions.0  | json_script:"jPhenDescriptions1"}}
 {{  phen_descriptions.1  | json_script:"jPhenDescriptions2"}}
 {{  phen_descriptions.2  | json_script:"jPhenDescriptions3"}}
+{{ dont_show_info | json_script:"jDontShowInfo" }}
 
 <script src="{% get_static_prefix %}js/cs/viewclasses.js"></script>
 <script src="{% get_static_prefix %}js/cs/modelclasses.js"></script>
@@ -239,7 +240,7 @@ Cross Simulator
 
 <script>
 
-
+var dontShowInfoPopup = JSON.parse(document.getElementById('jDontShowInfo').textContent);
 
 
 function setPunnettSquare() {
@@ -374,6 +375,24 @@ function genToPhen(gen) {
 
 window.onload = function(){
 
+}
+
+$(document).ready(function(){
+        if (dontShowInfoPopup == 'Y') {
+
+        }
+        else {
+            $("#csModalCenter").modal('show');
+        }
+});
+
+function ajaxDontShow() {
+    $.ajax("{%url 'setsessionvar' %}?var=cs_dontshowinfopopup:Y",   // request url
+    {
+        success: function (data, status, xhr) {// success callback function
+            //alert('Done ajax');
+    }
+});
 }
 
 var orgs = JSON.parse(document.getElementById('jOrgs').textContent);

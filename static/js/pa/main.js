@@ -127,3 +127,22 @@ var state = 1;
 var deactivateClick = false;
 var ping = new Audio(staticPrefix + "audio/ding-sound-effect-2.mp3");
 var x = 1;
+
+
+function ajaxDontShow(setSessionVarURL) {
+    $.ajax(setSessionVarURL + "?var=pa_dontshowinfopopup:Y",   // request url
+    {
+        success: function (data, status, xhr) {// success callback function
+            //alert('Done ajax');
+    }
+});
+}
+
+$(document).ready(function(){
+        if (dontShowInfoPopup == 'Y') {
+
+        }
+        else {
+            $("#paModalCenter").modal('show');
+        }
+});

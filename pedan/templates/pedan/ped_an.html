@@ -67,7 +67,7 @@ Pedigree Analyzer
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="ajaxDontShow();" data-dismiss="modal">Don't show again</button>
+        <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
       </div>
     </div>
   </div>
@@ -171,6 +171,7 @@ Pedigree Analyzer
 {{  p1_ind | json_script:"jP1Ind"}}
 {{  p2_ind | json_script:"jP2Ind"}}
 {{  genome_name | json_script:"jGenomeName"}}
+{{ dont_show_info | json_script:"jDontShowInfo" }}
 
 {{ ped_j | json_script:"jPedigree" }}
 
@@ -179,6 +180,7 @@ Pedigree Analyzer
 {{  poss_gens_per_inferrer | json_script:"jPossGensPerInferrer" }}
 <script>
     var staticPrefix = "{% get_static_prefix %}";
+    var dontShowInfoPopup = JSON.parse(document.getElementById('jDontShowInfo').textContent);
 </script>
 
 
