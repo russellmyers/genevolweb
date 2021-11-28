@@ -127,6 +127,13 @@ function numTraitsChanged(first) {
      var hybridOptions = ['Monohybrid Cross', 'Dihybrid Cross', 'TriHybrid Cross']
      crossTypeEl.options[2].innerHTML = hybridOptions[numTraits - 1];
 
+     var phenDescriptionsEl = document.getElementById('phen-descriptions');
+     var phenDescriptionTexts = [document.getElementById('jPhenDescriptions1'), document.getElementById('jPhenDescriptions2'), document.getElementById('jPhenDescriptions3')];
+     phenDescriptionsEl.innerHTML = ''
+     for (i=0;i < numTraits; ++i) {
+         phenDescriptionsEl.innerHTML += phenDescriptionTexts[i].innerText.replace(/"/g, '');
+         phenDescriptionsEl.innerHTML += '<BR>';
+     }
 
       orgTypeChanged();
       setPunnettSquare();

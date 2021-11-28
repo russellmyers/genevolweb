@@ -151,7 +151,7 @@ Cross Simulator
                  </div>
               </div>
                 <div class="col-lg-4 order-xs-1 order-md-4">
-                   <small>
+                   <small id="phen-descriptions">
                       {% for descr in phen_descriptions %}
                         {{  descr }}
                         <br>
@@ -228,7 +228,9 @@ Cross Simulator
 {{  p1_ind | json_script:"jP1Ind"}}
 {{  p2_ind | json_script:"jP2Ind"}}
 {{  genome_name | json_script:"jGenomeName"}}
-
+{{  phen_descriptions.0  | json_script:"jPhenDescriptions1"}}
+{{  phen_descriptions.1  | json_script:"jPhenDescriptions2"}}
+{{  phen_descriptions.2  | json_script:"jPhenDescriptions3"}}
 
 <script src="{% get_static_prefix %}js/cs/viewclasses.js"></script>
 <script src="{% get_static_prefix %}js/cs/modelclasses.js"></script>
