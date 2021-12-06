@@ -20,9 +20,14 @@ def quiz(request):
     quiz_code_requested = request.GET.get('quiz-code', 'GENEV')
     max_questions = request.GET.get('questions', -1)
 
+    try:
+        dont_show_info_popup_flag = request.session['qz_dontshowinfopopup']
+    except Exception:
+        dont_show_info_popup_flag = 'N'
+
     logger.info(f'Quiz - code: {quiz_code_requested} max_questions: {max_questions}')
 
     terms = load_quiz(quiz_code_requested)
-    context = {"terms": terms, 'max_questions': max_questions}
+    context = {"terms": terms, 'max_questions': max_questions, 'dont_show_info': dont_show_info_popup_flag}
 
     return render(request, "quiz/quiz.html", context=context)

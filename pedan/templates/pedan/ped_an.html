@@ -43,6 +43,11 @@ Pedigree Analyzer
             </button>
       </div>
       <div class="modal-body">
+          <div class="text-center">
+             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+             <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
+          </div>
+          <hr class ="my4">
           <p class = "lead">Track and graph the fate of alleles over multiple generations based on relative fitness, genetic drift etc.</p>
           <hr class ="my4">
 
@@ -66,8 +71,6 @@ Pedigree Analyzer
             </ul>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
       </div>
     </div>
   </div>
@@ -119,8 +122,8 @@ Pedigree Analyzer
 
             <div class = "col-1">
             </div>
-            <div class = "col-10">
-                <canvas id="canvas" width="1100px" height = "500px" class = "mt-4">
+            <div class = "col-10 mt-4">
+                <canvas id="canvas" width="1100px" height = "500px" class = "">
 
                 </canvas>
             </div>

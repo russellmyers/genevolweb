@@ -34,11 +34,16 @@ Self Test Quiz
             <hr class="my-4">
             <p>Test yourself on some common basic genetic terms</p>
 
-                  <p> Choose between:
+                  <p>Choose between:
                       <ul>
-                     <li>Genetics & Evolution quiz - basic genetics terms</li>
-                     <li>Population Genetics quiz</li>
+                     <li>Genetics & Evolution quiz (basic genetics terms)</li>
+                     <li>Population Genetics quiz (population genetics-related terms)</li>
                      </ul>
+                  </p>
+              <p>Select Option A, B, C or D for each question (more points for selecting correct answer on earlier attempts)</p>
+                  <p>Next question will appear after correct answer is selected </p>
+
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -273,8 +278,7 @@ Self Test Quiz
 
 {{ terms | json_script:"jTerms" }}
 {{  max_questions | json_script:"jMaxQuestions" }}
-
-
+{{ dont_show_info | json_script:"jDontShowInfo" }}
 
 
 {%  endblock %}
@@ -285,6 +289,7 @@ Self Test Quiz
 
 {%  block script %}
 <script>
+var dontShowInfoPopup = JSON.parse(document.getElementById('jDontShowInfo').textContent);
 
 /* Randomize array in-place using Durstenfeld shuffle algorithm */
 function shuffleArray(array) {
@@ -667,6 +672,24 @@ function initialiseQuiz() {
 
     document.getElementById('navig').style.display = 'none';
 
+}
+
+$(document).ready(function(){
+        if (dontShowInfoPopup == 'Y') {
+
+        }
+        else {
+            $("#qzModalCenter").modal('show');
+        }
+});
+
+function ajaxDontShow() {
+    $.ajax("{%url 'setsessionvar' %}?var=qz_dontshowinfopopup:Y",   // request url
+    {
+        success: function (data, status, xhr) {// success callback function
+            //alert('Done ajax');
+    }
+});
 }
 
 

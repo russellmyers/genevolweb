@@ -30,6 +30,11 @@ Cross Simulator
             </button>
       </div>
       <div class="modal-body">
+        <div class="text-center">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
+        </div>
+        <hr class = "my-4">
         <p class="lead"> Simulate crosses between male and female diploid organisms and examine expected gentoype and phenotype ratios of offspring produced</p>
         <hr class="my-4">
             <p>For x-linked inheritance, individual male and female expected ratios are also shown.</p>
@@ -53,8 +58,6 @@ Cross Simulator
             </ul>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="ajaxDontShow('{%url 'setsessionvar' %}');" data-dismiss="modal">Don't show again</button>
       </div>
     </div>
   </div>

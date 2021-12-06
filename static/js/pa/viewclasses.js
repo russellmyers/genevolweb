@@ -1083,7 +1083,7 @@ class PedigreeDiagram {
 
   drawAlleleLegend() {
      this.ctx.save();
-     if (this.showGenotypes) {
+     //if (this.showGenotypes) {
          //this.inhTypeToShow = null;
          var txt = 'Wild type Allele - A, Afflicted Allele - a'
          if (this.inhTypeToShow == 'YR') {
@@ -1093,7 +1093,7 @@ class PedigreeDiagram {
          this.ctx.font = "14px Helvetica Neue"; //Arial";
          var textWidth = this.ctx.measureText(txt).width;
          this.ctx.fillText(txt, this.padding.l + this.usableWidth - textWidth - 10, this.padding.t + 10);
-     }
+     //}
      this.ctx.restore()
 
 
