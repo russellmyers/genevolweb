@@ -218,6 +218,16 @@ Cross Simulator
 
 </div>
 
+<!-- Preload all possible phentoype images -->
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c+.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b+c-.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c+.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a+b-c-.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c+.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b+c-.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c+.png" height="1" width="1" border="0">
+<img src="{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c-.png" height="1" width="1" border="0">
+
 
 
 {%  endblock %}
