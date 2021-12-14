@@ -18,7 +18,7 @@ Test Cross Linkage
                                   <div class="col-sm-3">
                                   </div>
                                   <div class="col-sm-3">
-                                    <button name="gamete_type" id="solverGameteBut" onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+                                    <button name="gamete_type" id="solverGameteBut" onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Genotypes</button>
                                     <button name="phenotype_type" id="solverPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
                                  </div>
                    </div>
@@ -73,9 +73,9 @@ Test Cross Linkage
 
         <p class="lead mt-4" id="solverHeader">
            {% if cross_type == 'p' %}
-               <b>Enter number of offspring observed from cross:</b>
+               <b>Enter number of offspring observed from test cross:</b>
            {%  else %}
-               <b>Enter number of gametes observed from Heterozygote:</b>
+               <b>Enter number of offspring observed from test cross:</b>
            {%  endif %}
 
 
@@ -247,7 +247,7 @@ Test Cross Linkage
                                     {% endif %}
                                   </div>
                                   <div class="col-sm-3">
-                                    <button name="gamete_type_generator" id="generatorGameteBut"  onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Gametes</button>
+                                    <button name="gamete_type_generator" id="generatorGameteBut"  onclick="typeClicked('g')" class="btn btn-sm mt-1 {% if cross_type == 'g' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}" type="submit">Genotypes</button>
                                     <button name="phenotype_type_generator" id="generatorPhenotypeBut" onclick="typeClicked('p')" class="btn btn-sm mt-1 {% if cross_type == 'p' %}btn-primary active{%  else %} btn-outline-secondary{%  endif %}"  type="submit">Phenotypes</button>
                                  </div>
                     </div>
@@ -442,7 +442,7 @@ Test Cross Linkage
                {%  if default_tab == 1 %}
                         <p class="h5" ondragstart="return false;">
                              <img src = {% get_static_prefix %}img/calc.PNG %} width="20"></img>
-                                  Use results above to predict Phase (heterozygote), gene order, linkage and recombination fractions:
+                                  Use results above to predict parental phase (heterozygote), gene order, linkage and recombination fractions:
                          </p>
 
                         <small class="text-muted"><i>(Double click gene to change phase. Drag/drop gene to change order. Double click link to link/unlink)</i></small>
@@ -452,18 +452,18 @@ Test Cross Linkage
                    <p class="h4 mt-3">Result:</p>
                {%  endif %}
             <div class="row">
-                <div class="col-4" ondragstart="return false;">
+                <div class="col-5" ondragstart="return false;">
                     {%  if default_tab == 1 %}
-                        Gene order, *parental phase, linkage:
+                        Gene order, *parental phase (heterozygote) and linkage:
                         <br><small class=""><i>(*Choose either parental phase)</i></small>
                     {%  else %}
-                        Gene order, parental phase, linkage:
+                        Gene order, parental phase (heterozygote) and linkage:
                     {%  endif %}
                 </div>
                 {%  if default_tab == 1 %}
-                <div class="col-8">
+                <div class="col-7">
                 {%  else %}
-                 <div class="col-8" draggable="false" ondragstart="return false;">
+                 <div class="col-7" draggable="false" ondragstart="return false;">
                 {%  endif %}
                     <div class="gcm-gene" id="gcm-gene1" width="100px" height="50px" draggable="true">
                         A
@@ -491,10 +491,10 @@ Test Cross Linkage
             <br>
 
             <div class="row" ondragstart="return false;">
-                <div class="col-4">
+                <div class="col-5">
                     Recombination fractions:
                 </div>
-                <div class="col-8">
+                <div class="col-7">
                         <label for="rd1">ab</label><input id="rd1" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
                         <label for="rd2">bc</label><input id = "rd2" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
                     <label for="rd3">ac</label><input id="rd3" class="gcm-rdinput" type="number" min="0.00" max="1.00" step="0.01" value="0.0">
@@ -522,7 +522,7 @@ Test Cross Linkage
                 <button name="cheat_answer"  style="visibility:hidden" id="cheatButton" class="btn btn-info mt-2" onclick="cheatAnswer();">Show Answer</button>
             </div>
             <div id="answer_div_ticks"  style="visibility:hidden">
-                <i>Full parental phase:
+                <i>Full parental phase (heterozygote):
                     {{  org_het_phase }}
                 <br>Recombination fractions:
                 {%for phen_combs in recomb_fraction_list_with_p %}
@@ -565,37 +565,39 @@ Test Cross Linkage
 
 {%  endblock handle_tab_click_url %}
 
-{%  block problem_script_specific %}
-{{ proposed | json_script:"jProposed" }}
-{{ parsed_order | json_script:"jParsedOrder" }}
-{{ recomb_fraction_list | json_script:"jRecombFractionList" }}
-
 {%  block problem_info_head %}
     Info - <b><i>Test Cross Linkage</i></b>
 {%  endblock %}
 
 
 {%  block problem_solver_info %}
-    <p> Accepts genotype counts for three genes from a "test cross", and uses the counts to infer:
+    <p> Accepts genotype (or phenotype) counts for three genes from a "test cross", and uses the counts to infer:
         <ul>
-            <li>The gametic phase</li>
+            <li>The gametic phase (heterozygote parent)</li>
             <li>The recombination rate between the three genes</li>
             <li>The gene order</li>
+            <li>Linkage</li>
         </ul>
 
 {%  endblock problem_solver_info %}
 
 {%  block problem_generator_info %}
-    <p> Presents genotype counts observed for three genes from a "test cross". Use these results to propose:
+    <p> Presents genotype (or phenotype) counts observed for three genes from a "test cross". Use these results to propose:
         <ul>
-            <li>Gametic Phase (heterozygote)</li>
+            <li>The gametic phase (heterozygote parent)</li>
+            <li>The recombination rate between the three genes</li>
             <li>The gene order</li>
             <li>Linkage</li>
-            <li>The recombination rate between the three genes</li>
+
         </ul>
 
 {%  endblock problem_generator_info %}
 
+
+{%  block problem_script_specific %}
+{{ proposed | json_script:"jProposed" }}
+{{ parsed_order | json_script:"jParsedOrder" }}
+{{ recomb_fraction_list | json_script:"jRecombFractionList" }}
 
 
 <script>
@@ -1199,10 +1201,10 @@ function toggleLink(el) {
          document.getElementById(tagPrefix + 'abCTag').innerHTML =  '<b>{{ form.abC.label_tag }}</b>';
          document.getElementById(tagPrefix + 'abcTag').innerHTML = '<b>{{ form.abc.label_tag }}</b>';
          if (defaultTab == 0) {
-             document.getElementById('solverHeader').innerHTML = '<b>Enter number of gametes observed from Heterozygote:</b>';
+             document.getElementById('solverHeader').innerHTML = '<b>Enter number of offspring observed from test cross:</b>';
          }
          else {
-             document.getElementById('generatorHeader').innerHTML = 'Gametes observed from Heterozygote (Total: 1000)';
+             document.getElementById('generatorHeader').innerHTML = 'Offspring genotypes observed (Total: 1000)';
          }
 
 
@@ -1225,10 +1227,10 @@ function toggleLink(el) {
          document.getElementById(tagPrefix + 'abCTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c+.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
          document.getElementById(tagPrefix + 'abcTag').innerHTML = "<img src='{% get_static_prefix %}img/{{ genome_name }}/{{  genome_name }}_a-b-c-.png' width={%  if genome_name == 'pea' %}60px{%  else %}100px{%  endif %}' alt='something'  class='ml-4'>"
          if (defaultTab == 0) {
-             document.getElementById('solverHeader').innerHTML = '<b>Enter number of offspring observed from cross:</b>';
+             document.getElementById('solverHeader').innerHTML = '<b>Enter number of offspring observed from test cross:</b>';
          }
          else {
-             document.getElementById('generatorHeader').innerHTML = 'Offspring phenotypes observed (Total: 1000';
+             document.getElementById('generatorHeader').innerHTML = 'Offspring phenotypes observed (Total: 1000)';
          }
      }
 

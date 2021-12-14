@@ -150,35 +150,35 @@ class HardyWeinbergSolverForm(forms.Form):
 
 
 class GCMSolverForm(forms.Form):
-    ABC = forms.IntegerField(label='ABC', required=False,
+    ABC = forms.IntegerField(label='AaBbCc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    ABc = forms.IntegerField(label='ABc', required=False,
+    ABc = forms.IntegerField(label='AaBbcc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    AbC = forms.IntegerField(label='AbC', required=False,
+    AbC = forms.IntegerField(label='AabbCc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    Abc = forms.IntegerField(label='Abc', required=False,
+    Abc = forms.IntegerField(label='Aabbcc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    aBC = forms.IntegerField(label='aBC', required=False,
+    aBC = forms.IntegerField(label='aaBbCc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    aBc = forms.IntegerField(label='aBc', required=False,
+    aBc = forms.IntegerField(label='aaBbcc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    abC = forms.IntegerField(label='abC', required=False,
+    abC = forms.IntegerField(label='aabbCc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
-    abc = forms.IntegerField(label='abc', required=False,
+    abc = forms.IntegerField(label='aabbcc', required=False,
                              widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm very-narrow-select'
                                                                       ' solver-input', 'style': 'text-align: right;',
                                                              'min': '0'}))
